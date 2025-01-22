@@ -29,4 +29,21 @@ incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
 nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
 fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+culpa qui officia deserunt mollit anim id est laborum [@supermetroid:snes].
+
+![Caption: A description of the image.](style/figures/map.png){#fig:map
+width=80%}
+
+## Lorem Clipsum
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum [@Mather:2000:MUT].
+
+\begin{figure*}[ht] \centering
+\includegraphics[width=\textwidth]{style/figures/map.png} \caption{A
+visualization of the dataset across both columns.} \label{fig:map2}
+\end{figure*}
