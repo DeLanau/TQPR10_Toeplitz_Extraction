@@ -1,28 +1,32 @@
 ---
-documentclass: sigchi
-title: "A Study on Pandoc and CHI LaTeX Class"
+title: "Compiling Markdown to LaTeX"
 author:
-  - name: Alice Smith
-    affiliation: "University of Example"
-    email: alice@example.edu
-  - name: Bob Johnson
-    affiliation: "Institute of Research"
-    email: bob@research.org
-date: "January 20, 2025"
-abstract: |
-  This document demonstrates how to use Pandoc with a provided LaTeX class file.
-  It ensures compliance with CHI formatting and discusses key aspects of 
-  Markdown-to-PDF conversion.
+  - name: "Love Arreborn"
+    affiliation: "Linköping University"
+    email: "lovar063@student.liu.se"
+  - name: "Nadim Lakrouz"
+    affiliation: "Linköping University"
+    email: "nadla777@student.liu.se"
+documentclass: sigchi
+bibliography: style/sample.bib
+csl: style/ieee.csl
 keywords: [Pandoc, LaTeX, CHI Proceedings, Markdown]
-bibliography: references.bib
-csl: ieee.csl # Optional citation style, e.g., IEEE format
+abstract: |
+  This document contains a test of a particular compilation style in order to simplify and streamline the process of writing this article.
 header-includes:
-  - \pagenumbering{arabic} # Include page numbers if needed
-  - \numberofauthors{2} # Define number of authors
-  - \conferenceinfo{CHI 2025}{April 2025, San Francisco, CA, USA}
-  - \toappear{To appear in CHI 2025.}
+  - \pagenumbering{arabic}
+  - \numberofauthors{2}
 ---
 
 # Wee!
 
-This is a start. Wonder if it works.
+A test, how bold. Let me show you an example of Lorem Ipsum.
+
+## Lorem Dipsum
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
