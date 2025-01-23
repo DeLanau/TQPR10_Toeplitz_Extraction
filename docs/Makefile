@@ -8,7 +8,7 @@ TEXINPUTS := $(STYLE_DIR):$(TEXINPUTS)  # Ensures LaTeX searches style/
 
 PANDOC_FLAGS = --pdf-engine=xelatex --citeproc \
   --metadata documentclass=$(LATEX_CLASS) \
-  --metadata title="Creating High-Speed Firmware for Random Number Generating Microcontrollers" \
+  --metadata title="A Study on Pandoc and CHI LaTeX Class" \
   --metadata author="Love Arreborn, Nadim Lakrouz"
 
 all: $(PDF_FILE)
