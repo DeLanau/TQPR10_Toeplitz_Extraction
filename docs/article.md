@@ -1,5 +1,6 @@
 ---
-title: "Compiling Markdown to LaTeX"
+title:
+  "Creating High-Speed Firmware for Random Number Generating Microcontrollers"
 author:
   - name: "Love Arreborn"
     affiliation: "Linköping University"
@@ -12,38 +13,12 @@ bibliography: style/sample.bib
 csl: style/ieee.csl
 keywords: [Pandoc, LaTeX, CHI Proceedings, Markdown]
 abstract: |
-  This document contains a test of a particular compilation style in order to simplify and streamline the process of writing this article.
+  In computer security as well as cryptography, one key aspect revolves around generating truly random numbers. Traditionally, this has been done by utilizing non-predictable modules from the computer itself, such as the system time or similar. This is far from true randomness, and this thesis project is aimed at constructing one part of a random number generator which provides randomness by reading from an optical signal. The natural jitter in this signal will provide more randomness than any internal component can offer. This optical signal is then streamed through an Analog to Digital Converter (_ADC_), which then needs to be processed by a microcontroller. This thesis project aims to create firmware to then process this data into random numbers, with emphasis on creating high-speed implementations of said firmware in order to find the optimal solution for the end product.
+
 header-includes:
   - \pagenumbering{arabic}
-  - \numberofauthors{2}
 ---
 
-# Wee!
+# 1. INTRODUCTION
 
-A test, how bold. Let me show you an example of Lorem Ipsum.
-
-## Lorem Dipsum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum [@supermetroid:snes].
-
-![Caption: A description of the image.](style/figures/map.png){#fig:map
-width=80%}
-
-## Lorem Clipsum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum [@Mather:2000:MUT].
-
-\begin{figure*}[ht] \centering
-\includegraphics[width=\textwidth]{style/figures/map.png} \caption{A
-visualization of the dataset across both columns.} \label{fig:map2}
-\end{figure*}
+T
