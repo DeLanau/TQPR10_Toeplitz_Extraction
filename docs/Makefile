@@ -4,11 +4,11 @@ STYLE_DIR = ./style
 BIB_FILE = $(STYLE_DIR)/sample.bib
 CSL_FILE = $(STYLE_DIR)/ieee.csl
 LATEX_CLASS = sigchi
-TEXINPUTS := $(STYLE_DIR):$(TEXINPUTS)  # Ensures LaTeX searches style/
+TEXINPUTS := $(STYLE_DIR):$(TEXINPUTS)
 
 PANDOC_FLAGS = --pdf-engine=xelatex --citeproc \
   --metadata documentclass=$(LATEX_CLASS) \
-  --metadata title="A Study on Pandoc and CHI LaTeX Class" \
+  --metadata title="Programming Microcontrollers for Random Number Generation in Quantum Computing" \
   --metadata author="Love Arreborn, Nadim Lakrouz"
 
 all: $(PDF_FILE)

@@ -130,4 +130,42 @@ Diskussionsfrågor för detta seminarie:
    behöver skumma genom hela artikeln för att endast få veta att inget konkret
    resultat kunde hittas.
 
-# Artikel 3 -
+# Artikel 3 - "Second screen" på mobiler, cross-platform
+
+1. Här analyseras två ramverk för att möjliggöra "second screen content" för
+   multi-plattformsanvändning för mobiltelefoner. Syftet är att utvärdera två
+   ramverk gentemot varandra, samt att implementera dem bägge två. Jag ska medge
+   att jag inte känner att det framgår något faktiskt syfte med att göra det i
+   inledningen -- utan snarare huruvida multiplattformsutveckling är "något att
+   använda sig av". Så långt som motivationer går är detta relativt svagt, men
+   en komparativ analys av två ramverk är ändå något rimligt att göra.
+
+2. Jag får inget starkt intresse av denna artikel. Då syftet är att enkom
+   analysera prestanda och implementationskomplexitet för två ramverk så är den
+   nytta jag misstänker att man kan dra från denna artikel väldigt specifikt.
+   Har man däremot ett behov av att analysera prestandan och
+   implementationskomplexiteten för dessa två ramverk är detta säkerligen högst
+   intressant -- även om det nu finns markant många fler ramverk på marknaden
+   som har ett järngrepp över de flesta utvecklare (t.ex. Flutter, React).
+   Kontra de två tidigare artiklarna känner jag inte att något mer "allmänt"
+   intresse väcktes, men detta är säkerligen subjektivt.
+
+3. Frågeställningen här anser jag vara väldigt god. Det är två väldigt konkreta,
+   tydliga frågor som ska besvaras som bägge har tydliga mättal. DEt lämnas
+   väldigt lite utrymme för ambiguitet i denna frågeställning, så jag ser inte
+   hur frågeställningen skulle kunna förbättras från hur den ser ut just nu.
+   Eventuell expansion av frågeställningen skulle vara att testa applikationen
+   mot fler plattformar än de två Android-enheter som listats (t.ex. en iPhone),
+   men jag förstår precis varför den avgränsningen gjordes. Potentiellt kanske
+   sektionen "Frågeställning" bör omformuleras lite, då första meningen i detta
+   stycke är aningen märkligt formulerad. Något i stil med "En analys görs av
+   multiplattformsramverken PhoneGap och OpenFL, specifikt en implementation av
+   _second screen_ lösningen. Analysen kommer att täcka:" Detta är kanske något
+   av en petitess.
+
+4. Då bägge frågor som skall besvaras i artikeln är väl definierade och hårda
+   mättal så har jag inget tvivel om att frågan går att besvara. Dock så vore
+   det rimligt att ställa detta mot någon väletablerad baseline -- om man endast
+   ska mäta dem mot varandra tar man inte höjd för hur dessa står sig mot andra
+   ramverk, men potentiellt kanske det fanns en brist av andra lösningar att
+   ställa denna mot. Det är svårt att säga.
