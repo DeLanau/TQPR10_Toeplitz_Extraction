@@ -8,8 +8,10 @@ TEXINPUTS := $(STYLE_DIR):$(TEXINPUTS)
 
 PANDOC_FLAGS = --pdf-engine=xelatex --citeproc \
   --metadata documentclass=$(LATEX_CLASS) \
-  --metadata title="Programming Microcontrollers for Random Number Generation in Quantum Computing" \
-  --metadata author="Love Arreborn, Nadim Lakrouz"
+  --metadata title="Generating True Random Numbers From Vacuum Fluctuations in a Quantum System" \
+  --metadata author="Love Arreborn, Nadim Lakrouz" \
+  --variable tables=yes \
+  --variable table-environment=table
 
 all: $(PDF_FILE)
 
