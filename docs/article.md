@@ -24,46 +24,49 @@ In cryptography, there are many applications for randomly generated numbers.
 However, the process of producing these random numbers tends to be
 pseudo-random, e.g. utilizing the current states of various modules. These
 numbers do not generate true randomness, and in order to heighten security other
-methods of generating these are required. Current ranom number generators (RNG)
-are usually implemented in code, using certain states of the host machine as a
-starting point before running a predetermined algorithm. This pseudo-random
-number generation (PRNG) comes with the drawback that the result is always
-deterministic, provided that the initial state is known.
+methods of generating these are required. Current random number generators
+(_RNG_) are usually implemented in code, using certain states of the host
+machine as a starting point before running a predetermined algorithm. This
+pseudo-random number generation (_PRNG_) comes with the drawback that the result
+is always deterministic, provided that the initial state is known.
 
 True random numbers, then, cannot be produced solely through code. These systems
-require some input that is neither replicatable nor reproducable. One proposed
-solution for this is quantum random number generarion (QRNG) [@QRNG]. By reading
-quantum fluctuations from any given source, for instance an optical signal, the
-inherent unpredicability of said source can be harnessed in order to produce a
-random number from a state that is nigh impossible to reproduce accurately.
+require some input that is neither replicable nor reproducible. One proposed
+solution for this is quantum random number generation (_QRNG_) [@QRNG]. By
+reading quantum fluctuations from any given source, for instance an optical
+signal, the inherent unpredictability of said source can be harnessed in order
+to produce a random number from a state that is nigh impossible to reproduce
+accurately.
 
 In this project, we will be writing firmware for one such solution, which reads
-quantum variations from from an optical signal. Further details about how this
-signal is produced will be introduced in section 2 and builds on the work of M.
-Clason [@Clason2023]. This optical signal will be converted to a stream of
-random, raw bits via an Analog to Digital Converter (ADC). In turn, these random
-bits will be processed via Toeplitz-hashing [@toeplitz] in order to process
-these bits into random numbers. Some processing has to be done on the
-microcontrollers themselves in order to ensure that the data is workable, and
-Topelitz-hashing is a tried and tested method to accomplish this. These random
-numbers will then be output from the microcontroller to the host computer via
-USB. This thesis will aim to answer one key research question: How can a vacuum
-fluctuations in quantum system be sampled in order to generate true random
-numbers?
+quantum variations from an optical signal. Further details about how this signal
+is produced will be introduced in section 2 and builds on the work of M. Clason
+[@Clason2023]. This optical signal will be converted to a stream of random, raw
+bits via an Analog to Digital Converter (_ADC_). In turn, these random bits will
+be processed via Toeplitz-hashing [@toeplitz] in order to process these bits
+into random numbers. Some processing has to be done on the microcontrollers
+themselves in order to ensure that the data is workable, and Topelitz-hashing is
+a tried and tested method to accomplish this. These random numbers will then be
+output from the microcontroller to the host computer via USB. This thesis will
+aim to answer one key research question: How can sampled vacuum fluctuations be
+processed efficiently in order to output QRNG?
 
 In producing this firmware, several key considerations have to be made in order
 for this system to be usable in a production environment. The vision for the end
 product is a simple USB-stick that can be connected to a host, and produce true
 random numbers from ambient quantum fluctuations. While this system could very
 well be implemented on physically larger hardware, thus avoiding the constraints
-that limited hardware introduces, **add something more clever here**. However,
-due to this portability constraint, our implementation needs to work quickly and
-efficiently on resource constrained hardware. As such, our main question is
-broken down into two concrete research areas:
+that limited hardware introduces, Clason proposes a simpler and cheaper way to
+achieve QRNG [@Clason2023]. In keeping with this, utilizing microcontrollers for
+processing the raw bits extracted further helps to keep the costs low and the
+solution reasonably complex. However, due to this portability constraint, our
+implementation needs to work quickly and efficiently on resource constrained
+hardware. As such, our main question is broken down into two concrete research
+areas:
 
-**Research area 1 (RA1)**: How can Toeplitz-hashing be implemented as
-effectively as possible on resource constrained hardware, such as a
-microcontroller?
+**Research area 1 (_RA1_)**: How can Toeplitz-hashing be implemented as
+effectively as possible on resource constrained hardware in order to process raw
+bits into a workable random number?
 
 Toeplitz-hashing been optimized quite well, and previous research can be
 utilized for this. However, there are still considerations when implementing the
@@ -71,15 +74,17 @@ firmware for the microcontroller in order to optimize the code. Our goal is to
 attempt several implementations in order to find the most optimal implementation
 with the least amount of CPU-cycles.
 
-**Research area 2 (RA2)**: How can data effectively be streamed with a high
-bitrate to output a host computer?
+**Research area 2 (_RA2_)**: How can we ensure that the output of random numbers
+is not limited by our firmware, but rather only limited by the USB transfer
+speed of the microcontroller or the ADC?
 
-This will entail several bottlenecks out of our control, which will be discussed
-in the section regarding the limitations. However, the key consideration is how
-effectively these quantum random numbers can be streamed to a host computer via
-USB. We will focus our efforts on the implementation of the code on the
-microcontrollers in order to ensure that the firmware does not become the
-primary bottleneck.
+There will unequivocally be a bottleneck for the processing speed. For instance,
+the speed at which the ADC can process the optical signal into raw bits as well
+as the speed that the USB output can transfer processed random number to the
+host computer will be limiting factors. The slowest of these bottlenecks will
+inevitably be the limiting factor for any implementation. Our research aims to
+ensure that our implementation does not become the limiting factor, but rather
+processing data fast enough to match or exceed the speed of the hardware.
 
 ## 2 BACKGROUND
 
@@ -87,5 +92,25 @@ This work is a practical continuation of the work of Clason [@Clason2023]. In
 this work, the author aimed to study quantum shot noise originating from
 photodiodes, and in so doing built a device which read from an optical source,
 outputting analog voltage from the data "seen" by the diodes. A prototype was
-constructed, in which a LED is read by a photodiode soldered millimetres apart.
+constructed, in which an LED is read by a photodiode soldered millimeters apart.
+
+The idea of an optical QRNG (_OQRNG_) is not a novel one. The basis of the
+theory is that intrinsically random properties of a quantum process. Stefanov
+et. al. proposes using the random choice of a photon between two output signals
+to generate a random stream of bits, however the theory behind it can be applied
+to other quantum processes as well [@StefanovOptical]. This particular theorem
+has been implemented by Wayne et. al. to create a quantum number generator
+[@Wayne].
+
+However, our work revolves around the measurement of shot noise of vacuum
+states. Essentially, this is another quantum process with the same inherently
+random properties as described by Stefanov et. al., but instead using **insert
+reference for shot noise here**.
+
+Implementations of this theory exist, however with significant drawbacks. Shen
+et. al. presents an implementation using a fairly complex setup, in which a
+continuous-wave fiber laser is the optical source [@contender1]. They conclude
+that sampling the shot noise is, indeed, suitable for OQRNG. However, the
+implementation requires expensive and complex hardware.
+
 \pagebreak
