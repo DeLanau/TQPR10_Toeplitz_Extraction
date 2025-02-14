@@ -105,7 +105,7 @@ has been implemented by Wayne et. al. to create a quantum number generator
 slightly different method.
 
 Our work revolves around the measurement of shot noise of vacuum states rather
-than **whatever Wayne et al uses**. Essentially, this is another quantum process
+than measuring arrival times of photons. Essentially, this is another quantum process
 with the same inherently random properties as described by Stefanov et. al., but
 instead using shot noise. As described by Niemczuk [@shotnoise], shot noise is
 minor fluctuations in an elecritcal current, which is inherently random. Reading
