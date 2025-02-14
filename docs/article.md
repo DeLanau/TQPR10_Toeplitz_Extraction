@@ -40,7 +40,7 @@ accurately.
 
 In this project, we will be writing firmware for one such solution, which reads
 quantum variations from an optical signal. Further details about how this signal
-is produced will be introduced in section 2 and builds on the work of M. Clason
+is produced will be introduced in section 2 and builds on the work of Clason
 [@Clason2023]. This optical signal will be converted to a stream of random, raw
 bits via an Analog to Digital Converter (_ADC_). In turn, these random bits will
 be processed via Toeplitz-hashing [@toeplitz] in order to process these bits
@@ -100,17 +100,34 @@ et. al. proposes using the random choice of a photon between two output signals
 to generate a random stream of bits, however the theory behind it can be applied
 to other quantum processes as well [@StefanovOptical]. This particular theorem
 has been implemented by Wayne et. al. to create a quantum number generator
-[@Wayne].
+[@Wayne]. While this article proves the efficacy of OQRNG, it utilizes a
+slightly different method.
 
-However, our work revolves around the measurement of shot noise of vacuum
-states. Essentially, this is another quantum process with the same inherently
-random properties as described by Stefanov et. al., but instead using **insert
-reference for shot noise here**.
+Our work revolves around the measurement of shot noise of vacuum states rather
+than **whatever Wayne et al uses**. Essentially, this is another quantum process
+with the same inherently random properties as described by Stefanov et. al., but
+instead using **insert reference for shot noise here**.
 
 Implementations of this theory exist, however with significant drawbacks. Shen
 et. al. presents an implementation using a fairly complex setup, in which a
 continuous-wave fiber laser is the optical source [@contender1]. They conclude
 that sampling the shot noise is, indeed, suitable for OQRNG. However, the
-implementation requires expensive and complex hardware.
+implementation requires expensive and complex hardware, and the sheer size of
+the system prohibits it from being portable and easily reproducible in
+small-scale tests.
+
+A more recent implementation of OQRNG in a smaller scale has been presented by
+Singh et. al. [@singh]. This particular implementation uses a bespoke circuit
+board where all components are present on a single board -- e.g., this
+experimental setup contains an integrated ADC, post-processor, entropy
+controller and entropy generator. While this article cements the viability of
+OQRNG using shot noise (despite the article not being confirmed as peer
+reviewed), the bespoke nature of the circuit board makes this experiment
+difficult to reproduce. As our thesis will use commercially and commercially
+available ADCs and microcontrollers, the only bespoke component is the shot
+noise generator itself. Furthermore, the Topelitz-hashing is not run on the
+microcontroller itself in these experiments -- instead, the hashing of these raw
+bits is done on the receiving computer as this bespoke circuit board featured a
+relatively weak processor.
 
 \pagebreak
