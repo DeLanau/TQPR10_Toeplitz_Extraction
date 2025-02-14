@@ -22,21 +22,22 @@ header-includes:
 
 In cryptography, there are many applications for randomly generated numbers.
 However, the process of producing these random numbers tends to be
-pseudo-random, e.g. utilizing the current states of various modules. These
-numbers do not generate true randomness, and in order to heighten security other
-methods of generating these are required. Current random number generators
-(_RNG_) are usually implemented in code, using certain states of the host
-machine as a starting point before running a predetermined algorithm. This
-pseudo-random number generation (_PRNG_) comes with the drawback that the result
-is always deterministic, provided that the initial state is known.
+pseudo-random, e.g. utilizing the current states of various modules
+[@randomness]. These numbers do not generate true randomness, and in order to
+heighten security other methods of generating these are required. Current random
+number generators (_RNG_) are usually implemented in code, using certain states
+of the host machine as a starting point before running a predetermined algorithm
+[@randomness]. This pseudo-random number generation (_PRNG_) comes with the
+drawback that the result is always deterministic, provided that the initial
+state is known.
 
 True random numbers, then, cannot be produced solely through code. These systems
 require some input that is neither replicable nor reproducible. One proposed
 solution for this is quantum random number generation (_QRNG_) [@QRNG]. By
 reading quantum fluctuations from any given source, for instance an optical
-signal, the inherent unpredictability of said source can be harnessed in order
-to produce a random number from a state that is nigh impossible to reproduce
-accurately.
+signal, the inherent natural unpredictability of said source can be harnessed in
+order to produce a random number from a state that is nigh impossible to
+reproduce accurately.
 
 In this project, we will be writing firmware for one such solution, which reads
 quantum variations from an optical signal. Further details about how this signal
@@ -86,7 +87,7 @@ inevitably be the limiting factor for any implementation. Our research aims to
 ensure that our implementation does not become the limiting factor, but rather
 processing data fast enough to match or exceed the speed of the hardware.
 
-## 2 BACKGROUND
+## 2 RELATED WORKS
 
 This work is a practical continuation of the work of Clason [@Clason2023]. In
 this work, the author aimed to study quantum shot noise originating from
@@ -126,11 +127,11 @@ experimental setup contains an integrated ADC, post-processor, entropy
 controller and entropy generator. While this article cements the viability of
 OQRNG using shot noise (despite the article not being confirmed as peer
 reviewed), the bespoke nature of the circuit board makes this experiment
-difficult to reproduce. As our thesis will use commercially and commercially
-available ADCs and microcontrollers, the only bespoke component is the shot
-noise generator itself. Furthermore, the Topelitz-hashing is not run on the
-microcontroller itself in these experiments -- instead, the hashing of these raw
-bits is done on the receiving computer as this bespoke circuit board featured a
-relatively weak processor.
+difficult to reproduce. As our thesis will use commercially available ADCs and
+microcontrollers, the only bespoke component is the shot noise generator itself.
+Furthermore, the Topelitz-hashing is not run on the microcontroller itself in
+these experiments -- instead, the hashing of these raw bits is done on the
+receiving computer as this bespoke circuit board featured a relatively weak
+processor.
 
 \pagebreak
