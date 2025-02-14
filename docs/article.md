@@ -106,7 +106,10 @@ slightly different method.
 Our work revolves around the measurement of shot noise of vacuum states rather
 than **whatever Wayne et al uses**. Essentially, this is another quantum process
 with the same inherently random properties as described by Stefanov et. al., but
-instead using **insert reference for shot noise here**.
+instead using shot noise. As described by Niemczuk [@shotnoise], shot noise is
+minor fluctuations in an elecritcal current, which is inherently random. Reading
+this property, then, gives us an intrisically random source from which to
+generate a random output, which in turn can be processed into a random number.
 
 Implementations of this theory exist, however with significant drawbacks. Shen
 et. al. presents an implementation using a fairly complex setup, in which a
