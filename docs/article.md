@@ -100,11 +100,11 @@ constructed, in which an LED is read by a photodiode soldered millimeters apart.
 
 The idea of an optical QRNG (_OQRNG_) is not a novel one. The basis of the
 theory is that intrinsically random properties of a quantum process. Stefanov
-et. al. proposes using the random choice of a photon between two output signals
-to generate a random stream of bits, however the theory behind it can be applied
-to other quantum processes as well [@StefanovOptical]. This particular theorem
-has been implemented by Wayne et. al. to create a quantum number generator
-[@Wayne]. While this article proves the efficacy of OQRNG, it utilizes a
+et. al. [@StefanovOptical] proposes using the random choice of a photon between
+two output signals to generate a random stream of bits, however the theory
+behind it can be applied to other quantum processes as well. This particular
+theorem has been implemented by Wayne et. al. [@Wayne] to create a quantum
+number generator. While this article proves the efficacy of OQRNG, it utilizes a
 slightly different method.
 
 Our work revolves around the measurement of shot noise of vacuum states rather
@@ -117,9 +117,9 @@ which to generate a random output, which in turn can be processed into a random
 number.
 
 Implementations of this theory exist, however with significant drawbacks. Shen
-et. al. presents an implementation using a fairly complex setup, in which a
-continuous-wave fiber laser is the optical source [@contender1]. They conclude
-that sampling the shot noise is, indeed, suitable for OQRNG. However, the
+et. al. [@contender1] presents an implementation using a fairly complex setup,
+in which a continuous-wave fiber laser is the optical source. They conclude that
+sampling the shot noise is, indeed, suitable for OQRNG. However, the
 implementation requires expensive and complex hardware, and the sheer size of
 the system prohibits it from being portable and easily reproducible in
 small-scale tests.
@@ -148,4 +148,4 @@ system [@singh]. Our work aims to bridge this gap by using commercially
 available hardware (other than the bespoke shot noise generator [@Clason2023])
 and focuses on implementing Toeplitz-hashing directly on the microcontroller.
 
-\pagebreak
+\newpage
