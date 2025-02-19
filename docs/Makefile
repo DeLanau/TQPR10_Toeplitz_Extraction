@@ -1,27 +1,31 @@
 MD_FILE = article.md
+BODY_TEX = article-body.tex
+FINAL_TEX = style/article-final.tex
 PDF_FILE = article.pdf
-STYLE_DIR = ./style
-BIB_FILE = $(STYLE_DIR)/sample.bib
-CSL_FILE = $(STYLE_DIR)/ieee.csl
-LATEX_CLASS = sigchi
-TEXINPUTS := $(STYLE_DIR):$(TEXINPUTS)
+PREAMBLE = style/preamble.tex
+ENDING = style/ending.tex
+BIB_FILE = style/sample.bib
+CSL_FILE = style/ieee.csl
 
-PANDOC_FLAGS = --pdf-engine=xelatex --citeproc \
-  --metadata documentclass=$(LATEX_CLASS) \
-  --metadata title="Generating True Random Numbers From Vacuum Fluctuations in a Quantum System" \
-  --metadata author="Love Arreborn, Nadim Lakrouz" \
-  --variable tables=yes \
-  --variable table-environment=table
-
-all: $(PDF_FILE)
-
-$(PDF_FILE): $(MD_FILE) $(BIB_FILE) $(CSL_FILE)
-	TEXINPUTS=$(TEXINPUTS) pandoc $(MD_FILE) -o $(PDF_FILE) $(PANDOC_FLAGS) \
-	  --bibliography=$(BIB_FILE) \
-	  --csl=$(CSL_FILE)
-
-clean:
-	rm -f $(PDF_FILE) *.aux *.log *.out *.bbl *.blg *.bcf *.run.xml
+export TEXINPUTS=.:./style//
 
 .PHONY: all clean
 
+all: $(PDF_FILE)
+
+$(BODY_TEX): $(MD_FILE)
+	# Convert markdown to LaTeX body
+	pandoc $(MD_FILE) -o $(BODY_TEX) --bibliography=$(BIB_FILE) --csl=$(CSL_FILE) --wrap=none
+	# Fix citations in the LaTeX file
+	python fix_citations.py $(BODY_TEX)
+
+$(FINAL_TEX): $(PREAMBLE) $(BODY_TEX) $(ENDING)
+	# Move article-body.tex into style/ and concatenate with preamble and ending
+	mv $(BODY_TEX) style/
+	cat $(PREAMBLE) style/$(BODY_TEX) $(ENDING) > $(FINAL_TEX)
+
+$(PDF_FILE): $(FINAL_TEX)
+	echo 'Pre-processing done -- cd into style/ and run xelatex article-final, bibtex article-final then xelatex article-final twice'	
+
+clean:
+	rm -f style/$(BODY_TEX) $(FINAL_TEX) $(PDF_FILE) *.aux *.log *.out *.bbl *.blg *.bcf *.run.xml
