@@ -90,13 +90,14 @@ ensure that our implementation of Toeplitz-hashing does not become the limiting
 factor, but rather processing data fast enough to match or exceed the speed of
 the hardware.
 
-## 2 RELATED WORKS
+## 2 THEORY
 
 This work is a practical continuation of the work of Clason [@Clason2023]. In
 this work, the author aimed to study quantum shot noise originating from
 photodiodes, and in so doing built a device which read from an optical source,
 outputting analog voltage from the data "seen" by the diodes. A prototype was
 constructed, in which an LED is read by a photodiode soldered millimeters apart.
+We will introduce more details regarding this device in section 3.
 
 The idea of an optical QRNG (_OQRNG_) is not a novel one. The basis of the
 theory is that intrinsically random properties of a quantum process. Stefanov
@@ -106,6 +107,8 @@ behind it can be applied to other quantum processes as well. This particular
 theorem has been implemented by Wayne et. al. [@Wayne] to create a quantum
 number generator. While this article proves the efficacy of OQRNG, it utilizes a
 slightly different method.
+
+### Shot noise quantum fluctuations
 
 Our work revolves around the measurement of shot noise of vacuum states rather
 than measuring arrival times of photons. Essentially, this is another quantum
@@ -144,8 +147,25 @@ randomness, and more specifically, Shen et. al. [@contender1] and Singh et. al.
 limitations in both of these works. Either the system that generates the shot
 noise is large and complex [@contender1] or the system is built on bespoke
 hardware with limitations in processing power which prevents a fully integrated
-system [@singh]. Our work aims to bridge this gap by using commercially
-available hardware (other than the bespoke shot noise generator [@Clason2023])
-and focuses on implementing Toeplitz-hashing directly on the microcontroller.
+system [@singh]. Furthermore, to the best of our knowledge, most of the work in
+this field is from the perspective of physicists, and there appears to be little
+research on this subject in the domain of computer science. Our work aims to
+bridge this gap by using commercially available hardware (other than the bespoke
+shot noise generator [@Clason2023]) and focuses on implementing Toeplitz-hashing
+directly on the microcontroller.
+
+## 3 BACKGROUND
+
+### Optical RNG module
+
+### ADC converter
+
+### Microcontroller
+
+### Toeplitz-hashing
+
+### Summary
+
+## 4 METHODOLOGY
 
 \newpage
