@@ -7,6 +7,9 @@ edition = "2021"
 rtic = { version = "2", features = ["thumbv7-backend"] }
 rtic-monotonics = { version = "1", default-features = false, features = ["cortex-m-systick"] }
 
+rtt-target = { version = "0.3", features = ["cortex-m"] }
+usb-device = "0.2.9"
+usbd-serial = "0.1.0"
 # Remove these if you don't want logging.
 # imxrt-log = { version = "0.1", default-features = false, features = ["log", "usbd"] }
 # log = { version = "0.4", features = ["max_level_debug", "release_max_level_info"] }
