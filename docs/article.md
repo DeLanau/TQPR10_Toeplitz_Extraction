@@ -44,13 +44,13 @@ quantum variations from an optical signal. Further details about how this signal
 is produced will be introduced in section 2 and builds on the work of Clason
 [@Clason2023]. This optical signal will be converted to a stream of random, raw
 bits via an Analog to Digital Converter (_ADC_). In turn, these random bits will
-be processed via Toeplitz-hashing [@toeplitz] in order to process these bits
+be processed via Toeplitz extraction [@toeplitz] in order to process these bits
 into random numbers. Some processing has to be done on the microcontrollers
-themselves in order to ensure that the data is workable, and Toeplitz-hashing is
-a tried and tested method to accomplish this. These random numbers will then be
-output from the microcontroller to the host computer via USB. This thesis will
-aim to answer one key research question: How can sampled vacuum fluctuations be
-processed efficiently in order to output QRNG?
+themselves in order to ensure that the data is workable, and Toeplitz extraction
+is a tried and tested method to accomplish this. These random numbers will then
+be output from the microcontroller to the host computer via USB. This thesis
+will aim to answer one key research question: How can sampled vacuum
+fluctuations be processed efficiently in order to output QRNG?
 
 In producing this firmware, several key considerations have to be made in order
 for this system to be usable in a production environment. The vision for the end
@@ -66,11 +66,11 @@ constraint, our implementation needs to work quickly and efficiently on resource
 constrained hardware. As such, our main question is broken down into two
 concrete research areas:
 
-**Research area 1 (_RA1_)**: How can Toeplitz-hashing be implemented as
+**Research area 1 (_RA1_)**: How can Toeplitz extraction be implemented as
 effectively as possible on resource constrained hardware in order to process raw
 bits into a workable random number?
 
-Toeplitz-hashing been optimized quite well, and previous research can be
+Toeplitz extraction been optimized quite well, and previous research can be
 utilized for this. However, there are still considerations when implementing the
 firmware for the microcontroller in order to optimize the code. Our goal is to
 attempt several implementations in order to find the most optimal implementation
@@ -86,9 +86,9 @@ as the speed that the USB output can transfer processed random number to the
 host computer will be limiting factors. Further details on the limitations of
 the ADC will be outlined in section 3. The slowest of these bottlenecks will
 inevitably be the limiting factor for any implementation. Our research aims to
-ensure that our implementation of Toeplitz-hashing does not become the limiting
-factor, but rather processing data fast enough to match or exceed the speed of
-the hardware.
+ensure that our implementation of Toeplitz extraction does not become the
+limiting factor, but rather processing data fast enough to match or exceed the
+speed of the hardware.
 
 Section 2 of this article will introduce the theory that allows for QRNG, and
 how this will be utilized in our works. Section 3 delves further into the
@@ -140,7 +140,7 @@ OQRNG using shot noise (despite the article not being confirmed as peer
 reviewed), the bespoke nature of the circuit board makes this experiment
 difficult to reproduce. As our thesis will use commercially available ADCs and
 microcontrollers, the only bespoke component is the shot noise generator itself.
-Furthermore, the Toeplitz-hashing is not run on the microcontroller itself in
+Furthermore, the Toeplitz extraction is not run on the microcontroller itself in
 these experiments -- instead, the hashing of these raw bits is done on the
 receiving computer as this bespoke circuit board featured a relatively weak
 processor.
@@ -155,10 +155,10 @@ system [@singh]. Furthermore, to the best of our knowledge, most of the work in
 this field is from the perspective of physicists, and there appears to be little
 research on this subject in the domain of computer science. Our work aims to
 bridge this gap by using commercially available hardware (other than the bespoke
-shot noise generator [@Clason2023]) and focuses on implementing Toeplitz-hashing
-directly on the microcontroller. Rather than focusing on the intricacies of
-quantum fluctuations, we will instead approach this problem from a computer
-science perspective.
+shot noise generator [@Clason2023]) and focuses on implementing Toeplitz
+extraction directly on the microcontroller. Rather than focusing on the
+intricacies of quantum fluctuations, we will instead approach this problem from
+a computer science perspective.
 
 ## 3 BACKGROUND
 
@@ -177,31 +177,53 @@ The one bespoke piece of hardware used in this study is the prototype designed
 by Clason [@Clason2023] as a part of his masters thesis. This device produces
 the optical shot noise which will be the source of randomness in our work
 implementing the digization scheme discussed in section 5.1 of this article.
+Moving forward in this article, we will refer to this as the OQRNG-device.
+
+As described in Clason's work [@Clason2023}, the OQRNG-device is an
+electro-optical system which measures optical shot noise, generating quantum
+randomness. The device has an LED and a photodiode positioned a few millimeters
+apart, ensuring efficient light coupling. The photodiode detects light from the
+LED, and converts th elight into a current signal, which is sent to a
+transimpedance amplifier to convert it into measurable voltage. In order to
+minimize disruptions by other external lights, the system is enclosed in a
+shielded measurment box.
+
+Whereas the exact quantum mechanisms that ensure that this system ensures
+randomness is better derived directly from Clasons work [@Clason2023] directly,
+the end result as if correlates to our study is an inherently random, analog
+voltage current.
 
 ### ADC converter
 
-The analog voltage output isn't suitable to operate on without further
-processing. As mentioned in section 1, the signal needs to pass through an ADC
-and converted to raw bits in order for it to be useable.
+This analog current isn't suitable to operate on without further processing. As
+mentioned in section 1, the signal needs to pass through an ADC and converted
+into raw bits in order for it to be useable. In his thesis, Clason [@Clason2023]
+suggests a discrete ADC chip capable of analyzing frequencies higher than 25
+MHz, as studied in his work. The Nyquist-Shannon theorem poses that -- in order
+to accurately reconstruct the signal, the sampling rate must be at least twice
+the highest frequency component present in the signal,
+$f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
 
 **This section will be filled with more information as soon as the exact ADC we
-will be using has been selected.**
+will be using has been selected. The exact requirements needs to be discussed
+with the project owner before a choice can be made!**
 
 ### Microcontroller
 
-### Toeplitz-hashing
+### Toeplitz extraction
 
 ### Summary
 
 ## 4 METHODOLOGY
 
-With the consideration that our work revolves around optimizing Toeplitz-hashing
-in order to quickly process random bits into a random number, we will take an
-iterative approach. For our initial tests, we will use a pre-defined stream of
-raw bits which is loaded into memory on the microcontroller, and run several
-different implementations of Toeplitz-hashing to produce numbers. As we always
-use a pre-defined bitstream, the result will at this stage be deterministic,
-giving us a clear indication whether the algorithm works as intended.
+With the consideration that our work revolves around optimizing Toeplitz
+extraction in order to quickly process random bits into a random number, we will
+take an iterative approach. For our initial tests, we will use a pre-defined
+stream of raw bits which is loaded into memory on the microcontroller, and run
+several different implementations of Toeplitz extraction to produce numbers. As
+we always use a pre-defined bitstream, the result will at this stage be
+deterministic, giving us a clear indication whether the algorithm works as
+intended.
 
 However, in order to ensure the results work with varying data, we cannot limit
 ourselves to simply one stream of bits. The main point of the algorithm is to
@@ -236,7 +258,7 @@ the bounds imposed on us by the hardware.
 
 ### Iterative approach
 
-Implementation of Toeplitz-hashing will begin by a naive implementation not
+Implementation of Toeplitz extraction will begin by a naive implementation not
 optimized for speed, but rather for accuracy. This implementation will be
 executed on a separate computer in order to produce the correct random number
 for every provided bitstring. These will be used as our baseline for accuracy
@@ -246,7 +268,7 @@ This naive implementation will then be flashed to our microcontrollers,
 beginning with Teensy 4.1 as this is the more capable of the microcontrollers
 used for this experiment. Code to measure the execution speed in milliseconds
 will be implemented and tested before we load the naive implementation on said
-microcontroller. We expect that several implementations may be too resource
+microcontroller. We expect that several implementations ma y be too resource
 intensive or have a memory complexity far greater than our cheaper, less capable
 microcontroller are able to handle, and as such these may not be able to be
 tested until a few iterations of optimization has occurred.
@@ -258,13 +280,13 @@ on the empirical results of these iterations, there may be a need for further
 optimization iterations other than those listed.
 
 **Iteration 1 - Naive implementation**: The naive implementation consists of a
-Toeplitz matrix <em>T</em> and key <em>k</em>, acquired from fixed slice of the
-bitstream. Than matrix-vector multiplication will be performed using <em>T</em>
-and <em>k</em>, thus performing Toeplitz extraction. Which finally will
-eliminate jitter and produce random number. Code implementation will look much
-more simple, using double loop to go through all values and multiply them. We
-expect that the naive implementation will be far away from optimized iterations
-and resulting in $O(n^2)$ complexity.
+Toeplitz matrix $T$ and key $k$, acquired from fixed slices of the bitstream.
+Than matrix-vector multiplication will be performed using $T$ and $k$, thus
+performing Toeplitz extraction -- which finally will eliminate jitter and
+produce a random number. The implementation of this in code will look much more
+simple, using nested loops to iterate over all values and multiply them. We
+expect that the throughput of this naive implementation will be far away from
+optimized iterations, and result in $O(n^2)$ complexity.
 
 **Iteration 2 - Efficient data structures**: The naive implementation will not
 utilize efficient data structures for maximum speed, rather it will likely use
@@ -276,9 +298,13 @@ microcontrollers.
 
 **Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
 significantly improved with bitwise XOR operations, thus reducing overhead and
-memory usage. Instead of explicitly constructing the Toeplitz matrix, a right-shift operation can be used to dunamically reconstruct matrix rows. Furthermore, matrix-vector multiplication can be optimized by utilizing XOR operations to extract relevant bits more effectivly, thus eleminating unnecessary computations. Additionally, the iterative update of the extracted hash can be improved using a left-shift operations, thus allowing for continuos entropy accumulation without requiring full recomputations.
+memory usage. Instead of explicitly constructing the Toeplitz matrix, a
+right-shift operation can be used to dynamically reconstruct matrix rows.
+Additionally, the iterative update of the extracted hash can be improved using
+left-shift operations, thus allowing for continuous entropy accumulation without
+requiring full recomputations.
 
-**Scenario 4 - Batching**: Finally, we consider the concept of batching larger
+**Iteration 4 - Batching**: Finally, we consider the concept of batching larger
 amounts of bits for processing. Consider that an input buffer of bits is read
 from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
 shifting them one by one, we can take two batches of 64 bits and multiply them
