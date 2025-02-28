@@ -257,10 +257,14 @@ the algorithm, and each planned iteration will be discussed briefly. Depending
 on the empirical results of these iterations, there may be a need for further
 optimization iterations other than those listed.
 
-**Iteration 1 - Naive implementation**: The naive implementation consists of
-multiplicating a fixed slice of the bitstream into a matrix. Said matrix will
-then be **LEFT FOR NADIM**, which finally will produce a random number. We
-expect that the naive implementation will farr **WIP CHANGE ME**.
+**Iteration 1 - Naive implementation**: The naive implementation consists of a
+Toeplitz matrix <em>T</em> and key <em>k</em>, acquired from fixed slice of the
+bitstream. Than matrix-vector multiplication will be performed using <em>T</em>
+and <em>k</em>, thus performing Toeplitz extraction. Which finally will
+eliminate jitter and produce random number. Code implementation will look much
+more simple, using double loop to go through all values and multiply them. We
+expect that the naive implementation will be far away from optimized iterations
+and resulting in $O(n^2)$ complexity.
 
 **Iteration 2 - Efficient data structures**: The naive implementation will not
 utilize efficient data structures for maximum speed, rather it will likely use
@@ -270,7 +274,9 @@ to be processed in a far more efficient manner -- however, this scenario poses a
 risk for greater memory complexity which may not be suitable for use on
 microcontrollers.
 
-**Iteration 3 - Bitshifting**:
+**Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
+significantly improved with bitwise XOR operations, thus reducing overhead and
+memory usage. Instead of explicitly constructing the Toeplitz matrix, a right-shift operation can be used to dunamically reconstruct matrix rows. Furthermore, matrix-vector multiplication can be optimized by utilizing XOR operations to extract relevant bits more effectivly, thus eleminating unnecessary computations. Additionally, the iterative update of the extracted hash can be improved using a left-shift operations, thus allowing for continuos entropy accumulation without requiring full recomputations.
 
 **Scenario 4 - Batching**: Finally, we consider the concept of batching larger
 amounts of bits for processing. Consider that an input buffer of bits is read
