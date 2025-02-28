@@ -93,7 +93,8 @@ speed of the hardware.
 Section 2 of this article will introduce the theory that allows for QRNG, and
 how this will be utilized in our works. Section 3 delves further into the
 hardware and algorithms our work will use, and section 4 will present our
-methodology. **More sections to follow as we finish the article**.
+methodology with limitations listed under section 5. **More sections to follow
+as we finish the article**.
 
 ## 2 THEORY
 
@@ -117,11 +118,11 @@ slightly different method.
 Our work revolves around the measurement of shot noise of vacuum states rather
 than measuring arrival times of photons. Essentially, this is another quantum
 process with the same inherently random properties as described by Stefanov et.
-al., but instead using shot noise. As described by Niemczuk [@shotnoise], shot
-noise is minor fluctuations in an elecritcal current, which is inherently
-random. Reading this property, then, gives us an intrisically random source from
-which to generate a random output, which in turn can be processed into a random
-number.
+al. [@StefanovOptical], but instead using shot noise. As described by Niemczuk
+[@shotnoise], shot noise is minor fluctuations in an elecritcal current, which
+is inherently random. Reading this property, then, gives us an intrisically
+random source from which to generate a random output, which in turn can be
+processed into a random number.
 
 Implementations of this theory exist, however with significant drawbacks. Shen
 et. al. [@contender1] presents an implementation using a fairly complex setup,
@@ -175,23 +176,22 @@ from physics to computer science.
 
 The one bespoke piece of hardware used in this study is the prototype designed
 by Clason [@Clason2023] as a part of his masters thesis. This device produces
-the optical shot noise which will be the source of randomness in our work
-implementing the digization scheme discussed in section 5.1 of this article.
+the optical shot noise which will be the source of randomness in our work.
 Moving forward in this article, we will refer to this as the OQRNG-device.
 
-As described in Clason's work [@Clason2023}, the OQRNG-device is an
+As described in Clason's work [@Clason2023], the OQRNG-device is an
 electro-optical system which measures optical shot noise, generating quantum
 randomness. The device has an LED and a photodiode positioned a few millimeters
 apart, ensuring efficient light coupling. The photodiode detects light from the
-LED, and converts th elight into a current signal, which is sent to a
+LED, and converts the light into a current signal, which is sent to a
 transimpedance amplifier to convert it into measurable voltage. In order to
 minimize disruptions by other external lights, the system is enclosed in a
 shielded measurment box.
 
 Whereas the exact quantum mechanisms that ensure that this system ensures
-randomness is better derived directly from Clasons work [@Clason2023] directly,
-the end result as if correlates to our study is an inherently random, analog
-voltage current.
+randomness and further details regarding the OQRNG-device is better derived
+directly from Clasons work [@Clason2023], the end result as it correlates to our
+study is an inherently random, analog voltage current.
 
 ### ADC converter
 
@@ -199,10 +199,10 @@ This analog current isn't suitable to operate on without further processing. As
 mentioned in section 1, the signal needs to pass through an ADC and converted
 into raw bits in order for it to be useable. In his thesis, Clason [@Clason2023]
 suggests a discrete ADC chip capable of analyzing frequencies higher than 25
-MHz, as studied in his work. The Nyquist-Shannon theorem poses that -- in order
-to accurately reconstruct the signal, the sampling rate must be at least twice
-the highest frequency component present in the signal,
-$f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
+MHz, as this is the highest frequency studied in his work. The Nyquist-Shannon
+theorem poses that, in order to accurately reconstruct the signal, the sampling
+rate must be at least twice the highest frequency component present in the
+signal, $f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
 
 **This section will be filled with more information as soon as the exact ADC we
 will be using has been selected. The exact requirements needs to be discussed
@@ -218,10 +218,10 @@ with the project owner before a choice can be made!**
 
 With the consideration that our work revolves around optimizing Toeplitz
 extraction in order to quickly process random bits into a random number, we will
-take an iterative approach. For our initial tests, we will use a pre-defined
-stream of raw bits which is loaded into memory on the microcontroller, and run
-several different implementations of Toeplitz extraction to produce numbers. As
-we always use a pre-defined bitstream, the result will at this stage be
+take an iterative approach. For our tests, we will use a pre-defined stream of
+raw bits which is loaded into memory on the microcontroller, and run several
+different implementations of Toeplitz extraction to produce numbers. As we
+always use a pre-defined bitstream, the result will at this stage be
 deterministic, giving us a clear indication whether the algorithm works as
 intended.
 
@@ -242,7 +242,7 @@ of the ADC, as well as the output speed of the USB-port, both in $MB/s$. Hyncica
 et. al. [@micromeasurements] propose that measuring execution time of algorithms
 directly via the microcontrollers internal timers (while subtracting the
 interrupt overhead) provides adequate measurements. An additional advantage is
-that the same code can be used to measure execution speed on several different
+that the same code can be used to measue execution speed on several different
 microcontrollers, rather than relying on counting CPU cycles (as the process for
 this may vary greatly between controllers). As we will use fixed-size bitstrings
 for evaluation, we can then derive the throughput of the algorithm in $MB/s$ as
@@ -250,11 +250,13 @@ follows:
 
 $$
 Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
-Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{(1)}
+Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(1)}
 $$
 
 This measurement allows us to place the throughput of our algorithm soundly in
-the bounds imposed on us by the hardware.
+the bounds imposed on us by the hardware. During implementation, measurements of
+time complexity may be discussed with regards to the code -- but in the end, the
+performance of the code as it runs is what will be evaulated most thoroughly.
 
 ### Iterative approach
 
@@ -268,7 +270,7 @@ This naive implementation will then be flashed to our microcontrollers,
 beginning with Teensy 4.1 as this is the more capable of the microcontrollers
 used for this experiment. Code to measure the execution speed in milliseconds
 will be implemented and tested before we load the naive implementation on said
-microcontroller. We expect that several implementations ma y be too resource
+microcontroller. We expect that several implementations may be too resource
 intensive or have a memory complexity far greater than our cheaper, less capable
 microcontroller are able to handle, and as such these may not be able to be
 tested until a few iterations of optimization has occurred.
@@ -281,9 +283,9 @@ optimization iterations other than those listed.
 
 **Iteration 1 - Naive implementation**: The naive implementation consists of a
 Toeplitz matrix $T$ and key $k$, acquired from fixed slices of the bitstream.
-Than matrix-vector multiplication will be performed using $T$ and $k$, thus
+Then, matrix-vector multiplication will be performed using $T$ and $k$, thus
 performing Toeplitz extraction -- which finally will eliminate jitter and
-produce a random number. The implementation of this in code will look much more
+produce a random number. The implementation of this in code will be quite
 simple, using nested loops to iterate over all values and multiply them. We
 expect that the throughput of this naive implementation will be far away from
 optimized iterations, and result in $O(n^2)$ complexity.
@@ -324,11 +326,26 @@ microcontrollers (as the code will not be reusable between controllers). As
 such, this optimization may only be done for one controller or left for future
 work.
 
-Each scenario will first be executed on a single thread, and (**if time
-allows**) multiple threads may be executed concurrently to further optimize the
-data. The feasability of this highly depends on the performance of every
-individual implementation.
+Each scenario will first be executed on a single thread, and multiple threads
+may theoretically be executed concurrently to further optimize the data. The
+feasability of this highly depends on the performance of every individual
+implementation. Depending on the results during our experimentation, this may
+yield yet another iteration.
+
+### Evaluation
+
+Due to the bounds introduced by the hardware limitations, evaluating the
+throughput of each iteration essentially consists of measuring the execution
+time. In order to verify accuracy, the output of random numbers should be
+identical for each sample bitstring tested.
 
 ## 5 LIMITATIONS
+
+Our proposed iterations all assume that the limited hardware will support it.
+Whereas we are confident that Teensy 4.1 will be able to handle each iteration
+step (even the naive implementation), the remaining microcontrollers with lower
+specifications might not be suitable for the first iterations. Testing the
+implementations on different microcontrollers could turn out to be unfeasible --
+however, this remains to be seen during the experimentation.
 
 \newpage
