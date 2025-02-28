@@ -90,14 +90,18 @@ ensure that our implementation of Toeplitz-hashing does not become the limiting
 factor, but rather processing data fast enough to match or exceed the speed of
 the hardware.
 
+Section 2 of this article will introduce the theory that allows for QRNG, and
+how this will be utilized in our works. Section 3 delves further into the
+hardware and algorithms our work will use, and section 4 will present our
+methodology. **More sections to follow as we finish the article**.
+
 ## 2 THEORY
 
-This work is a practical continuation of the work of Clason [@Clason2023]. In
-this work, the author aimed to study quantum shot noise originating from
-photodiodes, and in so doing built a device which read from an optical source,
-outputting analog voltage from the data "seen" by the diodes. A prototype was
-constructed, in which an LED is read by a photodiode soldered millimeters apart.
-We will introduce more details regarding this device in section 3.
+A majority of the research around this topic stems from physics, with
+implementations of the technology frequently being published and studied by
+physicists. As such, a brief introduction to the concepts used in previous
+research as well as an introduction to previous implementations of this
+technology will be presented in this section.
 
 The idea of an optical QRNG (_OQRNG_) is not a novel one. The basis of the
 theory is that intrinsically random properties of a quantum process. Stefanov
@@ -152,11 +156,27 @@ this field is from the perspective of physicists, and there appears to be little
 research on this subject in the domain of computer science. Our work aims to
 bridge this gap by using commercially available hardware (other than the bespoke
 shot noise generator [@Clason2023]) and focuses on implementing Toeplitz-hashing
-directly on the microcontroller.
+directly on the microcontroller. Rather than focusing on the intricacies of
+quantum fluctuations, we will instead approach this problem from a computer
+science perspective.
 
 ## 3 BACKGROUND
 
+Our work is a practical continuation of the work of Clason [@Clason2023]. In
+this work, quantum shot noise originating from photodiodes was studies, and in
+so doing a prototype device was constructed. This device read from an optical
+source, outputting analog voltage from the data "seen" by the diodes. A
+prototype was constructed, in which an LED is read by a photodiode soldered
+millimeters apart. In this section, we introduce the hardware used for our
+implementations as well as the considerations taken in order to shift the focus
+from physics to computer science.
+
 ### Optical RNG module
+
+The one bespoke piece of hardware used in this study is the prototype designed
+by Clason [@Clason2023] as a part of his masters thesis. This device produces
+the optical shot noise which will be the source of randomness in our work
+implementing the digization scheme discussed in section 5.1 of this article.
 
 ### ADC converter
 
@@ -167,5 +187,109 @@ directly on the microcontroller.
 ### Summary
 
 ## 4 METHODOLOGY
+
+With the consideration that our work revolves around optimizing Toeplitz-hashing
+in order to quickly process random bits into a random number, we will take an
+iterative approach. For our initial tests, we will use a pre-defined stream of
+raw bits which is loaded into memory on the microcontroller, and run several
+different implementations of Toeplitz-hashing to produce numbers. As we always
+use a pre-defined bitstream, the result will at this stage be deterministic,
+giving us a clear indication whether the algorithm works as intended.
+
+However, in order to ensure the results work with varying data, we cannot limit
+ourselves to simply one stream of bits. The main point of the algorithm is to
+remove patterns in the bitstream that may lead to less randomized results. As
+such, we will manually produce several bitstreams to use for our tests -- each
+with varying degrees of repeated patterns that should be eliminated by the
+algorithm. Furthermore, in order to see how well our implementation will work
+with realistic data from the OQRNG generator, we will sample streams of bits
+directly from the source.
+
+### Evaluating optimization efforts
+
+As discussed in section 3, the hardware used will impose a clear bound on how
+quickly our implementation needs to process the bits in order to match the speed
+of the ADC, as well as the output speed of the USB-port, both in $MB/s$. Hyncica
+et. al. [@micromeasurements] propose that measuring execution time of algorithms
+directly via the microcontrollers internal timers (while subtracting the
+interrupt overhead) provides adequate measurements. An additional advantage is
+that the same code can be used to measure execution speed on several different
+microcontrollers, rather than relying on counting CPU cycles (as the process for
+this may vary greatly between controllers). As we will use fixed-size bitstrings
+for evaluation, we can then derive the throughput of the algorithm in $MB/s$ as
+follows:
+
+$$
+Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
+Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6}
+$$
+
+This measurement allows us to place the throughput of our algorithm soundly in
+the bounds imposed on us by the hardware.
+
+### Iterative approach
+
+Implementation of Toeplitz-hashing will begin by a naive implementation not
+optimized for speed, but rather for accuracy. This implementation will be
+executed on a separate computer in order to produce the correct random number
+for every provided bitstring. These will be used as our baseline for accuracy
+for future iterations.
+
+This naive implementation will then be flashed to our microcontrollers,
+beginning with Teensy 4.1 as this is the more capable of the microcontrollers
+used for this experiment. Code to measure the execution speed in milliseconds
+will be implemented and tested before we load the naive implementation on said
+microcontroller. We expect that several implementations may be too resource
+intensive or have a memory complexity far greater than our cheaper, less capable
+microcontroller are able to handle, and as such these may not be able to be
+tested until a few iterations of optimization has occurred.
+
+Each iteration will consist of incremental improvements to the algorithm. Our
+initial investigation has shown several avenues for improving the throughput of
+the algorithm, and each planned iteration will be discussed briefly. Depending
+on the empirical results of these iterations, there may be a need for further
+optimization iterations other than those listed.
+
+**Iteration 1 - Naive implementation**: The naive implementation consists of
+multiplicating a fixed slice of the bitstream into a matrix. Said matrix will
+then be **LEFT FOR NADIM**, which finally will produce a random number. We
+expect that the naive implementation will farr **WIP CHANGE ME**.
+
+**Iteration 2 - Efficient data structures**: The naive implementation will not
+utilize efficient data structures for maximum speed, rather it will likely use
+fixed-size arrays which need to be iterated over for a time complexity of
+$O(n^2)$. Our hypothesis is that more efficient data structures may allow data
+to be processed in a far more efficient manner -- however, this scenario poses a
+risk for greater memory complexity which may not be suitable for use on
+microcontrollers.
+
+**Iteration 3 - Bitshifting**:
+
+**Scenario 4 - Batching**: Finally, we consider the concept of batching larger
+amounts of bits for processing. Consider that an input buffer of bits is read
+from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
+shifting them one by one, we can take two batches of 64 bits and multiply them
+directly using XOR bitshifting -- eliminating the need to process these
+bit-by-bit. As we will have a constant stream of bits from the ADC, we theorize
+that this method will allow for better performance in real-time processing over
+reading individual bits.
+
+**Iteration 5 - ARM Hardware instructions**: Rather than performing bitshifting
+operations in the code itself, certain microcontrollers come equipped with a
+separate processor specifically for bitshift-operations. Offloading the shifting
+to these processors rather than running them on the main CPU may allow faster
+processing of the data than performing the shifting in the code itself. However,
+this operation isn't natively supported by Arduino, and will potentially lead to
+extreme rewrites of the code which may prove too time consuming to do for two
+microcontrollers (as the code will not be reusable between controllers). As
+such, this optimization may only be done for one controller or left for future
+work.
+
+Each scenario will first be executed on a single thread, and (**if time
+allows**) multiple threads may be executed concurrently to further optimize the
+data. The feasability of this highly depends on the performance of every
+individual implementation.
+
+## 5 LIMITATIONS
 
 \newpage
