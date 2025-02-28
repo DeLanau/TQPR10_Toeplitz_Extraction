@@ -180,6 +180,13 @@ implementing the digization scheme discussed in section 5.1 of this article.
 
 ### ADC converter
 
+The analog voltage output isn't suitable to operate on without further
+processing. As mentioned in section 1, the signal needs to pass through an ADC
+and converted to raw bits in order for it to be useable.
+
+**This section will be filled with more information as soon as the exact ADC we
+will be using has been selected.**
+
 ### Microcontroller
 
 ### Toeplitz-hashing
@@ -221,7 +228,7 @@ follows:
 
 $$
 Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
-Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6}
+Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{(1)}
 $$
 
 This measurement allows us to place the throughput of our algorithm soundly in
