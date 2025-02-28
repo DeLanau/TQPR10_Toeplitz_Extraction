@@ -210,7 +210,17 @@ with the project owner before a choice can be made!**
 
 ### Microcontroller
 
+Microcontrollers (MCUs) are compact and low-power computing devices designed
+primary for embedded systems and real-time applications. In contrast to general
+purpose CPUs, MCUS integrates a processor, memory and peripherals into a single
+chip, thus enabling efficient and autonomous operation in constrained
+environments. To program MCUs, various development frameworks and tools such as:
+Arduino Framework, Espressif IDF, raw C++ and etc. Different frameworks can
+contribute to overhead.
+
 ### Toeplitz extraction
+
+**WIP**
 
 ### Summary
 
@@ -270,10 +280,14 @@ This naive implementation will then be flashed to our microcontrollers,
 beginning with Teensy 4.1 as this is the more capable of the microcontrollers
 used for this experiment. Code to measure the execution speed in milliseconds
 will be implemented and tested before we load the naive implementation on said
-microcontroller. We expect that several implementations may be too resource
-intensive or have a memory complexity far greater than our cheaper, less capable
-microcontroller are able to handle, and as such these may not be able to be
-tested until a few iterations of optimization has occurred.
+<<<<<<< Updated upstream microcontroller. We expect that several implementations
+may be too resource ======= microcontroller. We expect that several
+implementations maybe too resource
+
+> > > > > > > Stashed changes intensive or have a memory complexity far greater
+> > > > > > > than our cheaper, less capable microcontroller are able to handle,
+> > > > > > > and as such these may not be able to be tested until a few
+> > > > > > > iterations of optimization has occurred.
 
 Each iteration will consist of incremental improvements to the algorithm. Our
 initial investigation has shown several avenues for improving the throughput of
@@ -298,33 +312,32 @@ to be processed in a far more efficient manner -- however, this scenario poses a
 risk for greater memory complexity which may not be suitable for use on
 microcontrollers.
 
-**Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
+**Iteration 3 - Bitsshifting**: We expect that Toeplitz extraction can be
 significantly improved with bitwise XOR operations, thus reducing overhead and
 memory usage. Instead of explicitly constructing the Toeplitz matrix, a
 right-shift operation can be used to dynamically reconstruct matrix rows.
-Additionally, the iterative update of the extracted hash can be improved using
-left-shift operations, thus allowing for continuous entropy accumulation without
-requiring full recomputations.
+Additionally, matrix-vector multiplication can be improved using XOR operations
+to extract bits more efficient, thus minimizing unnecessary computations.
 
 **Iteration 4 - Batching**: Finally, we consider the concept of batching larger
 amounts of bits for processing. Consider that an input buffer of bits is read
 from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
 shifting them one by one, we can take two batches of 64 bits and multiply them
-directly using XOR bitshifting -- eliminating the need to process these
+directly using XOR bitsshifting -- eliminating the need to process these
 bit-by-bit. As we will have a constant stream of bits from the ADC, we theorize
 that this method will allow for better performance in real-time processing over
 reading individual bits.
 
 **Iteration 5 - ARM Hardware instructions**: Rather than performing bitshifting
 operations in the code itself, certain microcontrollers come equipped with a
-separate processor specifically for bitshift-operations. Offloading the shifting
-to these processors rather than running them on the main CPU may allow faster
-processing of the data than performing the shifting in the code itself. However,
-this operation isn't natively supported by Arduino, and will potentially lead to
-extreme rewrites of the code which may prove too time consuming to do for two
-microcontrollers (as the code will not be reusable between controllers). As
-such, this optimization may only be done for one controller or left for future
-work.
+separate processor specifically for bitsshift-operations. Offloading the
+shifting to these processors rather than running them on the main CPU may allow
+faster processing of the data than performing the shifting in the code itself.
+However, this operation isn't natively supported by Arduino, and will
+potentially lead to extreme rewrites of the code which may prove too time
+consuming to do for two microcontrollers (as the code will not be reusable
+between controllers). As such, this optimization may only be done for one
+controller or left for future work.
 
 Each scenario will first be executed on a single thread, and multiple threads
 may theoretically be executed concurrently to further optimize the data. The
