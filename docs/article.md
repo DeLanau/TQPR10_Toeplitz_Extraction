@@ -92,9 +92,10 @@ speed of the hardware.
 
 Section 2 of this article will introduce the theory that allows for QRNG, and
 how this will be utilized in our works. Section 3 delves further into the
-hardware and algorithms our work will use, and section 4 will present our
-methodology with limitations listed under section 5. **More sections to follow
-as we finish the article**.
+hardware and algorithms our work will use, with related works in optimizing
+Toeplitz extraction listed under section 4. Section 5 will present our
+methodology as well as some limitations imposed on our work. **More sections to
+follow as we finish the article**.
 
 ## 2 THEORY
 
@@ -113,14 +114,14 @@ theorem has been implemented by Wayne et. al. [@Wayne] to create a quantum
 number generator. While this article proves the efficacy of OQRNG, it utilizes a
 slightly different method.
 
-### Shot noise quantum fluctuations
+### 2.1 Shot noise quantum fluctuations
 
 Our work revolves around the measurement of shot noise of vacuum states rather
 than measuring arrival times of photons. Essentially, this is another quantum
 process with the same inherently random properties as described by Stefanov et.
 al. [@StefanovOptical], but instead using shot noise. As described by Niemczuk
-[@shotnoise], shot noise is minor fluctuations in an elecritcal current, which
-is inherently random. Reading this property, then, gives us an intrisically
+[@shotnoise], shot noise is minor fluctuations in an electrical current, which
+is inherently random. Reading this property, then, gives us an intrinsically
 random source from which to generate a random output, which in turn can be
 processed into a random number.
 
@@ -172,7 +173,7 @@ millimeters apart. In this section, we introduce the hardware used for our
 implementations as well as the considerations taken in order to shift the focus
 from physics to computer science.
 
-### Optical RNG module
+### 3.1 Optical RNG module
 
 The one bespoke piece of hardware used in this study is the prototype designed
 by Clason [@Clason2023] as a part of his masters thesis. This device produces
@@ -193,11 +194,11 @@ randomness and further details regarding the OQRNG-device is better derived
 directly from Clasons work [@Clason2023], the end result as it correlates to our
 study is an inherently random, analog voltage current.
 
-### ADC converter
+### 3.2 ADC converter
 
 This analog current isn't suitable to operate on without further processing. As
 mentioned in section 1, the signal needs to pass through an ADC and converted
-into raw bits in order for it to be useable. In his thesis, Clason [@Clason2023]
+into raw bits in order for it to be usable. In his thesis, Clason [@Clason2023]
 suggests a discrete ADC chip capable of analyzing frequencies higher than 25
 MHz, as this is the highest frequency studied in his work. The Nyquist-Shannon
 theorem poses that, in order to accurately reconstruct the signal, the sampling
@@ -208,23 +209,43 @@ signal, $f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
 will be using has been selected. The exact requirements needs to be discussed
 with the project owner before a choice can be made!**
 
-### Microcontroller
+### 3.3 Microcontroller
 
 Microcontrollers (MCUs) are compact and low-power computing devices designed
 primary for embedded systems and real-time applications. In contrast to general
-purpose CPUs, MCUS integrates a processor, memory and peripherals into a single
+purpose CPUs, MCUs integrates a processor, memory, and peripherals into a single
 chip, thus enabling efficient and autonomous operation in constrained
 environments. To program MCUs, various development frameworks and tools such as:
-Arduino Framework, Espressif IDF, raw C++ and etc. Different frameworks can
+Arduino Framework, Espressif IDF, raw C++, etc. Different frameworks can
 contribute to overhead.
 
-### Toeplitz extraction
+In our project, we will be utilizing several microcontrollers. Primarily, we
+will be using Teensy 4.1[^1] as our baseline, as this controller is relatively
+cheap yet very powerful.
+
+[^1]:
+    [https://www.pjrc.com/store/teensy41.html](https://www.pjrc.com/store/teensy41.html)
+
+### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
 
 **WIP**
 
-### Summary
+### 3.5 Summary
 
-## 4 METHODOLOGY
+With the assumption that the OQRNG-device produces a truly random analog signal,
+we can now clearly define the scope in which this thesis operates. Considering
+the maximum conversion speed from the ADC and the USB-output from the MCU, we
+have a clear bound between **PLACEHOLDER** and **PLACEHOLDER** in which Toeplitz
+extraction needs to be executed. Any implementation of Toeplitz extraction must
+then execute fast enough on any given microcontroller feasible for the proposed
+quantum RNG-thumbstick as to not be the decisive limiting factor.
+
+## 4 RELATED WORKS <!-- TODO: Talk about why we select Toeplitz -->
+
+**WIP - Might be good to add related works in the domain of computer science
+here!**
+
+## 5 METHODOLOGY
 
 With the consideration that our work revolves around optimizing Toeplitz
 extraction in order to quickly process random bits into a random number, we will
@@ -244,31 +265,7 @@ algorithm. Furthermore, in order to see how well our implementation will work
 with realistic data from the OQRNG generator, we will sample streams of bits
 directly from the source.
 
-### Evaluating optimization efforts
-
-As discussed in section 3, the hardware used will impose a clear bound on how
-quickly our implementation needs to process the bits in order to match the speed
-of the ADC, as well as the output speed of the USB-port, both in $MB/s$. Hyncica
-et. al. [@micromeasurements] propose that measuring execution time of algorithms
-directly via the microcontrollers internal timers (while subtracting the
-interrupt overhead) provides adequate measurements. An additional advantage is
-that the same code can be used to measue execution speed on several different
-microcontrollers, rather than relying on counting CPU cycles (as the process for
-this may vary greatly between controllers). As we will use fixed-size bitstrings
-for evaluation, we can then derive the throughput of the algorithm in $MB/s$ as
-follows:
-
-$$
-Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
-Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(1)}
-$$
-
-This measurement allows us to place the throughput of our algorithm soundly in
-the bounds imposed on us by the hardware. During implementation, measurements of
-time complexity may be discussed with regards to the code -- but in the end, the
-performance of the code as it runs is what will be evaulated most thoroughly.
-
-### Iterative approach
+### 5.1 Iterative approach
 
 Implementation of Toeplitz extraction will begin by a naive implementation not
 optimized for speed, but rather for accuracy. This implementation will be
@@ -280,14 +277,10 @@ This naive implementation will then be flashed to our microcontrollers,
 beginning with Teensy 4.1 as this is the more capable of the microcontrollers
 used for this experiment. Code to measure the execution speed in milliseconds
 will be implemented and tested before we load the naive implementation on said
-<<<<<<< Updated upstream microcontroller. We expect that several implementations
-may be too resource ======= microcontroller. We expect that several
-implementations maybe too resource
-
-> > > > > > > Stashed changes intensive or have a memory complexity far greater
-> > > > > > > than our cheaper, less capable microcontroller are able to handle,
-> > > > > > > and as such these may not be able to be tested until a few
-> > > > > > > iterations of optimization has occurred.
+microcontroller. We expect that several implementations may be too resource
+intensive or have a memory complexity far greater than our cheaper, less capable
+microcontroller are able to handle, and as such these may not be able to be
+tested until a few iterations of optimization has occurred.
 
 Each iteration will consist of incremental improvements to the algorithm. Our
 initial investigation has shown several avenues for improving the throughput of
@@ -310,9 +303,10 @@ fixed-size arrays which need to be iterated over for a time complexity of
 $O(n^2)$. Our hypothesis is that more efficient data structures may allow data
 to be processed in a far more efficient manner -- however, this scenario poses a
 risk for greater memory complexity which may not be suitable for use on
-microcontrollers.
+microcontrollers. Which data structures might be most feasible will be evaluated
+during this iteration and as such is not preordained.
 
-**Iteration 3 - Bitsshifting**: We expect that Toeplitz extraction can be
+**Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
 significantly improved with bitwise XOR operations, thus reducing overhead and
 memory usage. Instead of explicitly constructing the Toeplitz matrix, a
 right-shift operation can be used to dynamically reconstruct matrix rows.
@@ -323,36 +317,59 @@ to extract bits more efficient, thus minimizing unnecessary computations.
 amounts of bits for processing. Consider that an input buffer of bits is read
 from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
 shifting them one by one, we can take two batches of 64 bits and multiply them
-directly using XOR bitsshifting -- eliminating the need to process these
+directly using XOR bitshifting -- eliminating the need to process these
 bit-by-bit. As we will have a constant stream of bits from the ADC, we theorize
 that this method will allow for better performance in real-time processing over
 reading individual bits.
 
 **Iteration 5 - ARM Hardware instructions**: Rather than performing bitshifting
 operations in the code itself, certain microcontrollers come equipped with a
-separate processor specifically for bitsshift-operations. Offloading the
-shifting to these processors rather than running them on the main CPU may allow
-faster processing of the data than performing the shifting in the code itself.
-However, this operation isn't natively supported by Arduino, and will
-potentially lead to extreme rewrites of the code which may prove too time
-consuming to do for two microcontrollers (as the code will not be reusable
-between controllers). As such, this optimization may only be done for one
-controller or left for future work.
+separate processor specifically for bitshift-operations. Offloading the shifting
+to these processors rather than running them on the main CPU may allow faster
+processing of the data than performing the shifting in the code itself. However,
+this operation isn't natively supported by Arduino, and will potentially lead to
+extreme rewrites of the code which may prove too time consuming to do for two
+microcontrollers (as the code will not be reusable between controllers). As
+such, this optimization may only be done for one controller or left for future
+work.
 
 Each scenario will first be executed on a single thread, and multiple threads
 may theoretically be executed concurrently to further optimize the data. The
-feasability of this highly depends on the performance of every individual
+feasibility of this highly depends on the performance of every individual
 implementation. Depending on the results during our experimentation, this may
 yield yet another iteration.
 
-### Evaluation
+### 5.2 Evaluation <!-- FIXME: Moved section here, tie it together! -->
 
 Due to the bounds introduced by the hardware limitations, evaluating the
 throughput of each iteration essentially consists of measuring the execution
 time. In order to verify accuracy, the output of random numbers should be
-identical for each sample bitstring tested.
+identical for each sample bitstring tested. Certain iterations might, however,
+use larger parts of the bitstring, and thus produce a slightly variable result.
 
-## 5 LIMITATIONS
+As discussed in section 3, the hardware used will impose a clear bound on how
+quickly our implementation needs to process the bits in order to match the speed
+of the ADC, as well as the output speed of the USB-port, both in $MB/s$. Hyncica
+et. al. [@micromeasurements] propose that measuring execution time of algorithms
+directly via the microcontrollers internal timers (while subtracting the
+interrupt overhead) provides adequate measurements. An additional advantage is
+that the same code can be used to measure execution speed on several different
+microcontrollers, rather than relying on counting CPU cycles (as the process for
+this may vary greatly between controllers). As we will use fixed-size bitstrings
+for evaluation, we can then derive the throughput of the algorithm in $MB/s$ as
+follows:
+
+$$
+Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
+Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(1)}
+$$
+
+This measurement allows us to place the throughput of our algorithm soundly in
+the bounds imposed on us by the hardware. During implementation, measurements of
+time complexity may be discussed with regards to the code -- but in the end, the
+performance of the code as it runs is what will be evaluated most thoroughly.
+
+### 5.2 Limitations
 
 Our proposed iterations all assume that the limited hardware will support it.
 Whereas we are confident that Teensy 4.1 will be able to handle each iteration
@@ -361,4 +378,18 @@ specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
 however, this remains to be seen during the experimentation.
 
-\newpage
+\newpage \phantom{HAHA I CAN CURSE HERE! FUCK YOU!} \newpage
+
+## CHANGELOG
+
+2025-02-14: Added background section, smaller reviews to introduction.
+
+2025-02-28: Template adjusted, added methodology. Started review of background
+and theory to add stronger correlation to computer science. Not yet finished due
+to review of articles as well as some additional information required from the
+project owner. The update to theory and background should be considered a heavy
+work in progress at this stage.
+
+2025-03-XX: Moved evaluation down in the methodology in order to provide a
+better flow. Elaborated further on Toeplitz extraction and ADC converters, as
+well as motivating the selection of these.
