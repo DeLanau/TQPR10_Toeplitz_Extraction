@@ -235,9 +235,21 @@ Microcontrollers (MCUs) are compact and low-power computing devices designed
 primary for embedded systems and real-time applications. In contrast to general
 purpose CPUs, MCUs integrates a processor, memory, and peripherals into a single
 chip, thus enabling efficient and autonomous operation in constrained
-environments. To program MCUs, various development frameworks and tools such as:
-Arduino Framework, Espressif IDF, raw C++, etc. Different frameworks can
-contribute to overhead.
+environments. Various development frameworks and tools are avaible for
+programming MCUs, including the Arduino Framework, Espressif IDF and raw C++
+among others. Each framework presents different trade-offs in terms of overhead,
+efficiency and ease of development.
+
+The Teensy 4.1 features an ARM Cortex-M7 processor running at 600 MHz, capable
+of executing two instructions per clock cycle due to its dual-issue superscalar
+architecture. Thus, making Teensy 4.1 significantly faster than others
+microcontrollers, particularly in single-threaded performance and real-time
+processing. In contrast, the ESP32 features a dual-core Tensilica Xtensa LX6
+processor running at up to 240 MHz. Thus, making it efficinent for multitasking
+but slower for raw number crunching. However, ESP32 includes Wi-Fi and Bluetooth
+enchancing versatility.
+
+<!-- TODO: connect -https://ieeexplore.ieee.org/abstract/document/7116095 to the text & add footnote for esp32 docs, but the question is, do we need 2 microcontrollers ? yeah but how to present it in a good way -->
 
 <!-- TODO: Add more details about considerations for MCUs, e.g. processing and input/output speeds. Keep it generalized, we can introduce even more hardware details in a later section! -->
 
