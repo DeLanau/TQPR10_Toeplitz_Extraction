@@ -7,7 +7,6 @@ target/
 
 mine/
 
-*.tex
 *.aux
 *.bbl
 *.blg

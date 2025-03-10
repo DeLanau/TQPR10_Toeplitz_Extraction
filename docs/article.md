@@ -20,7 +20,9 @@ header-includes:
 
 # 1 INTRODUCTION
 
-In cryptography, there are many applications for randomly generated numbers.
+In computer science, there are many applications for randomly generated numbers.
+From generating keys for cryptography
+
 However, the process of producing these random numbers tends to be
 pseudo-random, e.g. utilizing the current states of various modules
 [@randomness]. These numbers do not generate true randomness, and in order to
@@ -31,26 +33,41 @@ of the host machine as a starting point before running a predetermined algorithm
 drawback that the result is always deterministic, provided that the initial
 state is known.
 
-True random numbers, then, cannot be produced solely through code. These systems
-require some input that is neither replicable nor reproducible. One proposed
-solution for this is quantum random number generation (_QRNG_) [@QRNG]. By
-reading quantum fluctuations from any given source, for instance an optical
-signal, the inherent natural unpredictability of said source can be harnessed in
-order to produce a random number from a state that is nigh impossible to
-reproduce accurately.
+Imagine, then, if a malicious attacker somehow manages to ascertain the state a
+computer was in when it generated a random number, for instance to produce an
+SSH-key. This attacker then has the opportunity to accurately reproduce the
+exact, deterministic state that produced said random number, in essence removing
+the safety that randomness brings. While it may sound unrealistic, the
+exponential increase in processing power and the burgeoning field of quantum
+computing does introduce the possibility that one day, what we perceive as
+random is nothing more than a simple algorithm to crack.
 
-In this project, we will be writing firmware for one such solution, which reads
-quantum variations from an optical signal. Further details about how this signal
-is produced will be introduced in section 2 and builds on the work of Clason
-[@Clason2023]. This optical signal will be converted to a stream of random, raw
-bits via an Analog to Digital Converter (_ADC_). In turn, these random bits will
-be processed via Toeplitz extraction [@toeplitz] in order to process these bits
-into random numbers. Some processing has to be done on the microcontrollers
-themselves in order to ensure that the data is workable, and Toeplitz extraction
-is a tried and tested method to accomplish this. These random numbers will then
-be output from the microcontroller to the host computer via USB. This thesis
-will aim to answer one key research question: How can sampled vacuum
-fluctuations be processed efficiently in order to output QRNG?
+True random numbers, then, cannot be produced solely through code. These systems
+require some input that is neither replicable nor reproducible. One method that
+can be realistically used is the inherently random movement of lava lamps
+[@lavarand], which is used as a backup source of randomness for Cloudflare[^1].
+Another proposed solution for this is quantum random number generation (_QRNG_)
+[@QRNG]. By reading quantum fluctuations from any given source, for instance an
+optical signal, the inherent natural unpredictability of said source can be
+harnessed in order to produce a random number from a state that is nigh
+impossible to reproduce accurately.
+
+[^1]:
+    [Cloudflare.com, accessed 2025-03-10](https://blog.cloudflare.com/randomness-101-lavarand-in-production/)
+
+In this project, we will be writing firmware for a quantum number generator,
+which generates true randomness by reading shot noise from an optical signal.
+Further details about how this signal is produced will be introduced in section
+2 and 3, and builds on the work of Clason [@Clason2023]. This optical signal
+will be converted to a stream of random, raw bits via an Analog to Digital
+Converter (_ADC_). In turn, these random bits will be processed via Toeplitz
+extraction [@toeplitz] in order to process these bits into random numbers. Some
+processing has to be done on the microcontrollers themselves in order to ensure
+that the data is workable, and Toeplitz extraction is a tried and tested method
+to accomplish this. These random numbers will then be output from the
+microcontroller to the host computer via USB. This thesis will aim to answer one
+key research question: How can sampled vacuum fluctuations be processed
+efficiently in order to output QRNG?
 
 In producing this firmware, several key considerations have to be made in order
 for this system to be usable in a production environment. The vision for the end
@@ -209,6 +226,9 @@ signal, $f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
 will be using has been selected. The exact requirements needs to be discussed
 with the project owner before a choice can be made!**
 
+The final output from the ADC will be a stream of raw bits, as the analog signal
+from the OQRNG-device is processed.
+
 ### 3.3 Microcontroller
 
 Microcontrollers (MCUs) are compact and low-power computing devices designed
@@ -219,16 +239,23 @@ environments. To program MCUs, various development frameworks and tools such as:
 Arduino Framework, Espressif IDF, raw C++, etc. Different frameworks can
 contribute to overhead.
 
-In our project, we will be utilizing several microcontrollers. Primarily, we
-will be using Teensy 4.1[^1] as our baseline, as this controller is relatively
-cheap yet very powerful.
+<!-- TODO: Add more details about considerations for MCUs, e.g. processing and input/output speeds. Keep it generalized, we can introduce even more hardware details in a later section! -->
 
-[^1]:
-    [https://www.pjrc.com/store/teensy41.html](https://www.pjrc.com/store/teensy41.html)
+In our project, we will be utilizing several microcontrollers. Primarily, we
+will be using Teensy 4.1[^2] as our baseline, as this controller is relatively
+cheap yet very powerful. The analog signal sampled by the ADC will be streamed
+at high speeds to our MCU, where the raw bits will be processed in order to
+produce random numbers.
+
+[^2]:
+    [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
 
 ### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
 
-**WIP**
+The raw bits from the ADC can potentially have some deterministic patterns, and
+as such have to be processed somehow in order to remove these patterns. Several
+methods exist for this purpose, and for our work, we will perform this
+preprocessing via Toeplitz extraction.
 
 ### 3.5 Summary
 
@@ -339,25 +366,23 @@ feasibility of this highly depends on the performance of every individual
 implementation. Depending on the results during our experimentation, this may
 yield yet another iteration.
 
-### 5.2 Evaluation <!-- FIXME: Moved section here, tie it together! -->
-
-Due to the bounds introduced by the hardware limitations, evaluating the
-throughput of each iteration essentially consists of measuring the execution
-time. In order to verify accuracy, the output of random numbers should be
-identical for each sample bitstring tested. Certain iterations might, however,
-use larger parts of the bitstring, and thus produce a slightly variable result.
+### 5.2 Evaluation
 
 As discussed in section 3, the hardware used will impose a clear bound on how
 quickly our implementation needs to process the bits in order to match the speed
-of the ADC, as well as the output speed of the USB-port, both in $MB/s$. Hyncica
-et. al. [@micromeasurements] propose that measuring execution time of algorithms
-directly via the microcontrollers internal timers (while subtracting the
-interrupt overhead) provides adequate measurements. An additional advantage is
-that the same code can be used to measure execution speed on several different
-microcontrollers, rather than relying on counting CPU cycles (as the process for
-this may vary greatly between controllers). As we will use fixed-size bitstrings
-for evaluation, we can then derive the throughput of the algorithm in $MB/s$ as
-follows:
+of the ADC, as well as the output speed of the USB-port, both in $MB/s$. In
+order to verify accuracy, the output of random numbers should be identical for
+each sample bitstring tested. Certain iterations might, however, use larger
+parts of the bitstring, and thus produce a slightly variable result.
+
+Hyncica et. al. [@micromeasurements] propose that measuring execution time of
+algorithms directly via the microcontrollers internal timers (while subtracting
+the interrupt overhead) provides adequate measurements of an algorithms
+execution speed. An additional advantage is that the same code can be used to
+measure execution speed on several different microcontrollers, rather than
+relying on counting CPU cycles (as the process for this may vary greatly between
+controllers). As we will use fixed-size bitstrings for evaluation, we can then
+derive the throughput of the algorithm in $MB/s$ as follows:
 
 $$
 Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
@@ -378,7 +403,13 @@ specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
 however, this remains to be seen during the experimentation.
 
-\newpage \phantom{HAHA I CAN CURSE HERE! FUCK YOU!} \newpage
+## 6 EXPERIMENTATION
+
+Each iteration results in an implementation written in C, all of which will be
+supplied as an appendix to this paper. Furthermore, to simplify the
+implementation process, we will use the Arduino framework to communicate with
+the hardware. Whereas this introduces some overhead, it drastically reduces the
+time spent per iteration, and is deemed to be a suitable starting point.
 
 ## CHANGELOG
 
@@ -392,4 +423,5 @@ work in progress at this stage.
 
 2025-03-XX: Moved evaluation down in the methodology in order to provide a
 better flow. Elaborated further on Toeplitz extraction and ADC converters, as
-well as motivating the selection of these.
+well as motivating the selection of these. Some additional information added in
+introduction as motivation for the work.
