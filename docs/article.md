@@ -232,35 +232,79 @@ from the OQRNG-device is processed.
 ### 3.3 Microcontroller
 
 Microcontrollers (MCUs) are compact and low-power computing devices designed
-primary for embedded systems and real-time applications. In contrast to general
-purpose CPUs, MCUs integrates a processor, memory, and peripherals into a single
-chip, thus enabling efficient and autonomous operation in constrained
-environments. Various development frameworks and tools are avaible for
-programming MCUs, including the Arduino Framework, Espressif IDF and raw C++
-among others. Each framework presents different trade-offs in terms of overhead,
-efficiency and ease of development.
+primary for embedded systems and real-time applications. Unlike general purpose
+CPUs, MCUs integrates a processor, memory, and peripherals into a single chip.
+Thus, enabling efficient and autonomous operation in constrained environments.
+Various development frameworks and tools are available for programming MCUs,
+including the Arduino Framework, raw C++ and manufacturer specific SDKs. among
+others. Each framework presents different trade-offs in terms of performance
+overhead, efficiency and ease of development.
 
-The Teensy 4.1 features an ARM Cortex-M7 processor running at 600 MHz, capable
-of executing two instructions per clock cycle due to its dual-issue superscalar
-architecture. Thus, making Teensy 4.1 significantly faster than others
-microcontrollers, particularly in single-threaded performance and real-time
-processing. In contrast, the ESP32 features a dual-core Tensilica Xtensa LX6
-processor running at up to 240 MHz. Thus, making it efficinent for multitasking
-but slower for raw number crunching. However, ESP32 includes Wi-Fi and Bluetooth
-enchancing versatility.
+<!--TODO: fix reference https://ieeexplore.ieee.org/abstract/document/7116095 yeah i have knowledge issues xD-->
 
+Modern microcontrollers feature advanced microarchitectural elements to enhance
+processing capabilities. Some of high performance MCUs utilize dual-issue
+superscalar architectures, enabling them to run several instructions in one
+cycle. This type of design greatly improves single-threaded capabilities, which
+makes these MCUs ideal for tasks that need real-time data processing. The use of
+dual-issue architectures in embedded devices has demonstrated improved energy
+efficiency alongside high execution speeds. Thus, making them a great option for
+applications that require low power but high performance. Research conducted by
+Lozano et al. [] specifically explores energy efficient dual-issue processors
+designs. Study shows that optimizing instruction throughput and power
+consumption can significantly improve processing efficiency in embedded systems.
+
+<!-- TODO: provide source for TCM and DMA if possible -->
+
+Since MCUs often function under strict timing requirements, it is critical to
+have effective ways to access memory and transfer data for processing in real
+time. High-performance MCUs enhance memory usage in various ways. Some of them
+use Tightly Coupled Memory (TCM), which gives fast SRAM with specific access
+routes for important data, avoiding cache misses and guaranteeing consistent
+performance. Moreover, instruction and data caching techniques, including
+instruction prefetching and branch prediction, help minimize execution delays in
+computationally intensive real-time applications. Another important aspect is
+Direct Memory Access (DMA), which enables data transfer between peripherals such
+as the ADC and RAM, without CPU intervention. This offloading reduces processing
+overhead, allowing the MCU to manage fast data transfers effectively. These
+improvements are especially significant for Toeplitz extraction, were large
+amount of random data needs to be processed and sent quickly with low delay.
+Efficient memory management guarantees that randomness extraction can occur
+rapidly without major slowdowns in computing.
+
+The Teensy 4.1[^2], based on the ARM Cortex-M7 is especially good for
+computationally demanding tasks involving randomness extraction due to its
+dual-issue superscalar architecture and DSP capabilities. The floating-point
+unit (FPU) and SIMD-style DSP instructions imporove how quickly it can perform
+bitwise and arithmetic tasks, which are crucial for quick Toeplitz extraction.
+Although, the Cortex-M7 does not have special features for cryptography, its
+ability to execute multiple instructions quickly, combined with fast memory
+access and an efficient pipeline design, allows it to effectively manage and
+process randomness extraction. Moreover, its USB High-Speed interface allows
+rapid transmission of extracted random data to an external system, ensuring
+minimal bottlenecks in high-rate randomness generation.
+
+[^2]:
+    [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
+
+<!--The Teensy 4.1 features an ARM Cortex-M7 processor running at 600 MHz, capable-->
+<!--of executing two instructions per clock cycle due to its dual-issue superscalar-->
+<!--architecture. Thus, making Teensy 4.1 significantly faster than others-->
+<!--microcontrollers, particularly in single-threaded performance and real-time-->
+<!--processing. In contrast, the ESP32 features a dual-core Tensilica Xtensa LX6-->
+<!--processor running at up to 240 MHz. Thus, making it efficinent for multitasking-->
+<!--but slower for raw number crunching. However, ESP32 includes Wi-Fi and Bluetooth-->
+<!--enchancing versatility.-->
+<!---->
 <!-- TODO: connect -https://ieeexplore.ieee.org/abstract/document/7116095 to the text & add footnote for esp32 docs, but the question is, do we need 2 microcontrollers ? yeah but how to present it in a good way -->
 
 <!-- TODO: Add more details about considerations for MCUs, e.g. processing and input/output speeds. Keep it generalized, we can introduce even more hardware details in a later section! -->
 
-In our project, we will be utilizing several microcontrollers. Primarily, we
-will be using Teensy 4.1[^2] as our baseline, as this controller is relatively
-cheap yet very powerful. The analog signal sampled by the ADC will be streamed
-at high speeds to our MCU, where the raw bits will be processed in order to
-produce random numbers.
-
-[^2]:
-    [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
+<!--In our project, we will be utilizing several microcontrollers. Primarily, we-->
+<!--will be using Teensy 4.1[^2] as our baseline, as this controller is relatively-->
+<!--cheap yet very powerful. The analog signal sampled by the ADC will be streamed-->
+<!--at high speeds to our MCU, where the raw bits will be processed in order to-->
+<!--produce random numbers.-->
 
 ### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
 
