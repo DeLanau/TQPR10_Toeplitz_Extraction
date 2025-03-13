@@ -250,8 +250,8 @@ makes these MCUs ideal for tasks that need real-time data processing. The use of
 dual-issue architectures in embedded devices has demonstrated improved energy
 efficiency alongside high execution speeds. Thus, making them a great option for
 applications that require low power but high performance. Research conducted by
-Lozano et al. [] specifically explores energy efficient dual-issue processors
-designs. Study shows that optimizing instruction throughput and power
+Lozano et al. [dual-issue] specifically explores energy efficient dual-issue
+processors designs. Study shows that optimizing instruction throughput and power
 consumption can significantly improve processing efficiency in embedded systems.
 
 <!-- TODO: provide source for TCM and DMA if possible -->
