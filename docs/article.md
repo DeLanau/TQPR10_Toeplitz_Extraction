@@ -316,7 +316,7 @@ implement this extraction algorithm as effectively as possible on resource
 constrained hardware.
 
 A detailed account of the inner workings of Toeplitz extraction can be found in
-the work of Chouhan et al. [@toeplits-desc]. This work focuses on implementing
+the work of Chouhan et al. [@toeplitz-desc]. This work focuses on implementing
 Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific
 details can be derived from their work. As these authors describe, Toeplitz
 extraction is a strong contender for our work due to a lower computational
