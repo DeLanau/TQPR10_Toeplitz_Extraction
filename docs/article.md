@@ -217,17 +217,27 @@ This analog current isn't suitable to operate on without further processing. As
 mentioned in section 1, the signal needs to pass through an ADC and converted
 into raw bits in order for it to be usable. In his thesis, Clason [@Clason2023]
 suggests a discrete ADC chip capable of analyzing frequencies higher than 25
-MHz, as this is the highest frequency studied in his work. The Nyquist-Shannon
-theorem poses that, in order to accurately reconstruct the signal, the sampling
-rate must be at least twice the highest frequency component present in the
-signal, $f_s \geq 2 f_{\text{max}}$. **CITATION NEEDED**
+MHz, as this is the highest frequency studied in his work. However, in the
+interest of keeping the implementation light and cheap, we will be using ADCs
+that provide less samples per second and lower frequencies. This is done mainly
+for ease of development and access to this hardware.
 
-**This section will be filled with more information as soon as the exact ADC we
-will be using has been selected. The exact requirements needs to be discussed
-with the project owner before a choice can be made!**
+Initially, we will utilize MAX11102AUB[^3] with an effective sample rate of 2
+million samples per second (MSPS). This ADC provides a 12 bit sample size,
+providing roughly 2.86 MB/s of sampled data per second, derived by the following
+calculation.
 
-The final output from the ADC will be a stream of raw bits, as the analog signal
-from the OQRNG-device is processed.
+$$
+Data Rate = \frac{2,000,000_{MSPS} \times 12}{8 \times 1,048,576} \approx 2.86 MB/s \text{\phantom{123} (1)}
+$$
+
+Many microcontrollers furthermore come equipped with internal ADCs that can be
+utilized, and while these provide a lower sample size (often around 1 MSPS), the
+ease of development may be prudent to utilize for this proof-of-concept. While
+our initial ADC has a fairly low throughput, this can always be upgraded if it
+ends up becoming too limiting. The final output from the ADC, whether built into
+the microcontroller or an external one, will be a stream of raw bits, as the
+analog signal from the OQRNG-device is processed.
 
 ### 3.3 Microcontroller
 
@@ -288,6 +298,9 @@ process randomness extraction. Moreover, its USB High-Speed interface allows
 rapid transmission of extracted random data to an external system, ensuring
 minimal bottlenecks in high-rate randomness generation.
 
+[^3]:
+    [Technical specification for MAX11102AUB, accessed 2025-03-13](https://www.farnell.com/datasheets/1913106.pdf)
+
 [^2]:
     [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
 
@@ -310,20 +323,43 @@ use. This extraction utilizes either matrix multiplication or hashing between a
 pseudo-random seed and the raw data provided from a high-entropy source of
 randomness -- in our case, the OQRNG-device.
 
+To summarize the theoretical working of Toeplitz extraction (as explained by
+Chouhan et al. [@toeplitz-desc]), the sampled raw bit matrix ($T$) are
+multiplied with a pre-determined seed matrix ($K$). The size of the seed is
+directly dependant on the size of the sampled data, and can be fixed or
+continually re-sampled as needed. To ensure high levels of entropy, our
+intuition is that re-sampling the seed from the OQRNG-device continually is
+prudent. The sample and seed with then be processed with matrix multiplication
+to remove deterministic patterns, and produce a bitstring that results in our
+randomly generated number.
+
 ### 3.5 Summary
 
 With the assumption that the OQRNG-device produces a truly random analog signal,
 we can now clearly define the scope in which this thesis operates. Considering
 the maximum conversion speed from the ADC and the USB-output from the MCU, we
-have a clear bound between **PLACEHOLDER** and **PLACEHOLDER** in which Toeplitz
-extraction needs to be executed. Any implementation of Toeplitz extraction must
-then execute fast enough on any given microcontroller feasible for the proposed
-quantum RNG-thumbstick as to not be the decisive limiting factor.
+have a clear bound between 2.86 MS/s (for the ADC) and 480 MB/s (for the USB
+output) in which Toeplitz extraction needs to be executed. Any speeds over 2.86
+MB/s allows us to upgrade the ADC iteratively to continue increasing the output
+speed. Any implementation of Toeplitz extraction must then execute fast enough
+on any given microcontroller feasible for the proposed quantum RNG-thumbstick as
+to not be the decisive limiting factor.
 
-## 4 RELATED WORKS <!-- TODO: Talk about why we select Toeplitz -->
+## 4 RELATED WORKS <!-- TODO: Talk about why we select Toeplitz, how to optimize the bastard -->
 
-**WIP - Might be good to add related works in the domain of computer science
-here!**
+Most related works found tend to revolve around optimizing Toeplitz using more
+advanced hardware, and few works seem to delve into evaluating the
+implementation in code.
+
+As mentioned in section 3.4, Chouhan et al. [@toeplitz-desc] utilized FPGA to
+implement Toeplitz extraction specifically for OQRNG, a work also studied by
+Zhang et al. [@zhang]. Furthermore, Zhang et al. utilized a standardized
+min-entropy evaluation to ensure true, unbiased randomness in their result. Both
+of these implementations utilize powerful hardware where the matrix
+multiplication is offloaded to FPGA. These implementations provided extraction
+speeds of between 3.36 Gpbs [@zhang] to 26.57 Gbps [@toeplitz-desc]. Neither of
+these implementations operate on constrained hardware, instead creating bespoke
+circuit boards for their works.
 
 ## 5 METHODOLOGY
 
@@ -438,8 +474,8 @@ controllers). As we will use fixed-size bitstrings for evaluation, we can then
 derive the throughput of the algorithm in $MB/s$ as follows:
 
 $$
-Throughput_{MB/s} = \frac{DataSize_{bits}}{Execution
-Time_{ms}} \times \frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(1)}
+Throughput*{MB/s} = \frac{DataSize*{bits}}{Execution Time_{ms}} \times
+\frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(2)}
 $$
 
 This measurement allows us to place the throughput of our algorithm soundly in
@@ -474,7 +510,11 @@ to review of articles as well as some additional information required from the
 project owner. The update to theory and background should be considered a heavy
 work in progress at this stage.
 
-2025-03-XX: Moved evaluation down in the methodology in order to provide a
+2025-03-10: Moved evaluation down in the methodology in order to provide a
 better flow. Elaborated further on Toeplitz extraction and ADC converters, as
 well as motivating the selection of these. Some additional information added in
 introduction as motivation for the work.
+
+2025-03-12: Elaborated on background, as well as adding more details regarding
+hardware. Note that the hardware selected is subject to change over time.
+Further elaborated on related works in optimizing Toeplitz extraction.
