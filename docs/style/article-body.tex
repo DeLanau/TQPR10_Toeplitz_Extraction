@@ -80,7 +80,60 @@ The raw bits from the ADC can potentially have some deterministic patterns, and 
 
 A detailed account of the inner workings of Toeplitz extraction can be found in the work of Chouhan et al. \cite{toeplitz-desc}. This work focuses on implementing Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific details can be derived from their work. As these authors describe, Toeplitz extraction is a strong contender for our work due to a lower computational complexity than other alternatives, as well as a relatively easy algorithm to use. This extraction utilizes either matrix multiplication or hashing between a pseudo-random seed and the raw data provided from a high-entropy source of randomness -- in our case, the OQRNG-device.
 
-To summarize the theoretical working of Toeplitz extraction (as explained by Chouhan et al. \cite{toeplitz-desc}), the sampled raw bit matrix (\(T\)) are multiplied with a pre-determined seed matrix (\(K\)). The size of the seed is directly dependant on the size of the sampled data, and can be fixed or continually re-sampled as needed. To ensure high levels of entropy, our intuition is that re-sampling the seed from the OQRNG-device continually is prudent. The sample and seed with then be processed with matrix multiplication to remove deterministic patterns, and produce a bitstring that results in our randomly generated number.
+To summarize the theoretical working of Toeplitz extraction (as explained by Chouhan et al. \cite{toeplitz-desc}), the sampled raw bit matrix (\(T\)) are multiplied with a pre-determined seed matrix (\(K\)). The size of the seed is directly dependant on the size of the sampled data, and can be fixed or continually re-sampled as needed. To ensure high levels of entropy, our intuition is that re-sampling the seed from the OQRNG-device continually is prudent. The sample and seed with then be processed with matrix multiplication to remove deterministic patterns, and produce a bitstring that results in our randomly generated number. An example of how this extraction works can be seen below.
+
+\[
+T =
+\begin{bmatrix}
+1 & 0 & 1 & 1 & 0 & 1 & 0 & 1 \\
+0 & 1 & 1 & 0 & 1 & 0 & 1 & 1 \\
+1 & 1 & 0 & 1 & 0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 1 & 1 & 0 & 1 & 0
+\end{bmatrix}
+\quad
+k =
+\begin{bmatrix}
+1 \\ 0 \\ 1 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1
+\end{bmatrix}
+\]
+
+\[
+h(k) = T \cdot x \mod 2
+\]
+
+\phantom{TEMP LINEBREAK}
+
+We then perform XOR multiplication on the matrices:
+
+\[
+h(k) =
+\begin{bmatrix}
+(1 \oplus 0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1) \\
+(0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1) \\
+(1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1 \oplus 0) \\
+(1 \oplus 0 \oplus 1 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0)
+\end{bmatrix}
+\]
+
+Which finally simplifies to:
+
+\[
+h(k) =
+\begin{bmatrix}
+1 \\
+0 \\
+1 \\
+1
+\end{bmatrix}
+\]
+
+This allows us to intepret the result as a random 4-bit integer:
+
+\[
+h(k) = (1011)_2 = 11_{10}
+\]
+
+Whereas this example is quite small in order to demonstrate how the algorithm operates, this can of course be scaled up significantly with larger values for both \(T\) and \(k\) respectively, granting larger integers. The main focus of this work is implementing this algorithm as efficiently as possible on our MCUs, and as such, several optimization efforts need to be taken into account during our experimentation.
 
 \subsubsection{3.5 Summary}\label{summary}
 
@@ -91,6 +144,10 @@ With the assumption that the OQRNG-device produces a truly random analog signal,
 Most related works found tend to revolve around optimizing Toeplitz using more advanced hardware, and few works seem to delve into evaluating the implementation in code.
 
 As mentioned in section 3.4, Chouhan et al. \cite{toeplitz-desc} utilized FPGA to implement Toeplitz extraction specifically for OQRNG, a work also studied by Zhang et al. \cite{toeplitz}. Furthermore, Zhang et al.~utilized a standardized min-entropy evaluation to ensure true, unbiased randomness in their result. Both of these implementations utilize powerful hardware where the matrix multiplication is offloaded to FPGA. These implementations provided extraction speeds of between 3.36 Gpbs \cite{toeplitz} to 26.57 Gbps \cite{toeplitz-desc}. Neither of these implementations operate on constrained hardware, instead creating bespoke circuit boards for their works.
+
+Another important point that is often neglected in randomness extraction using Toeplitz matrices is how the seed key is handled when forming the Toeplitzmatrix. Numerous systems, such as those developed by Chouhan et al. \cite{toeplitz-desc} and Zhang et al. \cite{toeplitz}, depends on fixed seeds. Fixed seeds can create security risks over prolonged operation time. To tackle this problem, Lin et al \cite{lin} proposed a method for seed-renewable Toeplitz post-processing in QRNG. Their strategy incorporates a dynamic seed pool within the FPGA, where each instance of post-processing picks a new, randomly selected seed. Thus, minimizing temporal correlations between extractions. Furthermore, an external seed updateing mechanism via PCIe ensures that seeds are refreshed whenever a certain secutiry limit is reached. Compared to fixed-seed methods, this renewable approach enhances cryptographic robustness and ensures sustained high-security randomness extraction in real-world applications.
+
+Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for optimizing randomness extraction that relies on Toeplitz, particulary in constrained hardware environments. Liao et al. \cite{liao} showed that this process could be greatly accelerated using Fast Fourier Transform (FFT) and its inverser (IFFT). Thus, reducing computational complexity from \(O(n^2)\) to \(O(n log n)\). Their implementation on FPGA utilized this approach for deep neural networks, resulting in a 28.7 times decrease in model size while still achieving fast inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing for randomness extraction could achieve higher throughput. Thus, potentially could improve performance and reduce latency.
 
 \subsection{5 METHODOLOGY}\label{methodology}
 

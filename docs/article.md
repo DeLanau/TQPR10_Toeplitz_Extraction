@@ -360,7 +360,66 @@ continually re-sampled as needed. To ensure high levels of entropy, our
 intuition is that re-sampling the seed from the OQRNG-device continually is
 prudent. The sample and seed with then be processed with matrix multiplication
 to remove deterministic patterns, and produce a bitstring that results in our
-randomly generated number.
+randomly generated number. An example of how this extraction works can be seen
+below.
+
+$$
+T =
+\begin{bmatrix}
+1 & 0 & 1 & 1 & 0 & 1 & 0 & 1 \\
+0 & 1 & 1 & 0 & 1 & 0 & 1 & 1 \\
+1 & 1 & 0 & 1 & 0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 1 & 1 & 0 & 1 & 0
+\end{bmatrix}
+\quad
+k =
+\begin{bmatrix}
+1 \\ 0 \\ 1 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1
+\end{bmatrix}
+$$
+
+$$
+h(k) = T \cdot x \mod 2
+$$
+
+\phantom{TEMP LINEBREAK}
+
+We then perform XOR multiplication on the matrices:
+
+$$
+h(k) =
+\begin{bmatrix}
+(1 \oplus 0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1) \\
+(0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1) \\
+(1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1 \oplus 0) \\
+(1 \oplus 0 \oplus 1 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0)
+\end{bmatrix}
+$$
+
+Which finally simplifies to:
+
+$$
+h(k) =
+\begin{bmatrix}
+1 \\
+0 \\
+1 \\
+1
+\end{bmatrix}
+$$
+
+This allows us to intepret the result as a random 4-bit integer:
+
+$$
+h(k) = (1011)_2 = 11_{10}
+$$
+
+Whereas this example is quite small in order to demonstrate how the algorithm
+operates, this can of course be scaled up significantly with larger values for
+both $T$ and $k$ respectively, granting larger integers. The main focus of this
+work is implementing this algorithm as efficiently as possible on our MCUs, and
+as such, several optimization efforts need to be taken into account during our
+experimentation.
 
 ### 3.5 Summary
 
@@ -393,15 +452,15 @@ bespoke circuit boards for their works.
 Another important point that is often neglected in randomness extraction using
 Toeplitz matrices is how the seed key is handled when forming the
 Toeplitzmatrix. Numerous systems, such as those developed by Chouhan et al.
-[@toeplitz-desc] and Zhang et al. [@zhang], depends on fixed seeds. Fixed seeds
-can create security risks over prolonged operation time. To tackle this problem,
-Lin et al [@lin] proposed a method for seed-renewable Toeplitz post-processing
-in QRNG. Their strategy incorporates a dynamic seed pool within the FPGA, where
-each instance of post-processing picks a new, randomly selected seed. Thus,
-minimizing temporal correlations between extractions. Furthermore, an external
-seed updateing mechanism via PCIe ensures that seeds are refreshed whenever a
-certain secutiry limit is reached. Compared to fixed-seed methods, this
-renewable approach enhances cryptographic robustness and ensures sustained
+[@toeplitz-desc] and Zhang et al. [@toeplitz], depends on fixed seeds. Fixed
+seeds can create security risks over prolonged operation time. To tackle this
+problem, Lin et al [@lin] proposed a method for seed-renewable Toeplitz
+post-processing in QRNG. Their strategy incorporates a dynamic seed pool within
+the FPGA, where each instance of post-processing picks a new, randomly selected
+seed. Thus, minimizing temporal correlations between extractions. Furthermore,
+an external seed updateing mechanism via PCIe ensures that seeds are refreshed
+whenever a certain secutiry limit is reached. Compared to fixed-seed methods,
+this renewable approach enhances cryptographic robustness and ensures sustained
 high-security randomness extraction in real-world applications.
 
 Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for
