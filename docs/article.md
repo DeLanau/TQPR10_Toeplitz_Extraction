@@ -317,6 +317,20 @@ ensuring minimal bottlenecks in high-rate randomness generation.
 [^4]:
     [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
+In order to evaluate just how much constraint our implementation can allow, our
+aim is to try our implementation on other MCUs with varying levels of power and
+hardware support. Whereas Teensy 4.1 is our primary development platform, we aim
+to run our implementations on Raspberry Pi Pico 2[^6] as well as ESP32-S3[^7].
+Due to the lower computational power of these MCUs, there may be significant
+issues in utilizing these weaker models, yet they are significantly cheaper and
+easier to access.
+
+[^6]:
+    [Raspberry Pi Pico 2 documentation, accessed 2025-03-13](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
+
+[^7]:
+    [ESP32-S3 documentation, accessed 2025-03-13](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
+
 ### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
 
 The raw bits from the ADC can potentially have some deterministic patterns, and
