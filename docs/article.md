@@ -390,6 +390,31 @@ speeds of between 3.36 Gpbs [@toeplitz] to 26.57 Gbps [@toeplitz-desc]. Neither
 of these implementations operate on constrained hardware, instead creating
 bespoke circuit boards for their works.
 
+Another important point that is often neglected in randomness extraction using
+Toeplitz matrices is how the seed key is handled when forming the
+Toeplitzmatrix. Numerous systems, such as those developed by Chouhan et al.
+[@toeplitz-desc] and Zhang et al. [@zhang], depends on fixed seeds. Fixed seeds
+can create security risks over prolonged operation time. To tackle this problem,
+Lin et al [@lin] proposed a method for seed-renewable Toeplitz post-processing
+in QRNG. Their strategy incorporates a dynamic seed pool within the FPGA, where
+each instance of post-processing picks a new, randomly selected seed. Thus,
+minimizing temporal correlations between extractions. Furthermore, an external
+seed updateing mechanism via PCIe ensures that seeds are refreshed whenever a
+certain secutiry limit is reached. Compared to fixed-seed methods, this
+renewable approach enhances cryptographic robustness and ensures sustained
+high-security randomness extraction in real-world applications.
+
+Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for
+optimizing randomness extraction that relies on Toeplitz, particulary in
+constrained hardware environments. Liao et al. [@liao] showed that this process
+could be greatly accelerated using Fast Fourier Transform (FFT) and its inverser
+(IFFT). Thus, reducing computational complexity from $O(n^2)$ to $O(n log n)$.
+Their implementation on FPGA utilized this approach for deep neural networks,
+resulting in a 28.7 times decrease in model size while still achieving fast
+inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing
+for randomness extraction could achieve higher throughput. Thus, potentially
+could improve performance and reduce latency.
+
 ## 5 METHODOLOGY
 
 With the consideration that our work revolves around optimizing Toeplitz
