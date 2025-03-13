@@ -267,7 +267,19 @@ produce random numbers.
 The raw bits from the ADC can potentially have some deterministic patterns, and
 as such have to be processed somehow in order to remove these patterns. Several
 methods exist for this purpose, and for our work, we will perform this
-preprocessing via Toeplitz extraction.
+preprocessing via Toeplitz extraction. The main focus of this study is to
+implement this extraction algorithm as effectively as possible on resource
+constrained hardware.
+
+A detailed account of the inner workings of Toeplitz extraction can be found in
+the work of Chouhan et al. [@toeplits-desc]. This work focuses on implementing
+Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific
+details can be derived from their work. As these authors describe, Toeplitz
+extraction is a strong contender for our work due to a lower computational
+complexity than other alternatives, as well as a relatively easy algorithm to
+use. This extraction utilizes either matrix multiplication or hashing between a
+pseudo-random seed and the raw data provided from a high-entropy source of
+randomness -- in our case, the OQRNG-device.
 
 ### 3.5 Summary
 
