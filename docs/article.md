@@ -612,6 +612,7 @@ supplied as an appendix to this paper. Furthermore, to simplify the
 implementation process, we will use the Arduino framework to communicate with
 the hardware. Whereas this introduces some overhead, it drastically reduces the
 time spent per iteration, and is deemed to be a suitable starting point.
+\newpage
 
 ## CHANGELOG
 
@@ -628,6 +629,6 @@ better flow. Elaborated further on Toeplitz extraction and ADC converters, as
 well as motivating the selection of these. Some additional information added in
 introduction as motivation for the work.
 
-2025-03-12: Elaborated on background, as well as adding more details regarding
+2025-03-13: Elaborated on background, as well as adding more details regarding
 hardware. Note that the hardware selected is subject to change over time.
 Further elaborated on related works in optimizing Toeplitz extraction.
