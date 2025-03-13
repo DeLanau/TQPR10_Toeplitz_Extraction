@@ -272,37 +272,50 @@ not consume too much power is tangentially relevant for real-world usage.
 Since MCUs often function under strict timing requirements, it is critical to
 have effective ways to access memory and transfer data for processing in real
 time. High-performance MCUs enhance memory usage in various ways. Some of them
-use Tightly Coupled Memory (TCM), which gives fast SRAM with specific access
+use Tightly Coupled Memory[^3] (TCM), which gives fast SRAM with specific access
 routes for important data, avoiding cache misses and guaranteeing consistent
 performance. Moreover, instruction and data caching techniques, including
 instruction prefetching and branch prediction, help minimize execution delays in
 computationally intensive real-time applications. Another important aspect is
-Direct Memory Access (DMA), which enables data transfer between peripherals such
-as the ADC and RAM, without CPU intervention. This offloading reduces processing
-overhead, allowing the MCU to manage fast data transfers effectively. These
-improvements are especially significant for Toeplitz extraction, where large
-amount of random data needs to be processed and sent quickly with low delay.
-Efficient memory management guarantees that randomness extraction can occur
-rapidly without major slowdowns in computing. Both approaches will be tested
-during development.
+Direct Memory Access[^5] (DMA), which enables data transfer between peripherals
+such as the ADC and RAM, without CPU intervention. This offloading reduces
+processing overhead, allowing the MCU to manage fast data transfers effectively.
+These improvements are especially significant for Toeplitz extraction, where
+large amount of random data needs to be processed and sent quickly with low
+delay. Efficient memory management guarantees that randomness extraction can
+occur rapidly without major slowdowns in computing. Both approaches will be
+tested during development.
+
+[^3]:
+    [Arm developer documentation, accessed 2025-03-13](https://developer.arm.com/documentation/den0042/a/Tightly-Coupled-Memory)
+
+[^5]:
+    [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/direct-memory-access)
 
 The Teensy 4.1[^2], based on the ARM Cortex-M7 is especially good for
 computationally demanding tasks involving randomness extraction due to its
 dual-issue superscalar architecture and DSP capabilities. The floating-point
-unit (FPU) and SIMD-style DSP instructions imporove how quickly it can perform
-bitwise and arithmetic tasks, which are crucial for quick Toeplitz extraction.
-Although, the Cortex-M7 does not have special features for cryptography, its
-ability to execute multiple instructions quickly, combined with fast memory
-access and an efficient pipeline design, allows it to effectively manage and
-process randomness extraction. Moreover, its USB High-Speed interface allows
-rapid transmission of extracted random data to an external system, ensuring
-minimal bottlenecks in high-rate randomness generation.
+unit[^4] (FPU) and SIMD-style DSP instructions improves how quickly it can
+perform bitwise and arithmetic tasks, which are crucial for quick Toeplitz
+extraction. SIMD-controlled DSP architectures, as described by Han et al.
+[@simd-dsp], leverage parallel vectorized computation to accelerate matrix
+operations. Thus, making them highly effective for Toeplitz matrix-vector
+multiplications. Although, the Cortex-M7 does not have special features for
+cryptography, its ability to execute multiple instructions quickly, combined
+with fast memory access and an efficient pipeline design, allows it to
+effectively manage and process randomness extraction. Moreover, its USB
+High-Speed (480 Mbit/sec) interface, supporting both USB device and USB host
+modes, allows rapid transmission of extracted random data to an external system,
+ensuring minimal bottlenecks in high-rate randomness generation.
 
 [^3]:
     [Technical specification for MAX11102AUB, accessed 2025-03-13](https://www.farnell.com/datasheets/1913106.pdf)
 
 [^2]:
     [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
+
+[^4]:
+    [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
 ### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
 
