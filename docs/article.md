@@ -319,11 +319,13 @@ ensuring minimal bottlenecks in high-rate randomness generation.
 
 In order to evaluate just how much constraint our implementation can allow, our
 aim is to try our implementation on other MCUs with varying levels of power and
-hardware support. Whereas Teensy 4.1 is our primary development platform, we aim
-to run our implementations on Raspberry Pi Pico 2[^6] as well as ESP32-S3[^7].
-Due to the lower computational power of these MCUs, there may be significant
-issues in utilizing these weaker models, yet they are significantly cheaper and
-easier to access.
+hardware support. Whereas Teensy 4.1 is our primary development platform which
+we will evaluate closely, we aim to run our implementations on Raspberry Pi Pico
+2[^6] as well as ESP32-S3[^7]. Due to the lower computational power of these
+MCUs, there may be significant issues in utilizing these weaker models, yet they
+are significantly cheaper and easier to access. Testing of these will consist
+solely of running the implementation on these controllers and measuring
+execution speed.
 
 [^6]:
     [Raspberry Pi Pico 2 documentation, accessed 2025-03-13](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
