@@ -382,13 +382,13 @@ implementation in code.
 
 As mentioned in section 3.4, Chouhan et al. [@toeplitz-desc] utilized FPGA to
 implement Toeplitz extraction specifically for OQRNG, a work also studied by
-Zhang et al. [@zhang]. Furthermore, Zhang et al. utilized a standardized
+Zhang et al. [@toeplitz]. Furthermore, Zhang et al. utilized a standardized
 min-entropy evaluation to ensure true, unbiased randomness in their result. Both
 of these implementations utilize powerful hardware where the matrix
 multiplication is offloaded to FPGA. These implementations provided extraction
-speeds of between 3.36 Gpbs [@zhang] to 26.57 Gbps [@toeplitz-desc]. Neither of
-these implementations operate on constrained hardware, instead creating bespoke
-circuit boards for their works.
+speeds of between 3.36 Gpbs [@toeplitz] to 26.57 Gbps [@toeplitz-desc]. Neither
+of these implementations operate on constrained hardware, instead creating
+bespoke circuit boards for their works.
 
 ## 5 METHODOLOGY
 
