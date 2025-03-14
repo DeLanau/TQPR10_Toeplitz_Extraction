@@ -21,17 +21,16 @@ header-includes:
 # 1 INTRODUCTION
 
 In computer science, there are many applications for randomly generated numbers.
-From generating keys for cryptography
-
-However, the process of producing these random numbers tends to be
-pseudo-random, e.g. utilizing the current states of various modules
-[@randomness]. These numbers do not generate true randomness, and in order to
-heighten security other methods of generating these are required. Current random
-number generators (_RNG_) are usually implemented in code, using certain states
-of the host machine as a starting point before running a predetermined algorithm
-[@randomness]. This pseudo-random number generation (_PRNG_) comes with the
-drawback that the result is always deterministic, provided that the initial
-state is known.
+From generating keys for cryptography, salting password hashes, load balancing
+in distributed systems, memory addressing and so much more. However, the process
+of producing these random numbers tends to be pseudo-random, e.g. utilizing the
+current states of various modules [@randomness]. These numbers do not generate
+true randomness, and in order to heighten security other methods of generating
+these are required. Current random number generators (_RNG_) are usually
+implemented in code, using certain states of the host machine as a starting
+point before running a predetermined algorithm [@randomness]. This pseudo-random
+number generation (_PRNG_) comes with the drawback that the result is always
+deterministic, provided that the initial state is known.
 
 Imagine, then, if a malicious attacker somehow manages to ascertain the state a
 computer was in when it generated a random number, for instance to produce an
@@ -197,7 +196,7 @@ by Clason [@Clason2023] as a part of his masters thesis. This device produces
 the optical shot noise which will be the source of randomness in our work.
 Moving forward in this article, we will refer to this as the OQRNG-device.
 
-As described in Clason's work [@Clason2023], the OQRNG-device is an
+As described in Clasons work [@Clason2023], the OQRNG-device is an
 electro-optical system which measures optical shot noise, generating quantum
 randomness. The device has an LED and a photodiode positioned a few millimeters
 apart, ensuring efficient light coupling. The photodiode detects light from the
@@ -248,7 +247,7 @@ Thus, enabling efficient and autonomous operation in constrained environments.
 Various development frameworks and tools are available for programming MCUs,
 including the Arduino Framework, manufacturer specific SDKs and raw C++, among
 others. Each framework presents different trade-offs in terms of performance
-overhead, efficiency and ease of development.
+overhead, efficiency, and ease of development.
 
 <!--TODO: fix reference https://ieeexplore.ieee.org/abstract/document/7116095 yeah i have knowledge issues xD-->
 
@@ -300,13 +299,13 @@ perform bitwise and arithmetic tasks, which are crucial for quick Toeplitz
 extraction. SIMD-controlled DSP architectures, as described by Han et al.
 [@simd-dsp], leverage parallel vectorized computation to accelerate matrix
 operations. Thus, making them highly effective for Toeplitz matrix-vector
-multiplications. Although, the Cortex-M7 does not have special features for
-cryptography, its ability to execute multiple instructions quickly, combined
-with fast memory access and an efficient pipeline design, allows it to
-effectively manage and process randomness extraction. Moreover, its USB
-High-Speed (480 Mbit/sec) interface, supporting both USB device and USB host
-modes, allows rapid transmission of extracted random data to an external system,
-ensuring minimal bottlenecks in high-rate randomness generation.
+multiplications. The Cortex-M7 does not have special features for cryptography,
+its ability to execute multiple instructions quickly, combined with fast memory
+access and an efficient pipeline design, allows it to effectively manage and
+process randomness extraction. Moreover, its USB High-Speed (480 Mbit/sec)
+interface, supporting both USB device and USB host modes, allows rapid
+transmission of extracted random data to an external system, ensuring minimal
+bottlenecks in high-rate randomness generation.
 
 [^3]:
     [Technical specification for MAX11102AUB, accessed 2025-03-13](https://www.farnell.com/datasheets/1913106.pdf)
@@ -355,7 +354,7 @@ randomness -- in our case, the OQRNG-device.
 To summarize the theoretical working of Toeplitz extraction (as explained by
 Chouhan et al. [@toeplitz-desc]), the sampled raw bit matrix ($T$) are
 multiplied with a pre-determined seed matrix ($K$). The size of the seed is
-directly dependant on the size of the sampled data, and can be fixed or
+directly dependent on the size of the sampled data, and can be fixed or
 continually re-sampled as needed. To ensure high levels of entropy, our
 intuition is that re-sampling the seed from the OQRNG-device continually is
 prudent. The sample and seed with then be processed with matrix multiplication
@@ -408,7 +407,7 @@ h(k) =
 \end{bmatrix}
 $$
 
-This allows us to intepret the result as a random 4-bit integer:
+This allows us to interpret the result as a random 4-bit integer:
 
 $$
 h(k) = (1011)_2 = 11_{10}
@@ -450,23 +449,23 @@ of these implementations operate on constrained hardware, instead creating
 bespoke circuit boards for their works.
 
 Another important point that is often neglected in randomness extraction using
-Toeplitz matrices is how the seed key is handled when forming the
-Toeplitzmatrix. Numerous systems, such as those developed by Chouhan et al.
+Toeplitz matrices is how the seed key is handled when forming the Toeplitz
+matrix. Numerous systems, such as those developed by Chouhan et al.
 [@toeplitz-desc] and Zhang et al. [@toeplitz], depends on fixed seeds. Fixed
 seeds can create security risks over prolonged operation time. To tackle this
 problem, Lin et al [@lin] proposed a method for seed-renewable Toeplitz
 post-processing in QRNG. Their strategy incorporates a dynamic seed pool within
 the FPGA, where each instance of post-processing picks a new, randomly selected
 seed. Thus, minimizing temporal correlations between extractions. Furthermore,
-an external seed updateing mechanism via PCIe ensures that seeds are refreshed
-whenever a certain secutiry limit is reached. Compared to fixed-seed methods,
+an external seed updating mechanism via PCIe ensures that seeds are refreshed
+whenever a certain security limit is reached. Compared to fixed-seed methods,
 this renewable approach enhances cryptographic robustness and ensures sustained
 high-security randomness extraction in real-world applications.
 
 Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for
 optimizing randomness extraction that relies on Toeplitz, particulary in
 constrained hardware environments. Liao et al. [@liao] showed that this process
-could be greatly accelerated using Fast Fourier Transform (FFT) and its inverser
+could be greatly accelerated using Fast Fourier Transform (FFT) and its inverse
 (IFFT). Thus, reducing computational complexity from $O(n^2)$ to $O(n log n)$.
 Their implementation on FPGA utilized this approach for deep neural networks,
 resulting in a 28.7 times decrease in model size while still achieving fast
