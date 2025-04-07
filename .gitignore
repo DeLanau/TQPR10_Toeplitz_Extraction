@@ -12,3 +12,5 @@ mine/
 *.blg
 *.log
 *.out
+.DS_Store
+a.out
