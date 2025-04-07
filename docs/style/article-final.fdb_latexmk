@@ -1,0 +1,16 @@
+# Fdb version 4
+["xelatex"] 1743503317.36248 "style/article-final.tex" "style/article-final.pdf" "article-final" 1743503318.91803 2
+  "/etc/texmf/web2c/texmf.cnf" 1739444475.72487 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1739444529 10844962 a40d06d2f372b7c1c5ccdd29d4142ab4 ""
+  "epsfig.sty" 0 -1 0 ""
+  "style/article-final.aux" 1743501468.44063 3374 f4269be0f8e95c7d8c4d100ea26a81b0 "xelatex"
+  "style/article-final.tex" 1743503316.94302 3529 1b9ecdf2df00c5773806d25bea24f963 ""
+  "style/epsfig.sty" 0 -1 0 ""
+  "style/sigchi.cls" 1737538076.93048 53703 fc658cbf9ea8800187b2e29bdf30f298 ""
+  (generated)
+  "style/article-final.aux"
+  "style/article-final.log"
+  "style/article-final.pdf"
+  (rewritten before read)
