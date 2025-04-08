@@ -31,11 +31,11 @@ vector<int> toeplitz_extraction(const vector<int> &raw_bits,
 
 //now, how to make it real time? 
 int main() {
-  vector<int> raw_bits{1, 0, 1, 1, 0, 1, 0, 0};
+  vector<int> raw_bits{1, 1, 0, 0};
 
-  vector<int> seed_bits{1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0};
+  vector<int> seed_bits{1, 1, 0, 1, 0, 1};
 
-  vector<int> extracted_bits = toeplitz_extraction(raw_bits, seed_bits, 4);
+  vector<int> extracted_bits = toeplitz_extraction(raw_bits, seed_bits, 3);
 
   cout << "Extracted bits: ";
   for (int bit : extracted_bits) {
