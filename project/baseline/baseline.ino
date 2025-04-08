@@ -22,7 +22,11 @@
 #include <vector>
 using std::vector;
 
-const int seed_bits[SEED_LEN] = {1, 1, 0, 1, 0, 1}; // example seed
+const int seed_bits[SEED_LEN] = {1, 1, 0, 1, 0, 1}; // example seed, same as from wiki
+
+//this code uses 1 serial as both input and output, how good is it? what the limitations? speed? 
+//tested on windows (meh, i know) using arduino IDE, needs implemintation for mac/linux
+//BTW!!! filename and foldername needs to be same if using arduino IDE
 
 vector<int> raw_bits;
 
@@ -64,4 +68,3 @@ void loop() {
     }
   }
 }
-
