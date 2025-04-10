@@ -1,8 +1,18 @@
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 
 using namespace std;
+
+enum LOG_LEVEL {
+  LOG_HIGH,
+  LOG_MED,
+  LOG_LOW
+};
+
+constexpr int NO_ITERATIONS{1000};
+constexpr LOG_LEVEL DEBUG{LOG_MED};
 
 // Needs at least m + n - 1 bits in seed where:
 //    m is the output
@@ -41,13 +51,26 @@ int main() {
   vector<bool> seed_bits{true, false, true,  false, true, false,
                          true, true,  false, true,  false};
 
-  vector<bool> extracted_bits{toeplitz_extraction(raw_bits, seed_bits, 4)};
+  chrono::nanoseconds total_duration{0};
 
-  cout << "Extracted bits: ";
-  for (bool bit : extracted_bits) {
-    cout << bit;
+  for (int i{0}; i < NO_ITERATIONS; i++) {
+    auto start{chrono::high_resolution_clock::now()};
+
+    vector<bool> extracted_bits{toeplitz_extraction(raw_bits, seed_bits, 4)};
+
+    auto end{chrono::high_resolution_clock::now()};
+    auto duration{chrono::duration_cast<chrono::nanoseconds>(end - start)};
+    if (DEBUG == LOG_HIGH) {
+      cout << "Iteration " << i << ": " << duration.count() << " ns." << endl;
+    } else if (DEBUG == LOG_MED) {
+      if (duration.count() > 300) {
+        cout << "Iteration " << i << ": " << duration.count() << " ns." << endl;
+      }
+    }
+    total_duration += duration;
   }
-  cout << endl;
 
+  cout << "Average execution time: " << total_duration.count() / NO_ITERATIONS
+       << endl;
   return 0;
 }
