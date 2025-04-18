@@ -606,11 +606,27 @@ however, this remains to be seen during the experimentation.
 
 ## 6 EXPERIMENTATION
 
-Each iteration results in an implementation written in C, all of which will be
+Each iteration results in an implementation written in C++, all of which will be
 supplied as an appendix to this paper. Furthermore, to simplify the
 implementation process, we will use the Arduino framework to communicate with
 the hardware. Whereas this introduces some overhead, it drastically reduces the
 time spent per iteration, and is deemed to be a suitable starting point.
+
+Initially, we created a script to simulate a stream of bits from a file, and
+pre-computed the expected results using a trusted version of Toeplitz
+extraction. With the expected results in hand, each iteration could then be
+deployed to the MCU and tested with ease. As the algorithm is fully
+deterministic with this uniform data, the exact same results in the same order
+should be produced by all iterations. The simulation script then simply asserts
+that the MCU produces the same integers as expected.
+
+As our system does not rely on interrupts in any capacity, measuring the
+execution speed of the implemented Toeplitz extraction function can be done
+using the built in `micros()`-function provided by Arduino. This provides us
+with an accurate measurement of the execution time per function call. To avoid
+bias, the average execution time per test set will be presented in
+**`TABLE 1`**, along with the fastest and slowest executions respectively.
+
 \newpage
 
 ## CHANGELOG
