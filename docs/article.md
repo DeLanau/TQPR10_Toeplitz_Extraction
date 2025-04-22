@@ -647,3 +647,7 @@ introduction as motivation for the work.
 2025-03-13: Elaborated on background, as well as adding more details regarding
 hardware. Note that the hardware selected is subject to change over time.
 Further elaborated on related works in optimizing Toeplitz extraction.
+
+2025-04-22: Begun including details regarding initial experimentation, updating
+details regarding experiments that had to change (e.g. no baseline on separate
+hardware).

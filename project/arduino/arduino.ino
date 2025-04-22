@@ -22,33 +22,24 @@
 #include <vector>
 using std::vector;
 
-const int seed_bits[767] = {
-  1,0,1,1,1,0,0,1, 0,1,0,1,1,1,1,0, 1,1,0,0,0,1,0,1, 0,1,1,0,1,1,0,1,
-  0,1,1,0,1,1,1,0, 1,0,0,1,1,0,1,1, 0,0,1,1,0,0,1,1, 1,1,0,1,0,0,1,0,
-  1,0,1,1,0,1,0,0, 0,0,1,0,0,1,0,1, 1,1,1,0,0,0,1,0, 0,1,1,1,0,0,0,1,
-  1,1,1,1,0,0,1,1, 0,1,0,1,0,0,1,0, 0,1,0,0,0,1,1,1, 1,0,0,1,0,0,0,0,
-  0,1,1,0,0,1,1,0, 0,0,1,0,0,1,0,0, 1,1,0,1,0,0,0,1, 1,1,0,1,1,0,0,0,
-  1,0,1,1,1,1,1,0, 0,1,1,0,0,0,1,0, 0,0,1,0,1,1,0,0, 0,0,1,1,1,1,0,1,
-  1,0,0,1,1,0,0,0, 1,1,1,0,0,1,1,1, 1,0,0,1,0,1,0,1, 0,0,0,1,1,0,1,0,
-  0,1,1,0,1,1,1,1, 1,0,1,1,0,0,1,0, 1,1,1,0,0,1,0,0, 1,1,1,1,0,1,1,1,
-  0,0,0,1,1,1,1,1, 0,1,0,0,0,1,0,1, 1,0,1,0,0,0,1,0, 0,1,1,0,1,1,1,1,
-  1,1,0,1,0,1,1,1, 0,1,0,1,0,0,1,0, 1,0,0,1,0,1,1,0, 1,1,1,0,0,1,1,0,
-  0,1,1,1,1,0,0,1, 0,1,0,1,1,1,1,0, 0,0,0,0,1,1,0,1, 0,1,0,1,0,0,1,1,
-  1,1,1,0,0,0,1,1, 0,0,1,1,0,0,0,0, 1,1,0,0,1,1,1,1, 0,1,1,0,1,1,0,1,
-  1,0,0,1,0,0,0,1, 1,1,1,1,0,1,0,1, 0,1,0,1,0,0,1,1, 1,1,0,1,0,1,0,0,
-  0,1,1,0,0,1,0,1, 0,1,0,0,1,0,1,1, 1,1,0,0,1,0,1,0, 1,1,1,0,1,0,0,1,
-  1,0,0,1,1,1,0,1, 0,1,1,0,0,1,1,0, 0,1,0,1,0,0,1,0, 0,1,0,0,1,1,1,0,
-  0,0,1,1,0,1,1,0, 0,1,1,0,0,0,1,0, 1,1,1,1,1,0,1,0, 1,0,0,1,1,0,0,1,
-  0,1,0,0,1,1,1,0, 0,1,0,0,0,1,0,0, 1,1,1,1,0,0,1,1, 1,0,0,0,1,1,0,1,
-  1,0,1,1,0,0,1,1, 0,0,0,1,1,1,0,0, 1,1,1,0,0,1,1,1, 1,0,1,0,1,0,1,1,
-  1,1,1,0,0,1,1,0, 0,0,1,0,1,0,0,1, 0,0,1,0,0,0,1,1, 1,0,1,1,0,1,0,0,
-  1,1,0,1,1,1,0,0, 1,1,0,0,0,0,1,0, 1,1,0,1,1,0,0,0, 1,1,0,0,1,0,0,0,
-  0,0,1,1,0,1,0,0, 0,1,1,0,1,1,0,1, 1,1,0,1,1,0,0,0, 1,0,0,0,1,1,1,1,
-  0,1,1,0,1,0,1,1, 0,1,0,0,0,0,1,0, 0,1,1,0,0,1,0,1, 1,0,1,1,1,0,0
-  // Total: 767 bits
-};
+//use this in future, cuz more optimized version e.g iteration 2 
+//int seed_bits[SEED_LEN];
+//int seed_index = 0:
+vector<int> seed_bits;
 
-// example seed, same as from wiki
+bool harvest_seed() {
+  while(SERIAL_MAIN.available() && seed_bits.size() < SEED_LEN) {  
+    char c = SERIAL_MAIN.read();
+    if (c == '0' || c == '1') {
+      seed_bits.push_back(c - '0');
+    }
+  }
+  if (seed_bits.size() == SEED_LEN){
+    SERIAL_MAIN.println("Done with seed harvesting.");
+    return true;
+  }
+  return false;
+}
 
 //this code uses 1 serial as both input and output, how good is it? what the limitations? speed? 
 //tested on windows (meh, i know) using arduino IDE, needs implemintation for mac/linux
@@ -74,9 +65,13 @@ void setup() {
   digitalWrite(LED_PIN, HIGH);
   while (!SERIAL_MAIN);
   SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
+
+  SERIAL_MAIN.println("Starting harvesting seed...");
+  while(!harvest_seed());
 }
 
 void loop() {
+
   if (SERIAL_MAIN.available()) {
     char c = SERIAL_MAIN.read();
     if (c == '0' || c == '1') {
@@ -84,16 +79,16 @@ void loop() {
     }
 
     if (raw_bits.size() == RAW_BITS_LEN) {
-      unsigned long start = micros();
+      // unsigned long start = micros();
       vector<int> result = toeplitz_extraction(raw_bits);
-      unsigned long time = micros() - start;
+      // unsigned long time = micros() - start;
       SERIAL_MAIN.print("out:");
       for (int b : result) {
         SERIAL_MAIN.print(b);
       }
-      SERIAL_MAIN.println(" (took ");
-      SERIAL_MAIN.print(time);
-      SERIAL_MAIN.println(" µs)");
+      // SERIAL_MAIN.println(" (took ");
+      // SERIAL_MAIN.print(time);
+      // SERIAL_MAIN.println(" µs)");
       raw_bits.clear();
     }
   }
