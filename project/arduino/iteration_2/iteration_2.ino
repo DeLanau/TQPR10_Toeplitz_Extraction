@@ -75,6 +75,26 @@ void toeplitz_extraction() {
 }*/ 
 //watahell ? from 700ish microsec to 2200-3000 microsec
 
+/**
+vector<int> toeplitz_extraction(const vector<int>& raw_bits) {
+  vector<int> output(OUTPUT_LEN, 0);
+  for (size_t i = 0; i < OUTPUT_LEN; ++i) {
+    int sum = 0;
+    const int* seed_ptr = &seed_bits[i]; 
+    const int* raw_ptr = raw_bits.data();
+
+    for(size_t j = 0; j < RAW_BITS_LEN; ++j) {
+      if (raw_ptr[j] && seed_ptr[j]) {
+        sum += 1;
+      }
+    }
+    output[i] = sum & 1;
+  }
+  return output;
+}
+**/
+//one more with 1900ish 
+
 void toeplitz_extraction() {
   for (uint16_t i = 0; i < OUTPUT_LEN; ++i) {
     uint8_t sum = 0;
