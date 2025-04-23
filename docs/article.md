@@ -354,14 +354,15 @@ pseudo-random seed and the raw data provided from a high-entropy source of
 randomness -- in our case, the OQRNG-device.
 
 To summarize the theoretical working of Toeplitz extraction (as explained by
-Chouhan et al. [@toeplitz-desc]), the sampled raw bit matrix ($T$) is multiplied
-with a pre-determined seed matrix ($K$). The size of the seed is directly
-dependent on the size of the sampled data, and can be fixed or continually
-re-sampled as needed. To ensure high levels of entropy, our intuition is that
-re-sampling the seed from the OQRNG-device continually is prudent. The sample
-and seed with then be processed with matrix multiplication to remove
-deterministic patterns, and produce a bitstring that results in our randomly
-generated number. An example of how this extraction works can be seen below.
+Chouhan et al. [@toeplitz-desc]), a pre-determined seed matrix ($T$) is
+multiplied with the sampled raw bit matrix ($K$). The size of the seed is
+directly dependent on the size of the sampled data, and can be fixed or
+continually re-sampled as needed. To ensure high levels of entropy, our
+intuition is that re-sampling the seed from the OQRNG-device continually is
+prudent. The sample and seed with then be processed with matrix multiplication
+to remove deterministic patterns, and produce a bitstring that results in our
+randomly generated number. An example of how this extraction works can be seen
+below.
 
 $$
 T =
