@@ -90,7 +90,7 @@ Toeplitz extraction been optimized quite well, and previous research can be
 utilized for this. However, there are still considerations when implementing the
 firmware for the microcontroller in order to optimize the code. Our goal is to
 attempt several implementations in order to find the most optimal implementation
-with the least amount of CPU-cycles.
+with the least amount of effective processing time spent on the algorithm.
 
 **Research area 2 (_RA2_)**: How can we ensure that the output of random numbers
 is not limited by our firmware, but rather only limited by the USB transfer
@@ -221,22 +221,24 @@ interest of keeping the implementation light and cheap, we will be using ADCs
 that provide less samples per second and lower frequencies. This is done mainly
 for ease of development and access to this hardware.
 
-Initially, we will utilize MAX11102AUB[^3] with an effective sample rate of 2
-million samples per second (MSPS). This ADC provides a 12 bit sample size,
-providing roughly 2.86 MB/s of sampled data per second, derived by the following
-calculation.
+Many microcontrollers furthermore come equipped with internal ADCs that can be
+utilized, and while these provide a lower sample size (often around 1 MSPS), the
+ease of development may be prudent to utilize for this proof-of-concept. While
+our initial ADC has a fairly low throughput, this can always be upgraded if it
+ends up becoming too limiting.
+
+Should these internal ADCs prove too limiting, we propose utilizing
+MAX11102AUB[^3] with an effective sample rate of 2 million samples per second
+(MSPS). This ADC provides a 12 bit sample size, providing roughly 2.86 MB/s of
+sampled data per second, derived by the following calculation.
 
 $$
 Data Rate = \frac{2,000,000_{MSPS} \times 12}{8 \times 1,048,576} \approx 2.86 MB/s \text{\phantom{123} (1)}
 $$
 
-Many microcontrollers furthermore come equipped with internal ADCs that can be
-utilized, and while these provide a lower sample size (often around 1 MSPS), the
-ease of development may be prudent to utilize for this proof-of-concept. While
-our initial ADC has a fairly low throughput, this can always be upgraded if it
-ends up becoming too limiting. The final output from the ADC, whether built into
-the microcontroller or an external one, will be a stream of raw bits, as the
-analog signal from the OQRNG-device is processed.
+The final output from the ADC, whether built into the microcontroller or an
+external one, will be a stream of raw bits, as the analog signal from the
+OQRNG-device is processed.
 
 ### 3.3 Microcontroller
 
@@ -352,15 +354,14 @@ pseudo-random seed and the raw data provided from a high-entropy source of
 randomness -- in our case, the OQRNG-device.
 
 To summarize the theoretical working of Toeplitz extraction (as explained by
-Chouhan et al. [@toeplitz-desc]), the sampled raw bit matrix ($T$) are
-multiplied with a pre-determined seed matrix ($K$). The size of the seed is
-directly dependent on the size of the sampled data, and can be fixed or
-continually re-sampled as needed. To ensure high levels of entropy, our
-intuition is that re-sampling the seed from the OQRNG-device continually is
-prudent. The sample and seed with then be processed with matrix multiplication
-to remove deterministic patterns, and produce a bitstring that results in our
-randomly generated number. An example of how this extraction works can be seen
-below.
+Chouhan et al. [@toeplitz-desc]), the sampled raw bit matrix ($T$) is multiplied
+with a pre-determined seed matrix ($K$). The size of the seed is directly
+dependent on the size of the sampled data, and can be fixed or continually
+re-sampled as needed. To ensure high levels of entropy, our intuition is that
+re-sampling the seed from the OQRNG-device continually is prudent. The sample
+and seed with then be processed with matrix multiplication to remove
+deterministic patterns, and produce a bitstring that results in our randomly
+generated number. An example of how this extraction works can be seen below.
 
 $$
 T =
@@ -478,11 +479,10 @@ could improve performance and reduce latency.
 With the consideration that our work revolves around optimizing Toeplitz
 extraction in order to quickly process random bits into a random number, we will
 take an iterative approach. For our tests, we will use a pre-defined stream of
-raw bits which is loaded into memory on the microcontroller, and run several
-different implementations of Toeplitz extraction to produce numbers. As we
-always use a pre-defined bitstream, the result will at this stage be
-deterministic, giving us a clear indication whether the algorithm works as
-intended.
+raw bits which is sent to the microcontroller via USB, and run several different
+implementations of Toeplitz extraction to produce numbers. As we always use a
+pre-defined bitstream, the result will at this stage be deterministic, giving us
+a clear indication whether the algorithm works as intended.
 
 However, in order to ensure the results work with varying data, we cannot limit
 ourselves to simply one stream of bits. The main point of the algorithm is to
@@ -503,7 +503,7 @@ for future iterations.
 
 This naive implementation will then be flashed to our microcontrollers,
 beginning with Teensy 4.1 as this is the more capable of the microcontrollers
-used for this experiment. Code to measure the execution speed in milliseconds
+used for this experiment. Code to measure the execution speed in microseconds
 will be implemented and tested before we load the naive implementation on said
 microcontroller. We expect that several implementations may be too resource
 intensive or have a memory complexity far greater than our cheaper, less capable
@@ -569,6 +569,25 @@ yield yet another iteration.
 
 ### 5.2 Evaluation
 
+In order to evaluate the efficacy of each iteration, we will test the code by
+processing our pre-determined bitstreams, saving the processed bits in a binary
+file and evaluating this file with the command line utility `ent`. This utility
+runs a series of tests on the data to determine its level of entropy the file
+has -- rather, how information dense the file is. A perfect result (_e.g.
+entirely random_) has an entropy value of $8.0$, whereas acceptable entropy
+values for our tests are greater than $7.99$, denoting a high level of
+randomness. Furthermore, `ent` can verify the arithmetic mean of the file,
+summing all the bits in the file and dividing it by the length of the file. A
+good distribution of randomness should have an arithmetic mean of $~127.5$. To
+ensure each iteration works as expected, we will compare the `ent` result from
+each iteration against the original baseline, ensuring that the resulting
+processed bitstring is identical between iterations. There are a few more
+measurements shown by `ent`, and more details regarding these can be found in
+the utilities manual page[^8].
+
+[^8]:
+    [Manual page for `ent`, accessed 2025-04-23.](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
+
 As discussed in section 3, the hardware used will impose a clear bound on how
 quickly our implementation needs to process the bits in order to match the speed
 of the ADC, as well as the output speed of the USB-port, both in $MB/s$. In
@@ -614,18 +633,22 @@ time spent per iteration, and is deemed to be a suitable starting point.
 
 Initially, we created a script to simulate a stream of bits from a file, and
 pre-computed the expected results using a trusted version of Toeplitz
-extraction. With the expected results in hand, each iteration could then be
-deployed to the MCU and tested with ease. As the algorithm is fully
-deterministic with this uniform data, the exact same results in the same order
-should be produced by all iterations. The simulation script then simply asserts
-that the MCU produces the same integers as expected.
+extraction. With the expected results saved to a file on the host computer, each
+iteration could then be deployed to the MCU, and tested with the same data as
+the baseline. As the algorithm is fully deterministic with this uniform data,
+the exact same results in the same order should be produced by all iterations.
+The simulation script then simply asserts that the MCU produces the same random
+string of bits from the resulting iterations as with the baseline.
 
 As our system does not rely on interrupts in any capacity, measuring the
 execution speed of the implemented Toeplitz extraction function can be done
 using the built in `micros()`-function provided by Arduino. This provides us
-with an accurate measurement of the execution time per function call. To avoid
-bias, the average execution time per test set will be presented in
-**`TABLE 1`**, along with the fastest and slowest executions respectively.
+with an accurate measurement of the execution time per function call. The
+average execution time per test set over each iteration will be presented in
+**`TABLE 1`**, along with the fastest and slowest executions per iteration
+respectively. Furthermore, the entropy value on the processed bitstream will be
+noted in the table to demonstrate that the important measurement, e.g. the
+randomness, still holds true between iterations.
 
 \newpage
 
