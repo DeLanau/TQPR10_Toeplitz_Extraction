@@ -86,10 +86,12 @@ void loop() {
       for (int b : result) {
         SERIAL_MAIN.print(b);
       }
-      // SERIAL_MAIN.println(" (took ");
-      // SERIAL_MAIN.print(time);
-      // SERIAL_MAIN.println(" µs)");
+      SERIAL_MAIN.println();
+      SERIAL_MAIN.print("[Time: ");
+      SERIAL_MAIN.print(time);
+      SERIAL_MAIN.println(" µs]");
       raw_bits.clear();
+      digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     }
   }
 }
