@@ -1,5 +1,5 @@
-#define RAW_BITS_LEN 512
-#define OUTPUT_LEN 256
+#define RAW_BITS_LEN 64
+#define OUTPUT_LEN 32
 #define SEED_LEN (RAW_BITS_LEN + OUTPUT_LEN - 1)
 
 #if defined(ARDUINO_TEENSY41)
@@ -25,8 +25,18 @@ using std::vector;
 //use this in future, cuz more optimized version e.g iteration 2 
 //int seed_bits[SEED_LEN];
 //int seed_index = 0:
-vector<int> seed_bits;
+//vector<int> seed_bits;
 
+const int seed_bits[SEED_LEN] = {
+  1,0,1,1,0,1,0,0, 1,1,1,0,1,0,0,1,
+  0,1,1,0,1,1,0,0, 1,0,1,0,0,1,1,1,
+  0,1,0,1,1,1,1,0, 0,0,1,0,1,1,0,1,
+  1,0,0,1,1,1,0,0, 1,0,1,0,1,1,0,0,
+  1,1,1,0,0,0,1,1, 0,1,0,0,1,0,0,1,
+  1,0,0,1,1,1,1,1, 0,0,1,0,1,0,1
+};
+
+/**
 bool harvest_seed() {
   while(SERIAL_MAIN.available() && seed_bits.size() < SEED_LEN) {  
     char c = SERIAL_MAIN.read();
@@ -38,8 +48,9 @@ bool harvest_seed() {
     SERIAL_MAIN.println("Done with seed harvesting.");
     return true;
   }
-  return false;
+  return false; 
 }
+*/
 
 //this code uses 1 serial as both input and output, how good is it? what the limitations? speed? 
 //tested on windows (meh, i know) using arduino IDE, needs implemintation for mac/linux
@@ -64,10 +75,10 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);
   while (!SERIAL_MAIN);
-  SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
+  //SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
 
-  SERIAL_MAIN.println("Starting harvesting seed...");
-  while(!harvest_seed());
+  //SERIAL_MAIN.println("Starting harvesting seed...");
+  //while(!harvest_seed());
 }
 
 void loop() {
@@ -86,10 +97,9 @@ void loop() {
       for (int b : result) {
         SERIAL_MAIN.print(b);
       }
-      SERIAL_MAIN.println();
-      SERIAL_MAIN.print("[Time: ");
+      //SERIAL_MAIN.println();
+      SERIAL_MAIN.print("took: ");
       SERIAL_MAIN.print(time);
-      SERIAL_MAIN.println(" µs]");
       raw_bits.clear();
       digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     }

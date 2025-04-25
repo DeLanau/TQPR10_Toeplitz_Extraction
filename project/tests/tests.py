@@ -200,6 +200,8 @@ def generate_results(port: str) -> None:
 
         payload, _, _ = line[4:].partition('took:')
         chunks_out.append(payload)
+        print(payload)
+        break
 
       full_out = ''.join(chunks_out)
       byte_vals = [
