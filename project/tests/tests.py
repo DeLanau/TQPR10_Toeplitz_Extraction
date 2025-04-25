@@ -13,41 +13,43 @@ import glob
 
 SERIAL_PORTNO = 115200
 
+
 def serial_select() -> str:
-  os = platform.system()
-  port = None
+    os = platform.system()
+    port = None
 
-  match os:
-    case 'Linux':
-      port = glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttyUSB*')
-    case 'Darwin':
-      port = glob.glob('/dev/tty.usbmodem*') + glob.glob('/dev/tty.usbserial*') + glob.glob('/dev/cu.usbmodem*')
-    case 'Windows':
-      print('Error: Ew. Exiting due to cringe.')
-      sys.exit(1)
-    case _:
-      print(f'Error: Unsupported OS "{os}", exiting.')
-      sys.exit(1)
+    match os:
+        case 'Linux':
+            port = glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttyUSB*')
+        case 'Darwin':
+            port = glob.glob('/dev/tty.usbmodem*') + \
+                glob.glob('/dev/tty.usbserial*') + \
+                glob.glob('/dev/cu.usbmodem*')
+        case 'Windows':
+            port = ['COM3']
+        case _:
+            print(f'Error: Unsupported OS "{os}", exiting.')
+            sys.exit(1)
 
-  if len(port) == 0:
-    print('❌ Error: No serial device found. Please connect a microcontroller and try again.')
-    sys.exit(1)
+    if len(port) == 0:
+        print('❌ Error: No serial device found. Please connect a microcontroller and try again.')
+        sys.exit(1)
 
-  print('Available ports:')
-  for i, p in enumerate(port):
-    print(f'{i}: {p}')
+    print('Available ports:')
+    for i, p in enumerate(port):
+        print(f'{i}: {p}')
 
-  while True:
-    try:
-      sel = int(input('Select port: '))
-    except:
-      print('Not a number.')
-      continue
+    while True:
+        try:
+            sel = int(input('Select port: '))
+        except:
+            print('Not a number.')
+            continue
 
-    if sel >= 0 and sel < len(port):
-      return port[sel]
+        if sel >= 0 and sel < len(port):
+            return port[sel]
 
-    print(f'⚠️ Invalid port {sel}.')
+        print(f'⚠️ Invalid port {sel}.')
 
 def run_tests(port: str) -> None:
   tests = sorted(glob.glob('data/*.bin'))
@@ -107,12 +109,13 @@ def run_tests(port: str) -> None:
     print(f'✅ {round(len(tests) - failed / len(tests))}% successful!')
 
 def main():
-  port = serial_select()
-  try:
-    run_tests(port)
-  except serial.SerialException as e:
-    print(f'Serial error: {e}')
-    sys.exit(1)
+    port = serial_select()
+    try:
+        run_tests(port)
+    except serial.SerialException as e:
+        print(f'Serial error: {e}')
+        sys.exit(1)
+
 
 if __name__ == "__main__":
-  main()
+    main()
