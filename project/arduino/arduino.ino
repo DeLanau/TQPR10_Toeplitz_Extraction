@@ -60,7 +60,8 @@ vector<int> toeplitz_extraction(const vector<int>& raw_bits) {
 }
 
 void setup() {
-  SERIAL_MAIN.begin(115200);
+  SERIAL_MAIN.begin(6000000);    // 6M
+  // SERIAL_MAIN.begin(20000000);    // 20MHz
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);
   while (!SERIAL_MAIN);

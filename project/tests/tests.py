@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-from statistics import mean
 import sys
-from typing import Any
 import serial
-import pprint
-
 import platform
 import glob
 import os
+import re
 
-SERIAL_PORTNO = 115200
+SERIAL_BAUD = 6000000
 BIT_CHUNK_SIZE = 64
 OUTPUT_LEN = 32
+
+BIT_CHUNK_BYTES = 8
+OUT_BYTES = 4
 
 def serial_select() -> str:
     os = platform.system()
@@ -52,66 +52,51 @@ def serial_select() -> str:
         print(f'⚠️ Invalid port {sel}.')
 
 def run_tests(port: str) -> None:
-  tests   = sorted(glob.glob('data/*.bin'))
-  results = sorted(glob.glob('results/*.bin'))
-  failed  = 0
+    tests   = sorted(glob.glob('data/*.bin'))
+    results = sorted(glob.glob('results/*.bin'))
+    failed  = 0
 
-  test_results: dict[str, dict[str, Any]] = {}
+    with serial.Serial(port, SERIAL_BAUD, timeout=1) as ser:
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
+        for test_path, result_path in zip(tests, results):
+            data = open(test_path, 'rb').read()
+            chunks_out = []
+            for offset in range(0, len(data), BIT_CHUNK_BYTES):
+                chunk = data[offset : offset + BIT_CHUNK_BYTES]
+                if len(chunk) < BIT_CHUNK_BYTES:
+                    chunk = chunk.ljust(BIT_CHUNK_BYTES, b'\x00')
 
-  with serial.Serial(port, SERIAL_PORTNO, timeout=1) as ser:
-    ser.reset_input_buffer()
-    ser.reset_output_buffer()
+                written = ser.write(chunk)
+                if written != len(chunk):
+                    raise RuntimeError(
+                        f'❌ Wrote {written}/{len(chunk)} bytes; expected {len(chunk)}'
+                    )
 
-    for test_path, result_path in zip(tests, results):
-      with open(test_path, 'rb') as f:
-        data_bytes = f.read()
-      all_bits = ''.join(format(b, '08b') for b in data_bytes)
+                resp = ser.read(OUT_BYTES)
+                if len(resp) != OUT_BYTES:
+                    raise RuntimeError(
+                        f'❌ Incomplete response from MCU: got {len(resp)} bytes, expected {OUT_BYTES}'
+                    )
 
-      extracted_outputs: list[str] = []
-      times: list[int] = []
+                bits = ''.join(f'{b:08b}' for b in resp)
+                chunks_out.append(bits)
 
-      for offset in range(0, len(all_bits), BIT_CHUNK_SIZE):
-        chunk = all_bits[offset : offset + BIT_CHUNK_SIZE]
-        _ = ser.write(chunk.encode()) # send entire chunk
-        ser.flush()
+            full_out = ''.join(chunks_out)
 
-        while True:
-          line = ser.readline().decode(errors='ignore').strip()
-          if not line:
-            continue
-          if not line.startswith('out:'):
-            print(f'⚠️ WARN: unexpected line from MCU: {line}')
-            continue
+            expected_bytes = open(result_path, 'rb').read()
+            expected = ''.join(format(b, '08b') for b in expected_bytes)
 
-          payload, _, took = line[4:].partition('took:')
-          extracted_outputs.append(payload)
-
-          if took.isdigit():
-            times.append(int(took))
-          else:
-            print('⚠️ WARN: missing or invalid timing info')
-          break
-
-      full_output = ''.join(extracted_outputs)
-      with open(result_path, 'rb') as f:
-        expected = ''.join(format(b, '08b') for b in f.read())
-
-      if full_output != expected:
-        failed += 1
-        print(f'❌ Test {result_path} failed.')
-      else:
-        print(f'✅ Test {result_path} succeeded.')
-
-      test_results[test_path] = {
-        'min' : min(times),
-        'max' : max(times),
-        'mean': mean(times),
-      }
+            name = os.path.basename(result_path)
+            if full_out != expected:
+                failed += 1
+                print(f'❌ Test {name} ➔ FAILED')
+            else:
+                print(f'✅ Test {name} ➔ OK')
 
     total = len(tests)
-    success_rate = 100 * (total - failed) / total
-    print(f'🕑 {success_rate:.1f}% of tests passed ({total - failed}/{total})')
-    pprint.pp(test_results)
+    passed = total - failed
+    print(f'📈 {passed}/{total} tests passed ({100 * passed/total:.1f}%)')
 
 # def run_tests(port: str) -> None:
 #   tests = sorted(glob.glob('data/*.bin'))
@@ -171,44 +156,42 @@ def run_tests(port: str) -> None:
 #     print(f'✅ {round(len(tests) - failed / len(tests))}% successful!')
 
 def generate_results(port: str) -> None:
-  tests   = sorted(glob.glob('data/*.bin'))
-  results = sorted(glob.glob('results/*.bin'))
+    tests = sorted(glob.glob('data/*.bin'))
+    os.makedirs('results', exist_ok=True)
 
-  with serial.Serial(port, SERIAL_PORTNO, timeout=1) as ser:
-    ser.reset_input_buffer()
-    ser.reset_output_buffer()
+    with serial.Serial(port, SERIAL_BAUD, timeout=1) as ser:
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
 
-    for test_path, result_path in zip(tests, results):
-      with open(test_path, 'rb') as f:
-        data = f.read()
-      all_bits = ''.join(format(b, '08b') for b in data)
+        for test_path in tests:
+            print(f'🕑 Running {test_path}…')
+            data = open(test_path, 'rb').read()
 
-      chunks_out: list[str] = []
+            chunks = []
+            for offset in range(0, len(data), BIT_CHUNK_BYTES):
+              chunk = data[offset : offset + BIT_CHUNK_BYTES]
+              if len(chunk) < BIT_CHUNK_BYTES:
+                chunk = chunk.ljust(BIT_CHUNK_BYTES, b'\x00')
 
-      for i in range(0, len(all_bits), BIT_CHUNK_SIZE):
-        chunk = all_bits[i:i + BIT_CHUNK_SIZE]
-        ser.write(chunk.encode())
-        ser.flush()
+              written = ser.write(chunk)
+              if written != len(chunk):
+                  raise RuntimeError(
+                      f'⚠️ Wrote {written}/{len(chunk)} bytes; expected {len(chunk)}'
+                  )
 
-        # read exactly one response, break on timeout or error
-        line = ser.readline()  # timeout=1s
-        if not line:
-          raise RuntimeError("Timeout waiting for MCU response")
-        line = line.decode(errors='ignore').strip()
-        if not line.startswith('out:'):
-          raise RuntimeError(f"Bad MCU response: {line}")
+              resp = ser.read(OUT_BYTES)
+              if len(resp) != OUT_BYTES:
+                  raise RuntimeError(
+                    f'❌Incomplete response from MCU: got {len(resp)} bytes, expected {OUT_BYTES}'
+                  )
+              chunks.append(resp)
 
-        payload, _, _ = line[4:].partition('took:')
-        chunks_out.append(payload)
+            base = os.path.basename(test_path)
+            result_path = os.path.join('results', base)
+            with open(result_path, 'wb') as f:
+                f.write(b''.join(chunks))
 
-      full_out = ''.join(chunks_out)
-      byte_vals = [
-        int(full_out[j:j+8], 2)
-        for j in range(0, len(full_out), 8)
-      ]
-      with open(result_path, 'wb') as f:
-        _ = f.write(bytes(byte_vals))
-      print(f'Regenerated {os.path.basename(result_path)}')
+            print(f'✅ Regenerated {result_path}')
 
 def main():
   port = serial_select()

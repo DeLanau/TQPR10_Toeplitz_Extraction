@@ -1,5 +1,6 @@
-#define RAW_BITS_LEN 512
-#define OUTPUT_LEN 256
+#define RAW_BITS_LEN 64
+#define OUTPUT_LEN 32
+#define SERIAL_BAUD 6000000
 #define SEED_LEN (RAW_BITS_LEN + OUTPUT_LEN - 1)
 
 #if defined(ARDUINO_TEENSY41)
@@ -25,9 +26,18 @@ using std::vector;
 //use this in future, cuz more optimized version e.g iteration 2 
 //int seed_bits[SEED_LEN];
 //int seed_index = 0:
-vector<int> seed_bits;
+//vector<int> seed_bits;
 
-bool harvest_seed() {
+const int seed_bits[SEED_LEN] = {
+  1,0,1,1,0,1,0,0, 1,1,1,0,1,0,0,1,
+  0,1,1,0,1,1,0,0, 1,0,1,0,0,1,1,1,
+  0,1,0,1,1,1,1,0, 0,0,1,0,1,1,0,1,
+  1,0,0,1,1,1,0,0, 1,0,1,0,1,1,0,0,
+  1,1,1,0,0,0,1,1, 0,1,0,0,1,0,0,1,
+  1,0,0,1,1,1,1,1, 0,0,1,0,1,0,1
+};
+
+/*bool harvest_seed() {
   while(SERIAL_MAIN.available() && seed_bits.size() < SEED_LEN) {  
     char c = SERIAL_MAIN.read();
     if (c == '0' || c == '1') {
@@ -39,7 +49,7 @@ bool harvest_seed() {
     return true;
   }
   return false;
-}
+}*/
 
 //this code uses 1 serial as both input and output, how good is it? what the limitations? speed? 
 //tested on windows (meh, i know) using arduino IDE, needs implemintation for mac/linux
@@ -54,44 +64,39 @@ vector<int> toeplitz_extraction(const vector<int>& raw_bits) {
     for (size_t j = 0; j < RAW_BITS_LEN; j++) {
       sum += raw_bits[j] * seed_bits[i + j];
     }
-    output[i] = sum % 2;
+    output[i] = sum & 1;
   }
   return output;
 }
 
 void setup() {
-  SERIAL_MAIN.begin(115200);
+  SERIAL_MAIN.begin(SERIAL_BAUD);
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);
-  while (!SERIAL_MAIN);
-  SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
-
-  SERIAL_MAIN.println("Starting harvesting seed...");
-  while(!harvest_seed());
 }
 
 void loop() {
-
-  if (SERIAL_MAIN.available()) {
-    char c = SERIAL_MAIN.read();
-    if (c == '0' || c == '1') {
-      raw_bits.push_back(c - '0');
-    }
-
-    if (raw_bits.size() == RAW_BITS_LEN) {
-      unsigned long start = micros();
-      vector<int> result = toeplitz_extraction(raw_bits);
-      unsigned long time = micros() - start;
-      SERIAL_MAIN.print("out:");
-      for (int b : result) {
-        SERIAL_MAIN.print(b);
-      }
-      SERIAL_MAIN.println();
-      SERIAL_MAIN.print("[Time: ");
-      SERIAL_MAIN.print(time);
-      SERIAL_MAIN.println(" µs]");
-      raw_bits.clear();
-      digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  while (SERIAL_MAIN.available() && raw_bits.size() < RAW_BITS_LEN) {
+    int b = SERIAL_MAIN.read(); // reads raw byte 0 - 255
+    for (int i = 7; i >= 0; i--) {
+      raw_bits.push_back((b >> i) & 1);
     }
   }
+
+  if (raw_bits.size() == RAW_BITS_LEN) {
+    auto result = toeplitz_extraction(raw_bits);
+
+    // pack 32 bits into 4 bytes
+    uint8_t out_bytes[OUTPUT_LEN / 8] = {0};
+    for (int i = 0; i < OUTPUT_LEN; i++) {
+      int byte_i = i >> 3;
+      int bit_i  = 7 - (i & 7);
+      out_bytes[byte_i] |= result[i] << bit_i;
+    }
+
+    SERIAL_MAIN.write(out_bytes, sizeof(out_bytes));
+    raw_bits.clear();
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  }
 }
+

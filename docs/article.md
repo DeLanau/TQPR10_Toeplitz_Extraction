@@ -649,7 +649,14 @@ average execution time per test set over each iteration will be presented in
 **`TABLE 1`**, along with the fastest and slowest executions per iteration
 respectively. Furthermore, the entropy value on the processed bitstream will be
 noted in the table to demonstrate that the important measurement, e.g. the
-randomness, still holds true between iterations.
+randomness, still holds true between iterations. Below we'll detail the results
+for each iteration.
+
+**Iteration 1**: The first iteration mainly revolved around getting the code
+operational on the MCU, and as such was mainly technical. We discovered that
+that, despite the algorithm being deterministic, the MCU was unable to read all
+bits sent in a deterministic manner. Whereas all bits processed show high
+randomness over all tests run by `ent`
 
 \newpage
 
