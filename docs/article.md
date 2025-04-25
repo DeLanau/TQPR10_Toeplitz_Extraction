@@ -649,14 +649,19 @@ average execution time per test set over each iteration will be presented in
 **`TABLE 1`**, along with the fastest and slowest executions per iteration
 respectively. Furthermore, the entropy value on the processed bitstream will be
 noted in the table to demonstrate that the important measurement, e.g. the
-randomness, still holds true between iterations. Below we'll detail the results
-for each iteration.
+randomness, still holds true between iterations.
 
-**Iteration 1**: The first iteration mainly revolved around getting the code
-operational on the MCU, and as such was mainly technical. We discovered that
-that, despite the algorithm being deterministic, the MCU was unable to read all
-bits sent in a deterministic manner. Whereas all bits processed show high
-randomness over all tests run by `ent`
+For our tests, we used six files with varying degrees of patterns in the
+bitstring, ranging from quite disastrous to acceptable. We constructed a simple
+test script to facilitate easier testing of each iteration. This script allowed
+us to easily test each implementation by automating several tasks -- generating
+a baseline binary file with data processed by a good, proven implementation of
+Toeplitz extraction, giving us a way to ensure each iteration still produces the
+correct result. Furthermore, this script allows us to define different sample
+sizes for the MCU to utilize, and can extract the amount of time the algorithm
+takes to execute (_see table 1_) per each sample size.
+
+Below we'll detail the results for each iteration.
 
 \newpage
 

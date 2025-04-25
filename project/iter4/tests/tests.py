@@ -7,17 +7,13 @@ import glob
 import os
 from statistics import mean
 import argparse
-import subprocess
-from pathlib import Path
 
 SERIAL_BAUD     = 6000000
-BIT_CHUNK_SIZE  = 2048
-OUTPUT_LEN      = BIT_CHUNK_SIZE // 2
+BIT_CHUNK_SIZE  = 1024
+OUTPUT_LEN      = 512
 
 BIT_CHUNK_BYTES = BIT_CHUNK_SIZE // 8
 OUT_BYTES = OUTPUT_LEN // 8
-
-current_iter = 0
 
 def serial_select() -> str:
     os = platform.system()
@@ -61,7 +57,7 @@ def serial_select() -> str:
         return port[0]
 
 
-def process_chunks(data, ser, ms=False, raw=False):
+def process_chunks(data, ser, ms=False):
     if ms:
         output_chunk_bytes = 4
     else:
@@ -86,23 +82,16 @@ def process_chunks(data, ser, ms=False, raw=False):
             )
         if ms:
              chunks_out.append(int.from_bytes(resp, 'big'))
-        elif raw:
-            chunks_out.append(resp)
         else:
             bits = ''.join(f'{b:08b}' for b in resp)
             chunks_out.append(bits)
-
     return chunks_out
 
 
 def run_tests(port: str) -> None:
     tests   = sorted(glob.glob('data/*.bin'))
-    results = sorted(glob.glob(f'results/{OUTPUT_LEN}/*.bin'))
+    results = sorted(glob.glob('results/*.bin'))
     failed  = 0
-
-    if len(tests) != len(results):
-        print('❌ Mismatch in test and results. Generate new ones first!')
-        sys.exit(1)
 
     with serial.Serial(port, SERIAL_BAUD, timeout=1) as ser:
         ser.reset_input_buffer()
@@ -130,9 +119,7 @@ def run_tests(port: str) -> None:
 
 def generate_results(port: str) -> None:
     tests = sorted(glob.glob('data/*.bin'))
-    os.makedirs(f'results/{OUTPUT_LEN}', exist_ok=True)
-
-    ent_string = ''
+    os.makedirs('results', exist_ok=True)
 
     with serial.Serial(port, SERIAL_BAUD, timeout=1) as ser:
         ser.reset_input_buffer()
@@ -140,36 +127,18 @@ def generate_results(port: str) -> None:
 
         for test_path in tests:
             print(f'🕑 Running {test_path}…')
-            ent_string += f'{test_path}\n\n'
             data = open(test_path, 'rb').read()
-            chunks_out = process_chunks(data, ser, raw=True)
+            chunks_out = process_chunks(data, ser)
 
             base = os.path.basename(test_path)
-            result_path = os.path.join(f'results/{OUTPUT_LEN}', base)
+            result_path = os.path.join('results', base)
             with open(result_path, 'wb') as f:
                 f.write(b''.join(chunks_out))
 
-            ent_string += subprocess.check_output(
-                ['ent', result_path],
-                stderr=subprocess.DEVNULL, 
-                text=True
-            ) + '\n'
-
             print(f'✅ Regenerated {result_path}')
-
-    with open(f'results/{OUTPUT_LEN}/ent.txt', 'w') as f:
-        f.write(ent_string)
-
-
 
 
 def log_times(port: str) -> None:
-    while True:
-        current_iter = input('⌨️ Select iteration (1 - 5): ')
-        if current_iter in ['1', '2', '3', '4', '5']:
-            break
-        print('❌ Not a valid iteration.')
-    
     while True:
         u_repl = input('⚠️ WARN: Is the right firmware flashed? (y / n): ')
         if u_repl.lower() == 'y':
@@ -178,12 +147,9 @@ def log_times(port: str) -> None:
             print('❌ Flash the right firmware!')
         else:
             print('❓ Reply with y / n.')
-
-    log_dir = f'logs/iter{current_iter}/{OUTPUT_LEN}'
-
-    tests = sorted(glob.glob(f'data/*.bin'))
-    os.makedirs(f'{log_dir}/', exist_ok=True)
-    for old_log in glob.glob(f'{log_dir}/*.log'):
+    tests = sorted(glob.glob('data/*.bin'))
+    os.makedirs('logs', exist_ok=True)
+    for old_log in glob.glob('logs/*.log'):
         os.remove(old_log)
 
     with serial.Serial(port, SERIAL_BAUD, timeout=1) as ser:
@@ -193,10 +159,10 @@ def log_times(port: str) -> None:
         for test_path in tests:
             basename = os.path.basename(test_path)
             name     = os.path.splitext(basename)[0]
-            log_path = os.path.join(f'{log_dir}', f'{name}.log')
+            log_path = os.path.join('logs', f'{name}.log')
 
             data = open(test_path, 'rb').read()
-            times = process_chunks(data, ser, ms=True)
+            times = process_chunks(data, ser, True)
 
             t_min = min(times)
             t_max = max(times)
