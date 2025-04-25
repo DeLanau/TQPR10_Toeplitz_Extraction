@@ -40,17 +40,21 @@ def serial_select() -> str:
     for i, p in enumerate(port):
         print(f'{i}: {p}')
 
-    while True:
-        try:
-            sel = int(input('⌨️ Select port: '))
-        except:
-            print('❌ Not a number.')
-            continue
+    if len(port) > 1:
+        while True:
+            try:
+                sel = int(input('⌨️ Select port: '))
+            except:
+                print('❌ Not a number.')
+                continue
 
-        if sel >= 0 and sel < len(port):
-            return port[sel]
+            if sel >= 0 and sel < len(port):
+                return port[sel]
 
-        print(f'⚠️ Invalid port {sel}.')
+            print(f'⚠️ Invalid port {sel}.')
+    else:
+        print(f'✅ Auto-selecting only port: {port[0]}')
+
 
 def process_chunks(data, ser, ms=False):
     chunks_out = []
