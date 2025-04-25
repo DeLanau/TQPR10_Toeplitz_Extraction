@@ -54,6 +54,7 @@ def serial_select() -> str:
             print(f'⚠️ Invalid port {sel}.')
     else:
         print(f'✅ Auto-selecting only port: {port[0]}')
+        return port[0]
 
 
 def process_chunks(data, ser, ms=False):
