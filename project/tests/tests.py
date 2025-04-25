@@ -187,20 +187,19 @@ def generate_results(port: str) -> None:
 
       for i in range(0, len(all_bits), BIT_CHUNK_SIZE):
         chunk = all_bits[i:i + BIT_CHUNK_SIZE]
-        _ = ser.write(chunk.encode())
+        ser.write(chunk.encode())
         ser.flush()
 
-        while True:
-          line = ser.readline().decode(errors='ignore').strip()
-          if not line:
-            continue
-          if not line.startswith('out:'):
-            print(f'WARN: unexpected MCU line: {line}')
-            continue
+        # read exactly one response, break on timeout or error
+        line = ser.readline()  # timeout=1s
+        if not line:
+          raise RuntimeError("Timeout waiting for MCU response")
+        line = line.decode(errors='ignore').strip()
+        if not line.startswith('out:'):
+          raise RuntimeError(f"Bad MCU response: {line}")
 
-          payload, _, _ = line[4:].partition('took:')
-          chunks_out.append(payload)
-          break
+        payload, _, _ = line[4:].partition('took:')
+        chunks_out.append(payload)
 
       full_out = ''.join(chunks_out)
       byte_vals = [
