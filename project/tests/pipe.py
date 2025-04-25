@@ -51,10 +51,6 @@ try:
 
     all_bits = ''.join(extracted_outputs)
 
-    print(f'Total blocks received: {len(extracted_outputs)}')
-    print(f'Total bits collected: {len(all_bits)}')
-    print(f'Writing binary output to {output_path}...')
-
     byte_chunks = [all_bits[i:i+8] for i in range(0, len(all_bits), 8)]
 
     with open(output_path, 'wb') as f:

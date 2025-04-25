@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+from math import nan
+from statistics import mean
 import sys
+from typing import Any
 import serial
 import time
+import pprint
 
 import platform
 import glob
@@ -26,7 +30,7 @@ def serial_select() -> str:
       sys.exit(1)
 
   if len(port) == 0:
-    print('Error: No serial device found. Please connect a microcontroller and try again.')
+    print('❌ Error: No serial device found. Please connect a microcontroller and try again.')
     sys.exit(1)
 
   print('Available ports:')
@@ -43,56 +47,64 @@ def serial_select() -> str:
     if sel >= 0 and sel < len(port):
       return port[sel]
 
-    print(f'Invalid port {sel}.')
+    print(f'⚠️ Invalid port {sel}.')
 
 def run_tests(port: str) -> None:
-  no_tests = len(glob.glob('data/*.txt'))
+  tests = sorted(glob.glob('data/*.bin'))
+  results = sorted(glob.glob('results/*.bin'))
   failed = 0
 
+  test_results: dict[str, dict[str, Any]] = {}
+
   with serial.Serial(port, SERIAL_PORTNO, timeout=1) as ser:
-    for i in range(no_tests):
-      data = f'data/{i}.txt'
-      result = f'results/{i}.txt'
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
+    for test, res in zip(tests, results):
+      print(f'🕑 Sending bits from {test}, please wait...')
+      with open(test, 'rb') as f:
+        for byte in f.read():
+          bits = format(byte, '08b')
+          _ = ser.write(bits.encode())
+          time.sleep(0.0005)
 
-      with open(data, 'r') as f:
-        data_bits = f.read()
+      print('🕑 Data sent to MCU, reading output...')
 
-      with open(result, 'r') as f:
-        expected_outputs = [line.strip() for line in f if line.strip()]
+      extracted_outputs: list[str] = []
+      times: list[int] = []
 
-      print(f'Running test {i}:')
-      received_outputs: list[str] = []
-      ser.reset_input_buffer()
-
-      for bit in data_bits:
-        _ = ser.write(bit.encode())
-        time.sleep(0.0005)
-
-        if ser.in_waiting:
-          line = ser.readline().decode(errors='ignore').strip()
-          if line.startswith('out:'):
-            received_outputs.append(line[4:])
-
-      if len(received_outputs) != len(expected_outputs):
-        print(f'FAIL: Test {i} - Mismatched output count ({len(received_outputs)} vs {len(expected_outputs)})')
-        failed += 1
-        continue
-
-      mismatch = False
-      for i, (expected, actual) in enumerate(zip(expected_outputs, received_outputs)):
-        if expected != actual:
-          print(f'FAILED: Test {i} - Mismatch at index {i}')
-          print(f'\txpected: {expected}')
-          print(f'\tReceived: {actual}')
-          mismatch = True
-          failed += 1
+      while True:
+        raw_line = ser.readline().decode(errors='ignore').strip()
+        
+        if not raw_line:
           break
 
-      if not mismatch:
-        print(f'PASS: Test {i}')
+        if not raw_line.startswith('out:'):
+          print(f'⚠️ WARN: Block start invalid: {raw_line}')
+          continue
 
-  print('TESTS COMPLETE')
-  print(f'Passed tests: {round((no_tests - failed / no_tests) * 100, 2)}%')
+        raw_parts = raw_line[4:].split('took:')
+        extracted_outputs.append(raw_parts[0])
+        if len(raw_parts) > 1 and raw_parts[1].isdigit():
+          times.append(int(raw_parts[1]))
+        else:
+          print(f'⚠️ WARN: Time missing!')
+
+        test_results[test] = { 'max': max(times), 'min': min(times), 'mean':  mean(times)}
+
+      with open(res, 'rb') as f:
+        result = ''.join(format(b, '08b') for b in f.read())
+        print('r ----')
+        print(len(result))
+        print('a ----')
+        print(len(''.join(extracted_outputs)))
+        if result != ''.join(extracted_outputs):
+          failed += 1
+          print(f'❌ Test {res} failed!')
+        else:
+          print(f'✅ Test {res} SUCCESS!')
+
+    pprint.pp(test_results)
+    print(f'✅ {round(len(tests) - failed / len(tests))}% successful!')
 
 def main():
   port = serial_select()

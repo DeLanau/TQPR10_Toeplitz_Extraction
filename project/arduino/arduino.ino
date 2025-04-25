@@ -1,5 +1,5 @@
-#define RAW_BITS_LEN 512
-#define OUTPUT_LEN 256
+#define RAW_BITS_LEN 64
+#define OUTPUT_LEN 32
 #define SEED_LEN (RAW_BITS_LEN + OUTPUT_LEN - 1)
 
 #if defined(ARDUINO_TEENSY41)
@@ -35,7 +35,7 @@ bool harvest_seed() {
     }
   }
   if (seed_bits.size() == SEED_LEN){
-    SERIAL_MAIN.println("Done with seed harvesting.");
+    //SERIAL_MAIN.println("Done with seed harvesting.");
     return true;
   }
   return false;
@@ -64,9 +64,9 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);
   while (!SERIAL_MAIN);
-  SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
+  //SERIAL_MAIN.println("[" MCU_NAME "] Streaming Toeplitz extractor ready.");
 
-  SERIAL_MAIN.println("Starting harvesting seed...");
+  //SERIAL_MAIN.println("Starting harvesting seed...");
   while(!harvest_seed());
 }
 
@@ -79,16 +79,15 @@ void loop() {
     }
 
     if (raw_bits.size() == RAW_BITS_LEN) {
-      // unsigned long start = micros();
+      unsigned long start = micros();
       vector<int> result = toeplitz_extraction(raw_bits);
-      // unsigned long time = micros() - start;
+      unsigned long time = micros() - start;
       SERIAL_MAIN.print("out:");
       for (int b : result) {
         SERIAL_MAIN.print(b);
       }
-      // SERIAL_MAIN.println(" (took ");
-      // SERIAL_MAIN.print(time);
-      // SERIAL_MAIN.println(" µs)");
+      SERIAL_MAIN.print("took:");
+      SERIAL_MAIN.println(time);
       raw_bits.clear();
     }
   }
