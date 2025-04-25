@@ -1,5 +1,5 @@
-#define RAW_BITS_LEN 64
-#define OUTPUT_LEN 32
+#define RAW_BITS_LEN 512
+#define OUTPUT_LEN 256
 #define SEED_LEN (RAW_BITS_LEN + OUTPUT_LEN - 1)
 
 #if defined(ARDUINO_TEENSY41)
@@ -89,6 +89,7 @@ void loop() {
       SERIAL_MAIN.print("took:");
       SERIAL_MAIN.println(time);
       raw_bits.clear();
+      digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     }
   }
 }
