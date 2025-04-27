@@ -665,6 +665,35 @@ Below we'll detail the results for each iteration.
 
 \newpage
 
+## RESULTS <!-- mb first present raw results, and than explain them/draw conclusion ? idk -->
+
+All iterations was tested on 6 different input datasets, with results variation
+less than 0.1 microseconds. Thus, they wont be included in tabells unless result
+is unexpected. All the tables showen below has been tested on "biased_bits_bad".
+
+Due to compatebility issues, pico pi 2 was tested on different machine, creating
+some minor variation in result -- about 1 microsecond.
+
+### Iteration 1
+
+$$
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{Bit size} & \multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico (µs)}} \\
+\hline
+& Min & Max & Avg & Min & Max & Avg \\
+\hline
+64   & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\
+512  & 788 & 791 & 788.3139 & 5296 & 5311 & 5302.4979 \\
+1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
+\hline
+\end{tabular}
+\caption{Minimum, maximum and average processing time for Teensy and Pico.}
+\label{tab:teensy_pico_min_max_avg}
+\end{table}
+$$
+
 ## CHANGELOG
 
 2025-02-14: Added background section, smaller reviews to introduction.
@@ -687,3 +716,5 @@ Further elaborated on related works in optimizing Toeplitz extraction.
 2025-04-22: Begun including details regarding initial experimentation, updating
 details regarding experiments that had to change (e.g. no baseline on separate
 hardware).
+
+2025-04-27: Added first table with test data.

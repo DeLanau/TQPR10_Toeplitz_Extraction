@@ -1,8 +1,8 @@
-#define RAW_BITS_LEN   2048
+#define RAW_BITS_LEN   512
 #define OUTPUT_LEN     RAW_BITS_LEN / 2
 #define SERIAL_BAUD    6000000
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
-#define TIMED          0
+#define TIMED          1
 
 #if defined(ARDUINO_TEENSY41)
   #define SERIAL_MAIN  Serial
@@ -10,7 +10,7 @@
 #elif defined(ARDUINO_ESP32_DEV)
   #define SERIAL_MAIN  Serial
   #define LED_PIN      13
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2)
   #define SERIAL_MAIN  Serial
   #define LED_PIN      25
 #else
