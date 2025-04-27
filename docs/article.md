@@ -694,6 +694,30 @@ $$
 \end{table}
 $$
 
+### Iteration 2 <!--TODO: ask if it ok to write so? mb need some test to prove or not?-->
+
+Although the updated version included enhanced data structures, theoretical and
+practical analysis indicated that these modifications do not provide advantages
+for this project. Due to the small size of the input data (64, 512, 1024 bits) -
+using plain, contiguous memory layouts such as "std::vector<int>" proves to be
+very efficient in terms of access speed and memory usage. Current C++ compilers
+can effectively optimize these simple structures, often generating faster and
+more compact machine code than manually optimised alternatives. Introducing
+additional data structures or indirection would only add overhead without
+improving performance.
+
+From an algorithmic perspective, Toeplitz extraction inherently reqiures a
+double summation loop, which leads to a time complexity of O(n^2) no matter the
+optimization applied internally. Thus, making attemps to change it would not
+result in lower asymptotic cost.
+
+In summary, given the size and type of this system, a strightforward and
+minimnal approach is not just adequate bit also recommended.
+
+### Iteration 3
+
+comming soon
+
 ## CHANGELOG
 
 2025-02-14: Added background section, smaller reviews to introduction.

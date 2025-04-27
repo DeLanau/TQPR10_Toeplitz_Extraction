@@ -1,4 +1,4 @@
-#define RAW_BITS_LEN   512
+#define RAW_BITS_LEN   64
 #define OUTPUT_LEN     RAW_BITS_LEN / 2
 #define SERIAL_BAUD    6000000
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
