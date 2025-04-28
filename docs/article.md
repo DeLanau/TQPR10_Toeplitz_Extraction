@@ -667,56 +667,62 @@ Below we'll detail the results for each iteration.
 
 ## RESULTS <!-- mb first present raw results, and than explain them/draw conclusion ? idk -->
 
-All iterations was tested on 6 different input datasets, with results variation
-less than 0.1 microseconds. Thus, they wont be included in tabells unless result
-is unexpected. All the tables showen below has been tested on "biased_bits_bad".
+All iterations was tested on 6 different input datasets, with some results
+varying less than 0.1 microseconds. These results with such slight variations
+have been omitted from the table. All the tables shown below has been tested on
+the dataset `biased_bits_bad.bin` which can be found as an appendix -- and
+whereas more files have been used, this file has been arbitrarily selected to
+present the data.
 
-Due to compatebility issues, pico pi 2 was tested on different machine, creating
-some minor variation in result -- about 1 microsecond.
+Due to compatibility issues, Pi Pico 2 was tested on different machine, creating
+further variation in the results -- about 1 microsecond.
 
 ### Iteration 1
 
-$$
-\centering
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
-\textbf{Bit size} & \multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico (µs)}} \\
-\hline
-& Min & Max & Avg & Min & Max & Avg \\
-\hline
-64   & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\
-512  & 788 & 791 & 788.3139 & 5296 & 5311 & 5302.4979 \\
-1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
-\hline
-\end{tabular}
-\caption{Minimum, maximum and average processing time for Teensy and Pico.}
-\label{tab:teensy_pico_min_max_avg}
-\end{table}
-$$
+The first iteration brought few surprises, as it ran quite well on Teensy. To
+our surprise, it executed well enough on Pi Pico 2 as well, albeit with
+\~$8\times$ slower execution speed. This first implementation is the same one
+used to generate the baseline results, and used to ensure following iterations
+all generate correct output.
+
+Worth noting is that this iteration (\_and all following iterations that
+generate the same result) have achieved entropy scores from `ent` that are
+greater than 7.99 for all tested data while ensuring it cannot be compressed
+further. This ensures that the algorithm has successfully removed as much of the
+patterns as can be reasonably expected from the raw binary data while
+maintaining the random nature of the data.
+
+\centering \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
+\multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico
+(µs)}} \\ \hline & Min & Max & Avg & Min & Max & Avg \\ \hline 64 & 13 & 14 &
+13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 & 791 & 788.3139 & 5296 & 5311 &
+5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
+\hline \end{tabular} \caption{Minimum, maximum and average processing time for
+Teensy and Pico.} \label{tab:teensy_pico_min_max_avg} \end{table}
 
 ### Iteration 2 <!--TODO: ask if it ok to write so? mb need some test to prove or not?-->
 
 Although the updated version included enhanced data structures, theoretical and
 practical analysis indicated that these modifications do not provide advantages
 for this project. Due to the small size of the input data (64, 512, 1024 bits) -
-using plain, contiguous memory layouts such as "std::vector<int>" proves to be
+using plain, contiguous memory layouts such as `std::vector<int>` proves to be
 very efficient in terms of access speed and memory usage. Current C++ compilers
 can effectively optimize these simple structures, often generating faster and
 more compact machine code than manually optimised alternatives. Introducing
 additional data structures or indirection would only add overhead without
 improving performance.
 
-From an algorithmic perspective, Toeplitz extraction inherently reqiures a
-double summation loop, which leads to a time complexity of O(n^2) no matter the
-optimization applied internally. Thus, making attemps to change it would not
-result in lower asymptotic cost.
+From an algorithmic perspective, Toeplitz extraction inherently requires a
+double summation loop, which leads to a time complexity of $O(n^2)$ no matter
+the optimization applied internally. Thus, making attempts to change it would
+not result in lower asymptotic cost.
 
-In summary, given the size and type of this system, a strightforward and
-minimnal approach is not just adequate bit also recommended.
+In summary, given the size and type of this system, a straightforward and
+minimal approach is not just adequate, but also recommended.
 
 ### Iteration 3
 
-comming soon
+Coming soon!
 
 ## CHANGELOG
 

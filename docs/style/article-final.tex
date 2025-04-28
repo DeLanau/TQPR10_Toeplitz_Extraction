@@ -101,8 +101,7 @@
 \maketitle
 
 
-\hypertarget{introduction}{%
-\section{1 INTRODUCTION}\label{introduction}}
+\section{1 INTRODUCTION}\label{introduction}
 
 In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules \cite{randomness}. These numbers do not generate true randomness, and in order to heighten security other methods of generating these are required. Current random number generators (\emph{RNG}) are usually implemented in code, using certain states of the host machine as a starting point before running a predetermined algorithm \cite{randomness}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
 
@@ -124,15 +123,13 @@ There will unequivocally be a bottleneck for the processing speed. For instance,
 
 Section 2 of this article will introduce the theory that allows for QRNG, and how this will be utilized in our works. Section 3 delves further into the hardware and algorithms our work will use, with related works in optimizing Toeplitz extraction listed under section 4. Section 5 will present our methodology as well as some limitations imposed on our work. \textbf{More sections to follow as we finish the article}.
 
-\hypertarget{theory}{%
-\subsection{2 THEORY}\label{theory}}
+\subsection{2 THEORY}\label{theory}
 
 A majority of the research around this topic stems from physics, with implementations of the technology frequently being published and studied by physicists. As such, a brief introduction to the concepts used in previous research as well as an introduction to previous implementations of this technology will be presented in this section.
 
 The idea of an optical QRNG (\emph{OQRNG}) is not a novel one. The basis of the theory is that intrinsically random properties of a quantum process. Stefanov et. al. \cite{StefanovOptical} proposes using the random choice of a photon between two output signals to generate a random stream of bits, however the theory behind it can be applied to other quantum processes as well. This particular theorem has been implemented by Wayne et. al. \cite{Wayne} to create a quantum number generator. While this article proves the efficacy of OQRNG, it utilizes a slightly different method.
 
-\hypertarget{shot-noise-quantum-fluctuations}{%
-\subsubsection{2.1 Shot noise quantum fluctuations}\label{shot-noise-quantum-fluctuations}}
+\subsubsection{2.1 Shot noise quantum fluctuations}\label{shot-noise-quantum-fluctuations}
 
 Our work revolves around the measurement of shot noise of vacuum states rather than measuring arrival times of photons. Essentially, this is another quantum process with the same inherently random properties as described by Stefanov et. al. \cite{StefanovOptical}, but instead using shot noise. As described by Niemczuk \cite{shotnoise}, shot noise is minor fluctuations in an electrical current, which is inherently random. Reading this property, then, gives us an intrinsically random source from which to generate a random output, which in turn can be processed into a random number.
 
@@ -142,13 +139,11 @@ A more recent implementation of OQRNG in a smaller scale has been presented by S
 
 In summary, previous research has proven that OQRNG can generate true randomness, and more specifically, Shen et. al. \cite{contender1} and Singh et. al. \cite{singh} both implement OQRNG through readings of shot noise. However, there are limitations in both of these works. Either the system that generates the shot noise is large and complex \cite{contender1} or the system is built on bespoke hardware with limitations in processing power which prevents a fully integrated system \cite{singh}. Furthermore, to the best of our knowledge, most of the work in this field is from the perspective of physicists, and there appears to be little research on this subject in the domain of computer science. Our work aims to bridge this gap by using commercially available hardware (other than the bespoke shot noise generator \cite{Clason2023}) and focuses on implementing Toeplitz extraction directly on the microcontroller. Rather than focusing on the intricacies of quantum fluctuations, we will instead approach this problem from a computer science perspective.
 
-\hypertarget{background}{%
-\subsection{3 BACKGROUND}\label{background}}
+\subsection{3 BACKGROUND}\label{background}
 
 Our work is a practical continuation of the work of Clason \cite{Clason2023}. In this work, quantum shot noise originating from photodiodes was studies, and in so doing a prototype device was constructed. This device read from an optical source, outputting analog voltage from the data ``seen'' by the diodes. A prototype was constructed, in which an LED is read by a photodiode soldered millimeters apart. In this section, we introduce the hardware used for our implementations as well as the considerations taken in order to shift the focus from physics to computer science.
 
-\hypertarget{optical-rng-module}{%
-\subsubsection{3.1 Optical RNG module}\label{optical-rng-module}}
+\subsubsection{3.1 Optical RNG module}\label{optical-rng-module}
 
 The one bespoke piece of hardware used in this study is the prototype designed by Clason \cite{Clason2023} as a part of his masters thesis. This device produces the optical shot noise which will be the source of randomness in our work. Moving forward in this article, we will refer to this as the OQRNG-device.
 
@@ -156,8 +151,7 @@ As described in Clasons work \cite{Clason2023}, the OQRNG-device is an electro-o
 
 Whereas the exact quantum mechanisms that ensure that this system ensures randomness and further details regarding the OQRNG-device is better derived directly from Clasons work \cite{Clason2023}, the end result as it correlates to our study is an inherently random, analog voltage current.
 
-\hypertarget{adc-converter}{%
-\subsubsection{3.2 ADC converter}\label{adc-converter}}
+\subsubsection{3.2 ADC converter}\label{adc-converter}
 
 This analog current isn't suitable to operate on without further processing. As mentioned in section 1, the signal needs to pass through an ADC and converted into raw bits in order for it to be usable. In his thesis, Clason \cite{Clason2023} suggests a discrete ADC chip capable of analyzing frequencies higher than 25 MHz, as this is the highest frequency studied in his work. However, in the interest of keeping the implementation light and cheap, we will be using ADCs that provide less samples per second and lower frequencies. This is done mainly for ease of development and access to this hardware.
 
@@ -171,8 +165,7 @@ Data Rate = \frac{2,000,000_{MSPS} \times 12}{8 \times 1,048,576} \approx 2.86 M
 
 The final output from the ADC, whether built into the microcontroller or an external one, will be a stream of raw bits, as the analog signal from the OQRNG-device is processed.
 
-\hypertarget{microcontroller}{%
-\subsubsection{3.3 Microcontroller}\label{microcontroller}}
+\subsubsection{3.3 Microcontroller}\label{microcontroller}
 
 Microcontrollers (MCUs) are compact and low-power computing devices designed primary for embedded systems and real-time applications. Unlike general purpose CPUs, MCUs integrates a processor, memory, and peripherals into a single chip. Thus, enabling efficient and autonomous operation in constrained environments. Various development frameworks and tools are available for programming MCUs, including the Arduino Framework, manufacturer specific SDKs and raw C++, among others. Each framework presents different trade-offs in terms of performance overhead, efficiency, and ease of development.
 
@@ -184,8 +177,7 @@ The Teensy 4.1\footnote{\href{https://www.pjrc.com/store/teensy41.html}{Teensy d
 
 In order to evaluate just how much constraint our implementation can allow, our aim is to try our implementation on other MCUs with varying levels of power and hardware support. Whereas Teensy 4.1 is our primary development platform which we will evaluate closely, we aim to run our implementations on Raspberry Pi Pico 2\footnote{\href{https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf}{Raspberry Pi Pico 2 documentation, accessed 2025-03-13}} as well as ESP32-S3\footnote{\href{https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf}{ESP32-S3 documentation, accessed 2025-03-13}}. Due to the lower computational power of these MCUs, there may be significant issues in utilizing these weaker models, yet they are significantly cheaper and easier to access. Testing of these will consist solely of running the implementation on these controllers and measuring execution speed.
 
-\hypertarget{toeplitz-extraction}{%
-\subsubsection{\texorpdfstring{3.4 Toeplitz extraction }{3.4 Toeplitz extraction }}\label{toeplitz-extraction}}
+\subsubsection{\texorpdfstring{3.4 Toeplitz extraction }{3.4 Toeplitz extraction }}\label{toeplitz-extraction}
 
 The raw bits from the ADC can potentially have some deterministic patterns, and as such have to be processed somehow in order to remove these patterns. Several methods exist for this purpose, and for our work, we will perform this preprocessing via Toeplitz extraction. The main focus of this study is to implement this extraction algorithm as effectively as possible on resource constrained hardware.
 
@@ -246,13 +238,11 @@ h(k) = (1011)_2 = 11_{10}
 
 Whereas this example is quite small in order to demonstrate how the algorithm operates, this can of course be scaled up significantly with larger values for both \(T\) and \(k\) respectively, granting larger integers. The main focus of this work is implementing this algorithm as efficiently as possible on our MCUs, and as such, several optimization efforts need to be taken into account during our experimentation.
 
-\hypertarget{summary}{%
-\subsubsection{3.5 Summary}\label{summary}}
+\subsubsection{3.5 Summary}\label{summary}
 
 With the assumption that the OQRNG-device produces a truly random analog signal, we can now clearly define the scope in which this thesis operates. Considering the maximum conversion speed from the ADC and the USB-output from the MCU, we have a clear bound between 2.86 MS/s (for the ADC) and 480 MB/s (for the USB output) in which Toeplitz extraction needs to be executed. Any speeds over 2.86 MB/s allows us to upgrade the ADC iteratively to continue increasing the output speed. Any implementation of Toeplitz extraction must then execute fast enough on any given microcontroller feasible for the proposed quantum RNG-thumbstick as to not be the decisive limiting factor.
 
-\hypertarget{related-works}{%
-\subsection{\texorpdfstring{4 RELATED WORKS }{4 RELATED WORKS }}\label{related-works}}
+\subsection{\texorpdfstring{4 RELATED WORKS }{4 RELATED WORKS }}\label{related-works}
 
 Most related works found tend to revolve around optimizing Toeplitz using more advanced hardware, and few works seem to delve into evaluating the implementation in code.
 
@@ -262,15 +252,13 @@ Another important point that is often neglected in randomness extraction using T
 
 Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for optimizing randomness extraction that relies on Toeplitz, particulary in constrained hardware environments. Liao et al. \cite{liao} showed that this process could be greatly accelerated using Fast Fourier Transform (FFT) and its inverse (IFFT). Thus, reducing computational complexity from \(O(n^2)\) to \(O(n log n)\). Their implementation on FPGA utilized this approach for deep neural networks, resulting in a 28.7 times decrease in model size while still achieving fast inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing for randomness extraction could achieve higher throughput. Thus, potentially could improve performance and reduce latency.
 
-\hypertarget{methodology}{%
-\subsection{5 METHODOLOGY}\label{methodology}}
+\subsection{5 METHODOLOGY}\label{methodology}
 
 With the consideration that our work revolves around optimizing Toeplitz extraction in order to quickly process random bits into a random number, we will take an iterative approach. For our tests, we will use a pre-defined stream of raw bits which is sent to the microcontroller via USB, and run several different implementations of Toeplitz extraction to produce numbers. As we always use a pre-defined bitstream, the result will at this stage be deterministic, giving us a clear indication whether the algorithm works as intended.
 
 However, in order to ensure the results work with varying data, we cannot limit ourselves to simply one stream of bits. The main point of the algorithm is to remove patterns in the bitstream that may lead to less randomized results. As such, we will manually produce several bitstreams to use for our tests -- each with varying degrees of repeated patterns that should be eliminated by the algorithm. Furthermore, in order to see how well our implementation will work with realistic data from the OQRNG generator, we will sample streams of bits directly from the source.
 
-\hypertarget{iterative-approach}{%
-\subsubsection{5.1 Iterative approach}\label{iterative-approach}}
+\subsubsection{5.1 Iterative approach}\label{iterative-approach}
 
 Implementation of Toeplitz extraction will begin by a naive implementation not optimized for speed, but rather for accuracy. This implementation will be executed on a separate computer in order to produce the correct random number for every provided bitstring. These will be used as our baseline for accuracy for future iterations.
 
@@ -290,8 +278,7 @@ Each iteration will consist of incremental improvements to the algorithm. Our in
 
 Each scenario will first be executed on a single thread, and multiple threads may theoretically be executed concurrently to further optimize the data. The feasibility of this highly depends on the performance of every individual implementation. Depending on the results during our experimentation, this may yield yet another iteration.
 
-\hypertarget{evaluation}{%
-\subsubsection{5.2 Evaluation}\label{evaluation}}
+\subsubsection{5.2 Evaluation}\label{evaluation}
 
 In order to evaluate the efficacy of each iteration, we will test the code by processing our pre-determined bitstreams, saving the processed bits in a binary file and evaluating this file with the command line utility \texttt{ent}. This utility runs a series of tests on the data to determine its level of entropy the file has -- rather, how information dense the file is. A perfect result (\emph{e.g. entirely random}) has an entropy value of \(8.0\), whereas acceptable entropy values for our tests are greater than \(7.99\), denoting a high level of randomness. Furthermore, \texttt{ent} can verify the arithmetic mean of the file, summing all the bits in the file and dividing it by the length of the file. A good distribution of randomness should have an arithmetic mean of \(~127.5\). To ensure each iteration works as expected, we will compare the \texttt{ent} result from each iteration against the original baseline, ensuring that the resulting processed bitstring is identical between iterations. There are a few more measurements shown by \texttt{ent}, and more details regarding these can be found in the utilities manual page\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}.
 
@@ -306,13 +293,11 @@ Throughput*{MB/s} = \frac{DataSize*{bits}}{Execution Time_{ms}} \times
 
 This measurement allows us to place the throughput of our algorithm soundly in the bounds imposed on us by the hardware. During implementation, measurements of time complexity may be discussed with regards to the code -- but in the end, the performance of the code as it runs is what will be evaluated most thoroughly.
 
-\hypertarget{limitations}{%
-\subsubsection{5.2 Limitations}\label{limitations}}
+\subsubsection{5.2 Limitations}\label{limitations}
 
 Our proposed iterations all assume that the limited hardware will support it. Whereas we are confident that Teensy 4.1 will be able to handle each iteration step (even the naive implementation), the remaining microcontrollers with lower specifications might not be suitable for the first iterations. Testing the implementations on different microcontrollers could turn out to be unfeasible -- however, this remains to be seen during the experimentation.
 
-\hypertarget{experimentation}{%
-\subsection{6 EXPERIMENTATION}\label{experimentation}}
+\subsection{6 EXPERIMENTATION}\label{experimentation}
 
 Each iteration results in an implementation written in C++, all of which will be supplied as an appendix to this paper. Furthermore, to simplify the implementation process, we will use the Arduino framework to communicate with the hardware. Whereas this introduces some overhead, it drastically reduces the time spent per iteration, and is deemed to be a suitable starting point.
 
@@ -326,36 +311,62 @@ Below we'll detail the results for each iteration.
 
 \newpage
 
-\hypertarget{results}{%
-\subsection{\texorpdfstring{RESULTS }{RESULTS }}\label{results}}
+\subsection{\texorpdfstring{RESULTS }{RESULTS }}\label{results}
 
-All iterations was tested on 6 different input datasets, with results variation less than 0.1 microseconds. Thus, they wont be included in tabells unless result is unexpected. All the tables showen below has been tested on ``biased\_bits\_bad''.
+All iterations was tested on 6 different input datasets, with some results varying less than 0.1 microseconds. The results with such slight variations have been omitted from the table. All the tables shown below has been tested on the dataset `biased\_bits\_bad' which can be found as an appendix.
 
-Due to compatebility issues, pico pi 2 was tested on different machine, creating some minor variation in result -- about 1 microsecond.
+Due to compatibility issues, Pi Pico 2 was tested on different machine, creating further variation in the results -- about 1 microsecond.
 
-\hypertarget{iteration-1}{%
-\subsubsection{Iteration 1}\label{iteration-1}}
+\subsubsection{Iteration 1}\label{iteration-1}
 
-\[
-\centering
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
-\textbf{Bit size} & \multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico (µs)}} \\
-\hline
-& Min & Max & Avg & Min & Max & Avg \\
-\hline
-64   & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\
-512  & 788 & 791 & 788.3139 & 5296 & 5311 & 5302.4979 \\
+The first iteration brought few surprises, as it ran quite well on Teensy. To our surprise, it executed well enough on Pi Pico 2 as well, albeit with \(~8\times\) slower execution speed.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1583}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1583}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1583}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1417}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1417}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1417}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Bit size}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Teensy Min (µs)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Teensy Max (µs)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Teensy Avg (µs)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Pico Min (µs)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Pico Max (µs)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Pico Avg (µs)}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+64 & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\
+512 & 788 & 791 & 788.3139 & 5296 & 5311 & 5302.4979 \\
 1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
-\hline
-\end{tabular}
-\caption{Minimum, maximum and average processing time for Teensy and Pico.}
-\label{tab:teensy_pico_min_max_avg}
-\end{table}
-\]
+\end{longtable}
 
-\hypertarget{changelog}{%
-\subsection{CHANGELOG}\label{changelog}}
+\subsubsection{\texorpdfstring{Iteration 2 }{Iteration 2 }}\label{iteration-2}
+
+Although the updated version included enhanced data structures, theoretical and practical analysis indicated that these modifications do not provide advantages for this project. Due to the small size of the input data (64, 512, 1024 bits) - using plain, contiguous memory layouts such as \texttt{std::vector\textless{}int\textgreater{}} proves to be very efficient in terms of access speed and memory usage. Current C++ compilers can effectively optimize these simple structures, often generating faster and more compact machine code than manually optimised alternatives. Introducing additional data structures or indirection would only add overhead without improving performance.
+
+From an algorithmic perspective, Toeplitz extraction inherently requires a double summation loop, which leads to a time complexity of \(O(n^2)\) no matter the optimization applied internally. Thus, making attempts to change it would not result in lower asymptotic cost.
+
+In summary, given the size and type of this system, a straightforward and minimal approach is not just adequate, but also recommended.
+
+\subsubsection{Iteration 3}\label{iteration-3}
+
+Coming soon!
+
+\subsection{CHANGELOG}\label{changelog}
 
 2025-02-14: Added background section, smaller reviews to introduction.
 
