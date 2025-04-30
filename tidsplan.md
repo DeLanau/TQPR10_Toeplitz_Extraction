@@ -83,8 +83,9 @@ measured. Experiments should be summarized to easily fit them into the thesis.
 ## Week 18
 
 - [ ] Half time seminar 30/4
-- [x] **DEADLINE**: Finalize third iteration
+- [ ] **DEADLINE**: Finalize third iteration
 - [ ] **DEADLINE**: Teensy 4.1 connected to OQRNG-device to sample real data
+      (Started 2025-04-25, almost finalized)
   - _NOTE_: This heavily depends on when the ADC is delivered, but should be
     done here at the latest!
   - _NOTE_: Currently, we're holding off on using an external ADC at all,
