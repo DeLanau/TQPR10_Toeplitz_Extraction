@@ -1,5 +1,5 @@
 #define RAW_BITS_LEN   1024
-#define OUTPUT_LEN     512
+#define OUTPUT_LEN     RAW_BITS_LEN / 2
 #define SERIAL_BAUD    6000000
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
 #define TIMED          1
@@ -10,7 +10,7 @@
 #elif defined(ARDUINO_ESP32_DEV)
   #define SERIAL_MAIN  Serial
   #define LED_PIN      13
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2)
   #define SERIAL_MAIN  Serial
   #define LED_PIN      25
 #else
@@ -20,15 +20,6 @@
 #include <Arduino.h>
 #include <vector>
 using std::vector;
-
-// const int seed_bits[SEED_LEN] = {
-//   1,0,1,1,0,1,0,0, 1,1,1,0,1,0,0,1,
-//   0,1,1,0,1,1,0,0, 1,0,1,0,0,1,1,1,
-//   0,1,0,1,1,1,1,0, 0,0,1,0,1,1,0,1,
-//   1,0,0,1,1,1,0,0, 1,0,1,0,1,1,0,0,
-//   1,1,1,0,0,0,1,1, 0,1,0,0,1,0,0,1,
-//   1,0,0,1,1,1,1,1, 0,0,1,0,1,0,1
-// };
 
 vector<int> seed_bits;
 vector<int> raw_bits;

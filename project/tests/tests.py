@@ -10,14 +10,15 @@ import argparse
 import subprocess
 from pathlib import Path
 
-SERIAL_BAUD     = 6000000
-BIT_CHUNK_SIZE  = 2048
-OUTPUT_LEN      = BIT_CHUNK_SIZE // 2
+SERIAL_BAUD = 6000000
+BIT_CHUNK_SIZE = 1024
+OUTPUT_LEN = BIT_CHUNK_SIZE // 2
 
 BIT_CHUNK_BYTES = BIT_CHUNK_SIZE // 8
 OUT_BYTES = OUTPUT_LEN // 8
 
 current_iter = 0
+
 
 def serial_select() -> str:
     os = platform.system()
@@ -31,7 +32,7 @@ def serial_select() -> str:
                 glob.glob('/dev/tty.usbserial*') + \
                 glob.glob('/dev/cu.usbmodem*')
         case 'Windows':
-            port = ['COM3']
+            port = ['COM6']
         case _:
             print(f'❌ Error: Unsupported OS "{os}", exiting.')
             sys.exit(1)
@@ -69,7 +70,7 @@ def process_chunks(data, ser, ms=False, raw=False):
 
     chunks_out = []
     for offset in range(0, len(data), BIT_CHUNK_BYTES):
-        chunk = data[offset : offset + BIT_CHUNK_BYTES]
+        chunk = data[offset: offset + BIT_CHUNK_BYTES]
         if len(chunk) < BIT_CHUNK_BYTES:
             chunk = chunk.ljust(BIT_CHUNK_BYTES, b'\x00')
 
@@ -85,7 +86,7 @@ def process_chunks(data, ser, ms=False, raw=False):
                 f'❌ Incomplete response from MCU: got {len(resp)} bytes, expected {output_chunk_bytes}'
             )
         if ms:
-             chunks_out.append(int.from_bytes(resp, 'big'))
+            chunks_out.append(int.from_bytes(resp, 'big'))
         elif raw:
             chunks_out.append(resp)
         else:
@@ -96,9 +97,9 @@ def process_chunks(data, ser, ms=False, raw=False):
 
 
 def run_tests(port: str) -> None:
-    tests   = sorted(glob.glob('data/*.bin'))
+    tests = sorted(glob.glob('data/*.bin'))
     results = sorted(glob.glob(f'results/{OUTPUT_LEN}/*.bin'))
-    failed  = 0
+    failed = 0
 
     if len(tests) != len(results):
         print('❌ Mismatch in test and results. Generate new ones first!')
@@ -151,7 +152,7 @@ def generate_results(port: str) -> None:
 
             ent_string += subprocess.check_output(
                 ['ent', result_path],
-                stderr=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL,
                 text=True
             ) + '\n'
 
@@ -161,15 +162,13 @@ def generate_results(port: str) -> None:
         f.write(ent_string)
 
 
-
-
 def log_times(port: str) -> None:
     while True:
         current_iter = input('⌨️ Select iteration (1 - 5): ')
         if current_iter in ['1', '2', '3', '4', '5']:
             break
         print('❌ Not a valid iteration.')
-    
+
     while True:
         u_repl = input('⚠️ WARN: Is the right firmware flashed? (y / n): ')
         if u_repl.lower() == 'y':
@@ -192,7 +191,7 @@ def log_times(port: str) -> None:
 
         for test_path in tests:
             basename = os.path.basename(test_path)
-            name     = os.path.splitext(basename)[0]
+            name = os.path.splitext(basename)[0]
             log_path = os.path.join(f'{log_dir}', f'{name}.log')
 
             data = open(test_path, 'rb').read()
@@ -244,6 +243,5 @@ def main():
         generate_results(port)
 
 
-
 if __name__ == "__main__":
-  main()
+    main()
