@@ -4,9 +4,9 @@ In computer science, there are many applications for randomly generated numbers.
 
 Imagine, then, if a malicious attacker somehow manages to ascertain the state a computer was in when it generated a random number, for instance to produce an SSH-key. This attacker then has the opportunity to accurately reproduce the exact, deterministic state that produced said random number, in essence removing the safety that randomness brings. While it may sound unrealistic, the exponential increase in processing power and the burgeoning field of quantum computing does introduce the possibility that one day, what we perceive as random is nothing more than a simple algorithm to crack.
 
-True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuations from any given source, for instance an optical signal, the inherent natural unpredictability of said source can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately.
+True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately.
 
-In this project, we will be writing firmware for a quantum number generator, which generates true randomness by reading shot noise from an optical signal. Further details about how this signal is produced will be introduced in section 2 and 3, and builds on the work of Clason \cite{Clason2023}. This optical signal will be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). In turn, these random bits will be processed via Toeplitz extraction \cite{toeplitz} in order to process these bits into random numbers. Some processing has to be done on the microcontrollers themselves in order to ensure that the data is workable, and Toeplitz extraction is a tried and tested method to accomplish this. These random numbers will then be output from the microcontroller to the host computer via USB. This thesis will aim to answer one key research question: How can sampled vacuum fluctuations be processed efficiently in order to output QRNG?
+Further details about how this signal is produced and sampled will be introduced in section 2 and 3, and builds on the work of Clason \cite{Clason2023}. This optical signal needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some processing of the data has to be done in order to ensure that the data is workable. As such, these random bits will be processed via Toeplitz extraction \cite{toeplitz} in order to process these bits into random numbers. These random numbers will then be output from the microcontroller to the host computer via USB. This thesis will aim to answer one key research question: How can sampled vacuum fluctuations be processed efficiently in order to output QRNG?
 
 In producing this firmware, several key considerations have to be made in order for this system to be usable in a production environment. The vision for the end product is a simple USB-stick that can be connected to a host, and produce true random numbers from ambient quantum fluctuations. While this system could very well be implemented on physically larger hardware, thus avoiding the constraints that limited hardware introduces, Clason proposes a simpler and cheaper way to achieve QRNG \cite{Clason2023}. In keeping with this, utilizing microcontrollers for processing the raw bits extracted further helps to keep the costs low and the solution reasonably complex. Further details regarding the microcontrollers used in our work will be outlined in section 3. However, due to this portability constraint, our implementation needs to work quickly and efficiently on resource constrained hardware. As such, our main question is broken down into two concrete research areas:
 
@@ -14,7 +14,7 @@ In producing this firmware, several key considerations have to be made in order 
 
 Toeplitz extraction been optimized quite well, and previous research can be utilized for this. However, there are still considerations when implementing the firmware for the microcontroller in order to optimize the code. Our goal is to attempt several implementations in order to find the most optimal implementation with the least amount of effective processing time spent on the algorithm.
 
-\textbf{Research area 2 (\emph{RA2})}: How can we ensure that the output of random numbers is not limited by our firmware, but rather only limited by the USB transfer speed of the microcontroller or the ADC?
+\textbf{Research area 2 (\emph{RA2})}: Can we ensure that the output of random numbers is not limited primarily by firmware, but rather limited by the processing power or the USB transfer speed of the microcontroller, alternatively by the ADC?
 
 There will unequivocally be a bottleneck for the processing speed. For instance, the speed at which the ADC can process the optical signal into raw bits as well as the speed that the USB output can transfer processed random number to the host computer will be limiting factors. Further details on the limitations of the ADC will be outlined in section 3. The slowest of these bottlenecks will inevitably be the limiting factor for any implementation. Our research aims to ensure that our implementation of Toeplitz extraction does not become the limiting factor, but rather processing data fast enough to match or exceed the speed of the hardware.
 
@@ -54,10 +54,12 @@ This analog current isn't suitable to operate on without further processing. As 
 
 Many microcontrollers furthermore come equipped with internal ADCs that can be utilized, and while these provide a lower sample size (often around 1 MSPS), the ease of development may be prudent to utilize for this proof-of-concept. While our initial ADC has a fairly low throughput, this can always be upgraded if it ends up becoming too limiting.
 
-Should these internal ADCs prove too limiting, we propose utilizing MAX11102AUB\footnote{\href{https://www.farnell.com/datasheets/1913106.pdf}{Technical specification for MAX11102AUB, accessed 2025-03-13}} with an effective sample rate of 2 million samples per second (MSPS). This ADC provides a 12 bit sample size, providing roughly 2.86 MB/s of sampled data per second, derived by the following calculation.
+Should these internal ADCs prove too limiting, we propose utilizing MAX11102AUB\footnote{\href{https://www.farnell.com/datasheets/1913106.pdf}{Technical specification for MAX11102AUB, accessed 2025-03-13}} with an effective sample rate of 2 million samples per second (MSPS). This ADC provides a 12 bit sample size, providing roughly 24 Mbit/s of sampled data per second, derived by the following calculation.
 
 \[
-Data Rate = \frac{2,000,000_{MSPS} \times 12}{8 \times 1,048,576} \approx 2.86 MB/s \text{\phantom{123} (1)}
+\text{ADC Throughput}
+= \frac{2,000,000_{\mathrm{MSPS}}\times12}{1,000,000}
+\approx24\ \mathrm{Mbit/s}\phantom{123}(1)
 \]
 
 The final output from the ADC, whether built into the microcontroller or an external one, will be a stream of raw bits, as the analog signal from the OQRNG-device is processed.
@@ -82,62 +84,28 @@ A detailed account of the inner workings of Toeplitz extraction can be found in 
 
 To summarize the theoretical working of Toeplitz extraction (as explained by Chouhan et al. \cite{toeplitz-desc}), a pre-determined seed matrix (\(T\)) is multiplied with the sampled raw bit matrix (\(K\)). The size of the seed is directly dependent on the size of the sampled data, and can be fixed or continually re-sampled as needed. To ensure high levels of entropy, our intuition is that re-sampling the seed from the OQRNG-device continually is prudent. The sample and seed with then be processed with matrix multiplication to remove deterministic patterns, and produce a bitstring that results in our randomly generated number. An example of how this extraction works can be seen below.
 
-\[
-T =
-\begin{bmatrix}
-1 & 0 & 1 & 1 & 0 & 1 & 0 & 1 \\
-0 & 1 & 1 & 0 & 1 & 0 & 1 & 1 \\
-1 & 1 & 0 & 1 & 0 & 1 & 1 & 0 \\
-1 & 0 & 1 & 1 & 1 & 0 & 1 & 0
-\end{bmatrix}
-\quad
-k =
-\begin{bmatrix}
-1 \\ 0 \\ 1 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1
-\end{bmatrix}
-\]
+\begin{verbatim}
+Where n = number of input bits,
+      m = number of output bits:
 
-\[
-h(k) = T \cdot x \mod 2
-\]
+Let X be the input array (length n)
+Let T be the seed array (length n + m – 1)
+Let Y be a new array of length m
 
-\phantom{TEMP LINEBREAK}
+For i from 0 to m - 1:
+  sum = 0
+  For j from 0 to n - 1:
+    sum = sum + X[j] * T[i + j]
+  Y[i] = sum mod 2
 
-We then perform XOR multiplication on the matrices:
-
-\[
-h(k) =
-\begin{bmatrix}
-(1 \oplus 0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1) \\
-(0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1) \\
-(1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1 \oplus 0) \\
-(1 \oplus 0 \oplus 1 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0)
-\end{bmatrix}
-\]
-
-Which finally simplifies to:
-
-\[
-h(k) =
-\begin{bmatrix}
-1 \\
-0 \\
-1 \\
-1
-\end{bmatrix}
-\]
-
-This allows us to interpret the result as a random 4-bit integer:
-
-\[
-h(k) = (1011)_2 = 11_{10}
-\]
+Return Y
+\end{verbatim}
 
 Whereas this example is quite small in order to demonstrate how the algorithm operates, this can of course be scaled up significantly with larger values for both \(T\) and \(k\) respectively, granting larger integers. The main focus of this work is implementing this algorithm as efficiently as possible on our MCUs, and as such, several optimization efforts need to be taken into account during our experimentation.
 
 \subsubsection{3.5 Summary}\label{summary}
 
-With the assumption that the OQRNG-device produces a truly random analog signal, we can now clearly define the scope in which this thesis operates. Considering the maximum conversion speed from the ADC and the USB-output from the MCU, we have a clear bound between 2.86 MS/s (for the ADC) and 480 MB/s (for the USB output) in which Toeplitz extraction needs to be executed. Any speeds over 2.86 MB/s allows us to upgrade the ADC iteratively to continue increasing the output speed. Any implementation of Toeplitz extraction must then execute fast enough on any given microcontroller feasible for the proposed quantum RNG-thumbstick as to not be the decisive limiting factor.
+With the assumption that the OQRNG-device produces a truly random analog signal, we can now clearly define the scope in which this thesis operates. Considering the maximum conversion speed from the ADC and the USB-output from the MCU, we have a clear bound over 24 Mbit/s (imposed by the ADC) in which Toeplitz extraction needs to be executed. Any speeds over 2.86 MB/s allows us to upgrade the ADC iteratively to continue increasing the output speed. Any implementation of Toeplitz extraction must then execute fast enough on any given microcontroller feasible for the proposed quantum RNG-thumbstick as to not be the decisive limiting factor.
 
 \subsection{\texorpdfstring{4 RELATED WORKS }{4 RELATED WORKS }}\label{related-works}
 
@@ -159,9 +127,7 @@ However, in order to ensure the results work with varying data, we cannot limit 
 
 Implementation of Toeplitz extraction will begin by a naive implementation not optimized for speed, but rather for accuracy. This implementation will be executed on a separate computer in order to produce the correct random number for every provided bitstring. These will be used as our baseline for accuracy for future iterations.
 
-This naive implementation will then be flashed to our microcontrollers, beginning with Teensy 4.1 as this is the more capable of the microcontrollers used for this experiment. Code to measure the execution speed in microseconds will be implemented and tested before we load the naive implementation on said microcontroller. We expect that several implementations may be too resource intensive or have a memory complexity far greater than our cheaper, less capable microcontroller are able to handle, and as such these may not be able to be tested until a few iterations of optimization has occurred.
-
-Each iteration will consist of incremental improvements to the algorithm. Our initial investigation has shown several avenues for improving the throughput of the algorithm, and each planned iteration will be discussed briefly. Depending on the empirical results of these iterations, there may be a need for further optimization iterations other than those listed.
+This naive implementation will then be flashed to our microcontrollers, beginning with Teensy 4.1 as this is the more capable of the microcontrollers used for this experiment. Code to measure the execution speed in microseconds will be implemented and tested before we load the naive implementation on said microcontroller. Each iteration will consist of incremental improvements to the algorithm. Our initial investigation has shown several avenues for improving the throughput of the algorithm, and each planned iteration will be discussed briefly. Depending on the empirical results of these iterations, there may be a need for further optimization iterations other than those listed.
 
 \textbf{Iteration 1 - Naive implementation}: The naive implementation consists of a Toeplitz matrix \(T\) and key \(k\), acquired from fixed slices of the bitstream. Then, matrix-vector multiplication will be performed using \(T\) and \(k\), thus performing Toeplitz extraction -- which finally will eliminate jitter and produce a random number. The implementation of this in code will be quite simple, using nested loops to iterate over all values and multiply them. We expect that the throughput of this naive implementation will be far away from optimized iterations, and result in \(O(n^2)\) complexity.
 
@@ -177,20 +143,29 @@ Each scenario will first be executed on a single thread, and multiple threads ma
 
 \subsubsection{5.2 Evaluation}\label{evaluation}
 
-In order to evaluate the efficacy of each iteration, we will test the code by processing our pre-determined bitstreams, saving the processed bits in a binary file and evaluating this file with the command line utility \texttt{ent}. This utility runs a series of tests on the data to determine its level of entropy the file has -- rather, how information dense the file is. A perfect result (\emph{e.g. entirely random}) has an entropy value of \(8.0\), whereas acceptable entropy values for our tests are greater than \(7.99\), denoting a high level of randomness. Furthermore, \texttt{ent} can verify the arithmetic mean of the file, summing all the bits in the file and dividing it by the length of the file. A good distribution of randomness should have an arithmetic mean of \(~127.5\). To ensure each iteration works as expected, we will compare the \texttt{ent} result from each iteration against the original baseline, ensuring that the resulting processed bitstring is identical between iterations. There are a few more measurements shown by \texttt{ent}, and more details regarding these can be found in the utilities manual page\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}.
+In order to evaluate the efficacy of each iteration, we will test the code by processing our pre-determined bitstreams, saving the processed bits in a binary file and evaluating this file with the command line utility \texttt{ent}\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}, which is a simple way of evaluating the randomness of binary data.
 
-As discussed in section 3, the hardware used will impose a clear bound on how quickly our implementation needs to process the bits in order to match the speed of the ADC, as well as the output speed of the USB-port, both in \(MB/s\). In order to verify accuracy, the output of random numbers should be identical for each sample bitstring tested. Certain iterations might, however, use larger parts of the bitstring, and thus produce a slightly variable result.
+As discussed in section 3, the hardware used will impose a clear bound on how quickly our implementation needs to process the bits in order to match the speed of the ADC and the output speed of the USB-port in \(Mbit/s\). In order to verify accuracy, the output of random numbers should be identical for each sample bitstring tested. Certain iterations might, however, use larger parts of the bitstring, and thus produce a slightly variable result.
 
-Hyncica et. al. \cite{micromeasurements} propose that measuring execution time of algorithms directly via the microcontrollers internal timers (while subtracting the interrupt overhead) provides adequate measurements of an algorithms execution speed. An additional advantage is that the same code can be used to measure execution speed on several different microcontrollers, rather than relying on counting CPU cycles (as the process for this may vary greatly between controllers). As we will use fixed-size bitstrings for evaluation, we can then derive the throughput of the algorithm in \(MB/s\) as follows:
+Hyncica et. al. \cite{micromeasurements} propose that measuring execution time of algorithms directly via the microcontrollers internal timers (while subtracting the interrupt overhead) provides adequate measurements of an algorithms execution speed. An additional advantage is that the same code can be used to measure execution speed on several different microcontrollers, rather than relying on counting CPU cycles (as the process for this may vary greatly between controllers). As we will use fixed-size bitstrings for evaluation, we can then derive the throughput of the algorithm in \(Mbit/s\) as follows:
 
 \[
-Throughput*{MB/s} = \frac{DataSize*{bits}}{Execution Time_{ms}} \times
-\frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(2)}
+\text{Throughput}{\mathrm{Mbit/s}}
+= \frac{DataSize{\mathrm{bits}}}{ExecutionTime_{\mathrm{ms}}}
+\times 10^{-3}
+\phantom{12}(2)
 \]
 
-This measurement allows us to place the throughput of our algorithm soundly in the bounds imposed on us by the hardware. During implementation, measurements of time complexity may be discussed with regards to the code -- but in the end, the performance of the code as it runs is what will be evaluated most thoroughly.
+This measurement allows us to place the throughput of our algorithm soundly in the bounds imposed on us by the hardware. Plugging in the \(24 Mbit/s\) bound imposed by the ADC with an arbitrarily chosen 64-bit sample size, we can derive the average execution speed in microseconds:
 
-\subsubsection{5.2 Limitations}\label{limitations}
+\[
+T_{\mathrm{ms}}
+= \frac{64}{24}\times10^{-3}\ \mathrm{ms}
+\approx 2.667\times10^{-3}\ \mathrm{ms}
+=2.667\ \mu\mathrm{s}.
+\]
+
+\subsubsection{5.3 Limitations}\label{limitations}
 
 Our proposed iterations all assume that the limited hardware will support it. Whereas we are confident that Teensy 4.1 will be able to handle each iteration step (even the naive implementation), the remaining microcontrollers with lower specifications might not be suitable for the first iterations. Testing the implementations on different microcontrollers could turn out to be unfeasible -- however, this remains to be seen during the experimentation.
 
@@ -218,19 +193,16 @@ Due to compatibility issues, Pi Pico 2 was tested on different machine, creating
 
 The first iteration brought few surprises, as it ran quite well on Teensy. To our surprise, it executed well enough on Pi Pico 2 as well, albeit with \textasciitilde{}\(8\times\) slower execution speed. This first implementation is the same one used to generate the baseline results, and used to ensure following iterations all generate correct output.
 
-Worth noting is that this iteration (\_and all following iterations that generate the same result) have achieved entropy scores from \texttt{ent} that are greater than 7.99 for all tested data while ensuring it cannot be compressed further. This ensures that the algorithm has successfully removed as much of the patterns as can be reasonably expected from the raw binary data while maintaining the random nature of the data.
-
-\centering 
+Worth noting is that this iteration (\emph{and all following iterations that generate the same result}) have achieved entropy scores from \texttt{ent} that are greater than 7.99 for all tested data while ensuring it cannot be compressed further. This ensures that the algorithm has successfully removed as much of the patterns as can be reasonably expected from the raw binary data while maintaining the random nature of the data.
 
 \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
-\multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico
-(µs)}} \\ \hline & Min & Max & Avg & Min & Max & Avg \\ \hline 64 & 13 & 14 &
-13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 & 791 & 788.3139 & 5296 & 5311 &
-5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
-\hline \end{tabular} \caption{Minimum, maximum and average processing time for
-Teensy and Pico.} \label{tab:teensy_pico_min_max_avg}
-
-\textbackslash end\{table\}
+\multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &
+\multicolumn{3}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline & Min & Max & Avg & Min &
+Max & Avg \\ \hline 64 & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 &
+791 & 788.3139 & 5296 & 5311 & 5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 &
+21108 & 21119 & 21111.2163 \\ \hline \end{tabular} \caption{Minimum, maximum and
+average processing time for Teensy and Pico.}
+\label{tab:teensy_pico_min_max_avg}
 
 \subsubsection{\texorpdfstring{Iteration 2 }{Iteration 2 }}\label{iteration-2}
 
