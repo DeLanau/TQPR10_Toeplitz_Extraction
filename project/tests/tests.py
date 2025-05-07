@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 
 SERIAL_BAUD = 6000000
-BIT_CHUNK_SIZE = 1024
+BIT_CHUNK_SIZE = 128
 OUTPUT_LEN = BIT_CHUNK_SIZE // 2
 
 BIT_CHUNK_BYTES = BIT_CHUNK_SIZE // 8
@@ -164,8 +164,8 @@ def generate_results(port: str) -> None:
 
 def log_times(port: str) -> None:
     while True:
-        current_iter = input('⌨️ Select iteration (1 - 5): ')
-        if current_iter in ['1', '2', '3', '4', '5']:
+        current_iter = input('⌨️ Select iteration (1 - 6): ')
+        if current_iter in ['1', '2', '3', '4', '5', '6']:
             break
         print('❌ Not a valid iteration.')
 

@@ -1,0 +1,84 @@
+data/biased_bits_bad.bin
+
+Entropy = 7.997792 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 287.25, and randomly
+would exceed this value 8.06 percent of the times.
+
+Arithmetic mean value of data bytes is 128.1500 (127.5 = random).
+Monte Carlo value for Pi is 3.139584000 (error 0.06 percent).
+Serial correlation coefficient is 0.006430 (totally uncorrelated = 0.0).
+
+data/biased_bits_disaster.bin
+
+Entropy = 7.998242 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 229.02, and randomly
+would exceed this value 87.75 percent of the times.
+
+Arithmetic mean value of data bytes is 127.7595 (127.5 = random).
+Monte Carlo value for Pi is 3.120128000 (error 0.68 percent).
+Serial correlation coefficient is -0.003743 (totally uncorrelated = 0.0).
+
+data/biased_bits_fair.bin
+
+Entropy = 7.998108 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 246.11, and randomly
+would exceed this value 64.38 percent of the times.
+
+Arithmetic mean value of data bytes is 127.3764 (127.5 = random).
+Monte Carlo value for Pi is 3.137024000 (error 0.15 percent).
+Serial correlation coefficient is -0.001840 (totally uncorrelated = 0.0).
+
+data/biased_bits_good.bin
+
+Entropy = 7.997971 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 264.44, and randomly
+would exceed this value 32.91 percent of the times.
+
+Arithmetic mean value of data bytes is 127.4698 (127.5 = random).
+Monte Carlo value for Pi is 3.123456000 (error 0.58 percent).
+Serial correlation coefficient is -0.002402 (totally uncorrelated = 0.0).
+
+data/biased_bits_horrible.bin
+
+Entropy = 7.997716 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 297.25, and randomly
+would exceed this value 3.55 percent of the times.
+
+Arithmetic mean value of data bytes is 127.6058 (127.5 = random).
+Monte Carlo value for Pi is 3.156224000 (error 0.47 percent).
+Serial correlation coefficient is -0.000618 (totally uncorrelated = 0.0).
+
+data/biased_bits_ok.bin
+
+Entropy = 7.998037 bits per byte.
+
+Optimum compression would reduce the size
+of this 93752 byte file by 0 percent.
+
+Chi square distribution for 93752 samples is 255.66, and randomly
+would exceed this value 47.67 percent of the times.
+
+Arithmetic mean value of data bytes is 127.7923 (127.5 = random).
+Monte Carlo value for Pi is 3.138816000 (error 0.09 percent).
+Serial correlation coefficient is -0.004478 (totally uncorrelated = 0.0).
+

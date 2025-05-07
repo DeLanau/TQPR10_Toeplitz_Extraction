@@ -1,8 +1,10 @@
-#define RAW_BITS_LEN   64
+#pragma GCC optimize ("O3")
+
+#define RAW_BITS_LEN   128
 #define OUTPUT_LEN     RAW_BITS_LEN / 2
 #define SERIAL_BAUD    6000000
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
-#define TIMED          1
+#define TIMED          0
 
 #if defined(ARDUINO_TEENSY41)
   #define SERIAL_MAIN  Serial

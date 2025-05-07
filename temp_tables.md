@@ -15,8 +15,8 @@ with batching:
 2776.0440273037543 512/256: min: 2663 max: 2667 avg: 2663.8293515358364 512/512:
 min: 2663 max: 2664 avg: 2663.819453924915
 
-1024/512: min: 10573 max: 10581 avg: 10573.757679180888 1024/1024: 10513 max:
-10520 avg: 10513.176791808874
+1024/512: min: 10573 max: 10581 avg: 10573.757679180888 1024/1024: min: 10513
+max: 10520 avg: 10513.176791808874
 
 pico with batching:
 
@@ -31,3 +31,21 @@ pico:
 
 64: min: 68 max: 123 avg: 70.74020820889154 512: min: 3969 max: 4053 avg:
 3978.192832764505 1024: min: 15826 max: 15918 avg: 15830.878498293516
+
+teensy unroll x8:
+
+1024: min: 2305 max: 2312 avg: 2305.086689419795
+
+teensy unroll x16: 1024: min: 2303 max: 2311 avg: 2303.897610921502
+
+teensy: 1 loop 64x unroll: min: 6 max: 7 avg: 6.6626845293967065
+
+teensy unroll x64 no loops: min: 0 max: 1 avg: 0.04919361720283301
+
+teensy pragma unroll: min: 0 max: 1 avg: 0.05013226384503797
+
+add something to vector: min: 5 max: 6 avg: 5.72813379981227
+
+add/set something to vector: min: 13 max: 14 avg: 13.404684700059732
+
+pico no vector: min: 0 max: 9 avg: 0.2175767918088737
