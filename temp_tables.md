@@ -49,3 +49,19 @@ add something to vector: min: 5 max: 6 avg: 5.72813379981227
 add/set something to vector: min: 13 max: 14 avg: 13.404684700059732
 
 pico no vector: min: 0 max: 9 avg: 0.2175767918088737
+
+===== how about different datastructures? teensy
+
+baseline vector: avg: 13.152146087550133
+
+array: 0.42840686065363937
+
+vector<uint8_t>: same as vector
+
+unordered_map: avg: 31.509002474613876
+
+bitset: 0.4136018431606792
+
+with bitset and 128bit: avg: 179.87123474699206
+
+with bitset and bitshifting optimization: 179.87149074153083

@@ -32,7 +32,7 @@ def serial_select() -> str:
                 glob.glob('/dev/tty.usbserial*') + \
                 glob.glob('/dev/cu.usbmodem*')
         case 'Windows':
-            port = ['COM6']
+            port = ['COM7']
         case _:
             print(f'❌ Error: Unsupported OS "{os}", exiting.')
             sys.exit(1)
@@ -51,10 +51,10 @@ def serial_select() -> str:
                 sel = int(input('⌨️ Select port: '))
             except:
                 print('❌ Not a number.')
-                continue
+            continue
 
-            if sel >= 0 and sel < len(port):
-                return port[sel]
+        if sel >= 0 and sel < len(port):
+            return port[sel]
 
             print(f'⚠️ Invalid port {sel}.')
     else:

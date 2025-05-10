@@ -1,6 +1,4 @@
-#pragma GCC optimize ("O3")
-
-#define RAW_BITS_LEN   64
+#define RAW_BITS_LEN   1024
 #define OUTPUT_LEN     RAW_BITS_LEN / 2
 #define SERIAL_BAUD    6000000
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
@@ -41,9 +39,9 @@ vector<int> toeplitz_extraction(const vector<int>& raw) {
   for (size_t i = 0; i < OUTPUT_LEN; i++) {
     int sum = 0;
     for (size_t j = 0; j < RAW_BITS_LEN; j++) {
-      sum += raw[j] * seed_bits[i + j];
+      sum += (seed_bits[i + j] << raw[j]) & 1;
     }
-    output[i] = sum % 2;
+    output[i] = sum & 1;
   }
   return output;
 }
