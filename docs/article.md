@@ -456,71 +456,43 @@ algorithm. Furthermore, in order to see how well our implementation will work
 with realistic data from the OQRNG generator, we will sample streams of bits
 directly from the source.
 
-### 5.1 Iterative approach
+<!-- TODO: add figure for testing setup -->
+<!-- TODO: move some details from experementation sectio to implementation strategy and remove whole experemintation section, as well as some part of results. e.g concentrate every important thingy about implementation and testing setup here in section 5. -->
+### 5.1 Implementation Strategy
 
-Implementation of Toeplitz extraction will begin by a naive implementation not
-optimized for speed, but rather for accuracy. This implementation will be
-executed on a separate computer in order to produce the correct random number
-for every provided bitstring. These will be used as our baseline for accuracy
-for future iterations.
+The implementation of the Toeplitz extractor followed a structured, iterative approach devided into two phases. Phase A focused on exploring performance improvements through incremental algorithmic changes, while Phase B addressed architectural inefficiencies identified during implementation of Phase A. Each iteration built upon previus findings and performance was evaluated in terms of both correctness and execution time on the target hardware. 
 
-This naive implementation will then be flashed to our microcontrollers,
-beginning with Teensy 4.1 as this is the more capable of the microcontrollers
-used for this experiment. Code to measure the execution speed in microseconds
-will be implemented and tested before we load the naive implementation on said
-microcontroller. Each iteration will consist of incremental improvements to the
-algorithm. Our initial investigation has shown several avenues for improving the
-throughput of the algorithm, and each planned iteration will be discussed
-briefly. Depending on the empirical results of these iterations, there may be a
-need for further optimization iterations other than those listed.
+#### 5.2 Phase A
 
-**Iteration 1 - Naive implementation**: The naive implementation is implemented
-just as the pseudocode in section 3.4 describes, performing matrix
-multiplication between the input bits and the seed to process the data and
-remove potential jitter. As this implementation uses nested loops we expect this
-nested quality to be the main bottleneck of this iteration.
+The impelentation began with a naive version designet to prioritize correctness over speed. This version was first executed on a separate computer to generate reference output for various input bitstrings, which were lates used as accuracy baselines. The naive implementation was then flashed onto the Teensy 4.1 microcontroller, where execution time was measured in microseconds. Each subsequent iteration introduced controlled modifcations aimed at improving throughput. 
 
-**Iteration 2 - Efficient data structures**: The naive implementation will not
-utilize efficient data structures for maximum speed, rather it will likely use
-fixed-size arrays which need to be iterated over for a time complexity of
-$O(n^2)$. Our hypothesis is that more efficient data structures may allow data
-to be processed in a far more efficient manner -- however, this scenario poses a
-risk for greater memory complexity which may not be suitable for use on
-microcontrollers. Which data structures might be most feasible will be evaluated
-during this iteration and as such is not preordained.
+**Iteration 1 - Naive implementation:**
+The initial implmentation followed the pseudocode described in section 3.4, using matrix multiplication over raw input and seed data. It relied on `std::vector<int>` for storage and used nested loops to compute each output bit.
 
-**Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
-significantly improved with bitwise XOR operations, thus reducing overhead and
-memory usage. Instead of explicitly constructing the Toeplitz matrix, a
-right-shift operation can be used to dynamically reconstruct matrix rows.
-Additionally, matrix-vector multiplication can be improved using XOR operations
-to extract bits more efficient, thus minimizing unnecessary computations.
+**Iteration 2 - Data structures:**
+This iteration kept the same algorithmic logic but experimented with data structures such as raw pointers and hash maps to enhance the use of `std::vector`. The goal was to reduce or eliminate the reliance on nested loops. 
 
-**Iteration 4 - Batching**: Finally, we consider the concept of batching larger
-amounts of bits for processing. Consider that an input buffer of bits is read
-from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
-shifting them one by one, we can take two batches of 64 bits and multiply them
-directly using XOR bitshifting -- eliminating the need to process these
-bit-by-bit. As we will have a constant stream of bits from the ADC, we theorize
-that this method will allow for better performance in real-time processing over
-reading individual bits.
+**Iteration 3 - Bitshifting:**
+Basic bitwise operation were introduced to replace arithmetic where possible. Multiplication were replaced with logical AND `&` and modulo operations with bit masking `& 1`. The goal was to reduce the number of instructions and improve per-bit processing speed. 
 
-**Iteration 5 - ARM Hardware instructions**: Rather than performing bitshifting
-operations in the code itself, certain microcontrollers come equipped with a
-separate processor specifically for bitshift-operations. Offloading the shifting
-to these processors rather than running them on the main CPU may allow faster
-processing of the data than performing the shifting in the code itself. However,
-this operation isn't natively supported by Arduino, and will potentially lead to
-extreme rewrites of the code which may prove too time consuming to do for two
-microcontrollers (as the code will not be reusable between controllers). As
-such, this optimization may only be done for one controller or left for future
-work.
+**Iteration 4 - Batching and Hardware optimization:**
+This iteration focused on optimizing performance through batching and the use of ARM-native instructions. We began by testing batching alone. followed by isolated use of ARM instructions such as `__builtin_popcountll()`. After establishing their individual effect we combined both techniques. Multiple batch sizes were tested to determine their impact. more details and benchmars for each configuration can be found in the results section. 
 
-Each scenario will first be executed on a single thread, and multiple threads
-may theoretically be executed concurrently to further optimize the data. The
-feasibility of this highly depends on the performance of every individual
-implementation. Depending on the results during our experimentation, this may
-yield yet another iteration.
+#### 5.3 Phase B
+
+Phase B focused on addressing inefficiencies and design issues that were unintentionally introduced during earlier iterations. Rather than continuing with new algorithmic ideas, this phase aimed to identify and fix structural problems. Several assumptions from Phase A — such as the benefits of certain data structures or abstractions — were re-evaluated.
+
+**Iteration 1 - Loop unrolling:**
+This iteration focused on reducing the number of loops in the extractor by manually unrolling repeated operations. The goal was to decrease overhead created by loops. 
+
+**Iteration 2 - Removal of vector usage:**
+This iteration removed `std::vector` in favor of fixed-size types like uint32_t and uint64_t to reduce memory overhead.The goal was to simplify memory management and improve performance by avoiding dynamic allocation.
+
+**Iteration 3 - Data type exloration:**
+Following the removal of vectors, this iteration explored alternative static data types to determine the most efficient structure for storing input and seed data. 
+
+**Iteration 4 - Bit shifting reimplementation:**
+In this final iteration, bit shifting techniques were reintroduced into the now simplified implementation. With high-level abstractions removed and memory structures streamlined, bit-level operations such as shifting and masking were applied.
 
 ### 5.2 Evaluation
 
