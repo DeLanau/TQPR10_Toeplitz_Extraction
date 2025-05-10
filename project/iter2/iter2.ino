@@ -1,21 +1,15 @@
 #pragma GCC optimize ("O3")
 
-#define RAW_BITS_LEN   128
+#define RAW_BITS_LEN   64
 #define OUTPUT_LEN     (RAW_BITS_LEN / 2)
 #define SEED_LEN       (RAW_BITS_LEN + OUTPUT_LEN - 1)
 #define OUTPUT_BYTES   (OUTPUT_LEN / 8)
 #define SERIAL_BAUD    6000000
-#define TIMED          0
+#define TIMED          1
 
 #if defined(ARDUINO_TEENSY41)
   #define SERIAL_MAIN  Serial
   #define LED_PIN      13
-#elif defined(ARDUINO_ESP32_DEV)
-  #define SERIAL_MAIN  Serial
-  #define LED_PIN      13
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_2)
-  #define SERIAL_MAIN  Serial
-  #define LED_PIN      25
 #else
   #error Unsupported MCU
 #endif
@@ -24,6 +18,7 @@
 #include <bitset>
 
 std::bitset<SEED_LEN> seed_bits;
+uint64_t seed_chunks[OUTPUT_LEN];
 std::bitset<RAW_BITS_LEN> raw_bits;
 
 void init_seed() {
@@ -33,22 +28,20 @@ void init_seed() {
     bool feedback = ((lfsr >> 0) ^ (lfsr >> 1) ^ (lfsr >> 21) ^ (lfsr >> 31)) & 1u;
     lfsr = (lfsr >> 1) | (feedback << 31);
   }
+
+  for (size_t i = 0; i < OUTPUT_LEN; i++) {
+    uint64_t packed = 0;
+    for (size_t k = 0; k < RAW_BITS_LEN; ++k) {
+      packed |= static_cast<uint64_t>(seed_bits[i + k]) << (63 - k);
+    }
+    seed_chunks[i] = packed;
+  }
 }
 
-void toeplitz_extraction_optimized(uint64_t raw0, uint64_t raw1, uint8_t* out_bytes) {
+void toeplitz_extract_fast(uint64_t raw, uint8_t* out_bytes) {
   memset(out_bytes, 0, OUTPUT_BYTES);
-
   for (size_t i = 0; i < OUTPUT_LEN; ++i) {
-    uint64_t seed0 = 0;
-    uint64_t seed1 = 0;
-
-    for (size_t k = 0; k < 64; ++k) {
-      seed0 |= static_cast<uint64_t>(seed_bits[i + k])      << (63 - k);
-      seed1 |= static_cast<uint64_t>(seed_bits[i + 64 + k]) << (63 - k);
-    }
-
-    int sum = __builtin_popcountll(raw0 & seed0) + __builtin_popcountll(raw1 & seed1);
-
+    int sum = __builtin_popcountll(raw & seed_chunks[i]);
     if (sum & 1u) {
       size_t byte_i = i >> 3;
       size_t bit_i  = 7 - (i & 7);
@@ -77,25 +70,23 @@ void loop() {
   }
 
   if (bit_index == RAW_BITS_LEN) {
-    uint64_t raw0 = raw_bits.to_ullong();
-    uint64_t raw1 = (raw_bits >> 64).to_ullong();
-
+    uint64_t raw = raw_bits.to_ullong();
     uint8_t out_bytes[OUTPUT_BYTES];
 
     unsigned long t0 = micros();
-    toeplitz_extraction_optimized(raw0, raw1, out_bytes);
+    toeplitz_extract_fast(raw, out_bytes);
     unsigned long dt = micros() - t0;
 
     if (TIMED) {
       uint8_t dt_bytes[4] = {
         uint8_t((dt >> 24) & 0xFF),
         uint8_t((dt >> 16) & 0xFF),
-        uint8_t((dt >>  8) & 0xFF),
-        uint8_t((dt >>  0) & 0xFF)
+        uint8_t((dt >> 8)  & 0xFF),
+        uint8_t((dt >> 0)  & 0xFF),
       };
       SERIAL_MAIN.write(dt_bytes, 4);
     } else {
-      SERIAL_MAIN.write(out_bytes, OUTPUT_BYTES);  // ✅ exactly 8 bytes
+      SERIAL_MAIN.write(out_bytes, OUTPUT_BYTES);
     }
 
     bit_index = 0;

@@ -62,6 +62,12 @@ unordered_map: avg: 31.509002474613876
 
 bitset: 0.4136018431606792
 
+with bitset and optimization 64bit: avg: 0.04744432118781466
+
+bitset 32bit: min: 0 max: 1 avg: 0.05597747248058708
+
+bitset 16bit: min: 0 max: 1 avg: 0.05196689137298404
+
 with bitset and 128bit: avg: 179.87123474699206
 
 with bitset and bitshifting optimization: 179.87149074153083
