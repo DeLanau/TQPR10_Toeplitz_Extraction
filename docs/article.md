@@ -46,41 +46,37 @@ require some input that is neither replicable nor reproducible. One method that
 can be realistically used is the inherently random movement of lava lamps
 [@lavarand], which is used as a backup source of randomness for Cloudflare[^1].
 Another proposed solution for this is quantum random number generation (_QRNG_)
-[@QRNG]. By reading quantum fluctuations from any given source, for instance an
-optical signal, the inherent natural unpredictability of said source can be
-harnessed in order to produce a random number from a state that is nigh
+[@QRNG]. By reading quantum fluctuation signals from any given source, for
+instance an optical signal, the inherent natural unpredictability of said signal
+can be harnessed in order to produce a random number from a state that is nigh
 impossible to reproduce accurately.
 
 [^1]:
     [Cloudflare.com, accessed 2025-03-10](https://blog.cloudflare.com/randomness-101-lavarand-in-production/)
 
-In this project, we will be writing firmware for a quantum number generator,
-which generates true randomness by reading shot noise from an optical signal.
-Further details about how this signal is produced will be introduced in section
-2 and 3, and builds on the work of Clason [@Clason2023]. This optical signal
-will be converted to a stream of random, raw bits via an Analog to Digital
-Converter (_ADC_). In turn, these random bits will be processed via Toeplitz
-extraction [@toeplitz] in order to process these bits into random numbers. Some
-processing has to be done on the microcontrollers themselves in order to ensure
-that the data is workable, and Toeplitz extraction is a tried and tested method
-to accomplish this. These random numbers will then be output from the
-microcontroller to the host computer via USB. This thesis will aim to answer one
-key research question: How can sampled vacuum fluctuations be processed
-efficiently in order to output QRNG?
+Further details about how this signal is produced and sampled will be introduced
+in section 2 and 3, and builds on the work of Clason [@Clason2023]. This optical
+signal needs to be converted to a stream of random, raw bits via an Analog to
+Digital Converter (_ADC_). Some processing of the data has to be done in order
+to ensure that the data is workable and to remove potential deterministic
+patterns from these random bits. One method for this post-processing we will
+explore in this work is Toeplitz extraction [@toeplitz], typically performed on
+the host computer utilizing the randomly generated numbers. While this system
+could very well be implemented on physically larger hardware, thus avoiding the
+constraints that limited hardware introduces, Clason proposes a simpler and
+cheaper way to achieve QRNG [@Clason2023]. In keeping with this, utilizing
+microcontrollers rather than a host computer for processing the raw bits
+extracted further helps to keep the costs low and the solution reasonably
+complex. Additionally, this allows the system to be self-contained, for instance
+a simple and portable USB-device which both generates and processes true random
+numbers. Further details regarding the microcontrollers used in our work will be
+outlined in section 3.
 
-In producing this firmware, several key considerations have to be made in order
-for this system to be usable in a production environment. The vision for the end
-product is a simple USB-stick that can be connected to a host, and produce true
-random numbers from ambient quantum fluctuations. While this system could very
-well be implemented on physically larger hardware, thus avoiding the constraints
-that limited hardware introduces, Clason proposes a simpler and cheaper way to
-achieve QRNG [@Clason2023]. In keeping with this, utilizing microcontrollers for
-processing the raw bits extracted further helps to keep the costs low and the
-solution reasonably complex. Further details regarding the microcontrollers used
-in our work will be outlined in section 3. However, due to this portability
-constraint, our implementation needs to work quickly and efficiently on resource
-constrained hardware. As such, our main question is broken down into two
-concrete research areas:
+However, due to the lower processing power of the average microcontroller, any
+implementation of Toeplitz extraction needs to work quickly and efficiently
+despite this hardware constraint. Experimenting with efficient implementations
+of this well-defined algorithm is the main focus of this thesis, and the key
+research areas explored in this work are as follows:
 
 **Research area 1 (_RA1_)**: How can Toeplitz extraction be implemented as
 effectively as possible on resource constrained hardware in order to process raw
@@ -92,9 +88,10 @@ firmware for the microcontroller in order to optimize the code. Our goal is to
 attempt several implementations in order to find the most optimal implementation
 with the least amount of effective processing time spent on the algorithm.
 
-**Research area 2 (_RA2_)**: How can we ensure that the output of random numbers
-is not limited by our firmware, but rather only limited by the USB transfer
-speed of the microcontroller or the ADC?
+**Research area 2 (_RA2_)**: Can we ensure that the output of random numbers is
+not primarily limited primarily by our implementation, but rather limited by the
+processing power or the USB transfer speed of the microcontroller, alternatively
+by the ADC?
 
 There will unequivocally be a bottleneck for the processing speed. For instance,
 the speed at which the ADC can process the optical signal into raw bits as well
@@ -110,8 +107,8 @@ Section 2 of this article will introduce the theory that allows for QRNG, and
 how this will be utilized in our works. Section 3 delves further into the
 hardware and algorithms our work will use, with related works in optimizing
 Toeplitz extraction listed under section 4. Section 5 will present our
-methodology as well as some limitations imposed on our work. **More sections to
-follow as we finish the article**.
+methodology and implementation strategy, as well as some limitations imposed on
+our work. Finally, section 7 will present the results of our experimentation.
 
 ## 2 THEORY
 
@@ -229,11 +226,13 @@ ends up becoming too limiting.
 
 Should these internal ADCs prove too limiting, we propose utilizing
 MAX11102AUB[^3] with an effective sample rate of 2 million samples per second
-(MSPS). This ADC provides a 12 bit sample size, providing roughly 2.86 MB/s of
+(MSPS). This ADC provides a 12 bit sample size, providing roughly 24 Mbit/s of
 sampled data per second, derived by the following calculation.
 
 $$
-Data Rate = \frac{2,000,000_{MSPS} \times 12}{8 \times 1,048,576} \approx 2.86 MB/s \text{\phantom{123} (1)}
+\text{ADC Throughput}
+= \frac{2,000,000_{\mathrm{MSPS}}\times12}{1,000,000}
+\approx24\ \mathrm{Mbit/s}\phantom{123}(1)
 $$
 
 The final output from the ADC, whether built into the microcontroller or an
@@ -242,6 +241,17 @@ OQRNG-device is processed.
 
 ### 3.3 Microcontroller
 
+Microcontrollers (MCUs) are compact and low-power computing devices designed for
+embedded systems and real-time operations, and suitable as a processing unit for
+the purposes of this work. Unlike general purpose CPUs, an MCU integrates a
+processor, memory and peripherals (_such as an ADC, for instance_) into a single
+chip. Furthermore, modern MCUs often feature advanced microarchitectural
+elements to enhance processing capabilities on single threads (_such as
+dual-issue superscalar architectures, allowing the MCU to run several
+instructions per CPU cycle_), making them suitable candidates for the
+post-processing required for OQRNG-data.
+
+<!--
 Microcontrollers (MCUs) are compact and low-power computing devices designed
 primary for embedded systems and real-time applications. Unlike general purpose
 CPUs, MCUs integrates a processor, memory, and peripherals into a single chip.
@@ -250,8 +260,6 @@ Various development frameworks and tools are available for programming MCUs,
 including the Arduino Framework, manufacturer specific SDKs and raw C++, among
 others. Each framework presents different trade-offs in terms of performance
 overhead, efficiency, and ease of development.
-
-<!--TODO: fix reference https://ieeexplore.ieee.org/abstract/document/7116095 yeah i have knowledge issues xD-->
 
 Modern microcontrollers feature advanced microarchitectural elements to enhance
 processing capabilities. Some of high performance MCUs utilize dual-issue
@@ -268,7 +276,7 @@ improve processing efficiency in embedded systems. While energy efficiency is
 not the primary goal for this study, ensuring that the resulting USB-device does
 not consume too much power is tangentially relevant for real-world usage.
 
-<!-- TODO: provide source for TCM and DMA if possible -->
+-->
 
 Since MCUs often function under strict timing requirements, it is critical to
 have effective ways to access memory and transfer data for processing in real
@@ -293,21 +301,16 @@ tested during development.
 [^5]:
     [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/direct-memory-access)
 
-The Teensy 4.1[^2], based on the ARM Cortex-M7 is especially good for
-computationally demanding tasks involving randomness extraction due to its
-dual-issue superscalar architecture and DSP capabilities. The floating-point
-unit[^4] (FPU) and SIMD-style DSP instructions improves how quickly it can
-perform bitwise and arithmetic tasks, which are crucial for quick Toeplitz
-extraction. SIMD-controlled DSP architectures, as described by Han et al.
-[@simd-dsp], leverage parallel vectorized computation to accelerate matrix
-operations. Thus, making them highly effective for Toeplitz matrix-vector
-multiplications. The Cortex-M7 does not have special features for cryptography,
-its ability to execute multiple instructions quickly, combined with fast memory
-access and an efficient pipeline design, allows it to effectively manage and
-process randomness extraction. Moreover, its USB High-Speed (480 Mbit/sec)
-interface, supporting both USB device and USB host modes, allows rapid
-transmission of extracted random data to an external system, ensuring minimal
-bottlenecks in high-rate randomness generation.
+In our work, we intend to use Teensy 4.1[^2], based on the ARM Cortex-M7. This
+MCU is especially suitable for computationally demanding tasks involving
+randomness extraction due to its dual-issue superscalar architecture and Digital
+Signal Processing (_DSP_) capabilities. The floating-point unit[^4] (FPU) and
+Single Instruction, Multiple Data (_SIMD_) style DSP instructions improves how
+quickly it can perform bitwise and arithmetic tasks, which are crucial for quick
+Toeplitz extraction. SIMD-controlled DSP architectures, as described by Han et
+al. [@simd-dsp], leverage parallel vectorized computation to accelerate matrix
+operations -- making them highly effective for Toeplitz matrix-vector
+multiplications.
 
 [^3]:
     [Technical specification for MAX11102AUB, accessed 2025-03-13](https://www.farnell.com/datasheets/1913106.pdf)
@@ -318,15 +321,15 @@ bottlenecks in high-rate randomness generation.
 [^4]:
     [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
-In order to evaluate just how much constraint our implementation can allow, our
-aim is to try our implementation on other MCUs with varying levels of power and
-hardware support. Whereas Teensy 4.1 is our primary development platform which
-we will evaluate closely, we aim to run our implementations on Raspberry Pi Pico
-2[^6] as well as ESP32-S3[^7]. Due to the lower computational power of these
-MCUs, there may be significant issues in utilizing these weaker models, yet they
-are significantly cheaper and easier to access. Testing of these will consist
-solely of running the implementation on these controllers and measuring
-execution speed.
+In order to evaluate how efficent our implementation can become, our aim is to
+try our implementation on other MCUs with varying levels of power and hardware
+support. Whereas Teensy 4.1 is our primary development platform which we will
+evaluate closely, we aim to run our implementations on Raspberry Pi Pico 2[^6]
+as well as ESP32-S3[^7]. Due to the lower computational power of these MCUs,
+there may be significant issues in utilizing these weaker models, yet they are
+significantly cheaper and easier to access. Testing of these will consist solely
+of running the implementation on these controllers and measuring execution speed
+and correctness of the output.
 
 [^6]:
     [Raspberry Pi Pico 2 documentation, accessed 2025-03-13](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
@@ -334,7 +337,7 @@ execution speed.
 [^7]:
     [ESP32-S3 documentation, accessed 2025-03-13](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
 
-### 3.4 Toeplitz extraction <!-- TODO: Add good details about Toeplitz, maybe why we use Toeplitz -->
+### 3.4 Toeplitz extraction
 
 The raw bits from the ADC can potentially have some deterministic patterns, and
 as such have to be processed somehow in order to remove these patterns. Several
@@ -364,77 +367,40 @@ to remove deterministic patterns, and produce a bitstring that results in our
 randomly generated number. An example of how this extraction works can be seen
 below.
 
-$$
-T =
-\begin{bmatrix}
-1 & 0 & 1 & 1 & 0 & 1 & 0 & 1 \\
-0 & 1 & 1 & 0 & 1 & 0 & 1 & 1 \\
-1 & 1 & 0 & 1 & 0 & 1 & 1 & 0 \\
-1 & 0 & 1 & 1 & 1 & 0 & 1 & 0
-\end{bmatrix}
-\quad
-k =
-\begin{bmatrix}
-1 \\ 0 \\ 1 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1
-\end{bmatrix}
-$$
+```
+Where n = number of input bits,
+      m = number of output bits:
 
-$$
-h(k) = T \cdot x \mod 2
-$$
+Let X be the input array (length n)
+Let T be the seed matrix (length n + m – 1)
+Let Y be a new array of length m
 
-\phantom{TEMP LINEBREAK}
+For i from 0 to m - 1:
+  sum = 0
+  For j from 0 to n - 1:
+    sum = sum + X[j] * T[i + j]
+  Y[i] = sum mod 2
 
-We then perform XOR multiplication on the matrices:
+Return Y
+```
 
-$$
-h(k) =
-\begin{bmatrix}
-(1 \oplus 0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1) \\
-(0 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1) \\
-(1 \oplus 1 \oplus 0 \oplus 1 \oplus 0 \oplus 1 \oplus 1 \oplus 0) \\
-(1 \oplus 0 \oplus 1 \oplus 1 \oplus 1 \oplus 0 \oplus 1 \oplus 0)
-\end{bmatrix}
-$$
-
-Which finally simplifies to:
-
-$$
-h(k) =
-\begin{bmatrix}
-1 \\
-0 \\
-1 \\
-1
-\end{bmatrix}
-$$
-
-This allows us to interpret the result as a random 4-bit integer:
-
-$$
-h(k) = (1011)_2 = 11_{10}
-$$
-
-Whereas this example is quite small in order to demonstrate how the algorithm
-operates, this can of course be scaled up significantly with larger values for
-both $T$ and $k$ respectively, granting larger integers. The main focus of this
-work is implementing this algorithm as efficiently as possible on our MCUs, and
-as such, several optimization efforts need to be taken into account during our
-experimentation.
+The main focus of this work is implementing this algorithm as efficiently as
+possible on our MCUs, and as such, several optimization efforts need to be taken
+into account during our experimentation.
 
 ### 3.5 Summary
 
 With the assumption that the OQRNG-device produces a truly random analog signal,
 we can now clearly define the scope in which this thesis operates. Considering
 the maximum conversion speed from the ADC and the USB-output from the MCU, we
-have a clear bound between 2.86 MS/s (for the ADC) and 480 MB/s (for the USB
-output) in which Toeplitz extraction needs to be executed. Any speeds over 2.86
-MB/s allows us to upgrade the ADC iteratively to continue increasing the output
-speed. Any implementation of Toeplitz extraction must then execute fast enough
-on any given microcontroller feasible for the proposed quantum RNG-thumbstick as
-to not be the decisive limiting factor.
+have a clear bound over 24 Mbit/s (imposed by the ADC) in which Toeplitz
+extraction needs to be executed. Any speeds over 2.86 MB/s allows us to upgrade
+the ADC iteratively to continue increasing the output speed. Any implementation
+of Toeplitz extraction must then execute fast enough on any given
+microcontroller feasible for the proposed quantum RNG-thumbstick as to not be
+the decisive limiting factor.
 
-## 4 RELATED WORKS <!-- TODO: Talk about why we select Toeplitz, how to optimize the bastard -->
+## 4 RELATED WORKS
 
 Most related works found tend to revolve around optimizing Toeplitz using more
 advanced hardware, and few works seem to delve into evaluating the
@@ -488,113 +454,104 @@ a clear indication whether the algorithm works as intended.
 However, in order to ensure the results work with varying data, we cannot limit
 ourselves to simply one stream of bits. The main point of the algorithm is to
 remove patterns in the bitstream that may lead to less randomized results. As
-such, we will manually produce several bitstreams to use for our tests -- each
-with varying degrees of repeated patterns that should be eliminated by the
-algorithm. Furthermore, in order to see how well our implementation will work
-with realistic data from the OQRNG generator, we will sample streams of bits
-directly from the source.
+such, we will sample several bitstreams from the OQRNG-device to use for our
+tests -- each with varying degrees of repeated patterns that should be
+eliminated by the algorithm. All bitstrings tested are available as an appendix
+to this paper.
 
-### 5.1 Iterative approach
+<!-- TODO: add figure for testing setup -->
+<!-- TODO: move some details from experementation sectio to implementation strategy and remove whole experemintation section, as well as some part of results. e.g concentrate every important thingy about implementation and testing setup here in section 5. -->
 
-Implementation of Toeplitz extraction will begin by a naive implementation not
-optimized for speed, but rather for accuracy. This implementation will be
-executed on a separate computer in order to produce the correct random number
-for every provided bitstring. These will be used as our baseline for accuracy
-for future iterations.
+### 5.1 Implementation strategy
 
-This naive implementation will then be flashed to our microcontrollers,
-beginning with Teensy 4.1 as this is the more capable of the microcontrollers
-used for this experiment. Code to measure the execution speed in microseconds
-will be implemented and tested before we load the naive implementation on said
-microcontroller. We expect that several implementations may be too resource
-intensive or have a memory complexity far greater than our cheaper, less capable
-microcontroller are able to handle, and as such these may not be able to be
-tested until a few iterations of optimization has occurred.
+Our implementation of the Toeplitz extractor followed a structured, iterative
+approach divided into two phases. Phase one focused on exploring performance
+improvements through incremental algorithmic changes. Phase two then addressed
+architectural inefficiencies identified during phase one. Each phase then
+consisted of a number of individual iterations, in which performance was
+evaluated in terms of both correctness and execution time on the target
+hardware.
 
-Each iteration will consist of incremental improvements to the algorithm. Our
-initial investigation has shown several avenues for improving the throughput of
-the algorithm, and each planned iteration will be discussed briefly. Depending
-on the empirical results of these iterations, there may be a need for further
-optimization iterations other than those listed.
+#### 5.2 Phase one
 
-**Iteration 1 - Naive implementation**: The naive implementation consists of a
-Toeplitz matrix $T$ and key $k$, acquired from fixed slices of the bitstream.
-Then, matrix-vector multiplication will be performed using $T$ and $k$, thus
-performing Toeplitz extraction -- which finally will eliminate jitter and
-produce a random number. The implementation of this in code will be quite
-simple, using nested loops to iterate over all values and multiply them. We
-expect that the throughput of this naive implementation will be far away from
-optimized iterations, and result in $O(n^2)$ complexity.
+Initially, we require a "naive" version designed to prioritize correctness over
+speed. This version was first executed on a separate computer to generate
+reference output for various input bitstrings, which were later used as accuracy
+baselines. The naive implementation was then flashed onto the Teensy 4.1
+microcontroller, where execution time was measured in microseconds. Each
+subsequent iteration introduced controlled modifications aimed at improving
+throughput.
 
-**Iteration 2 - Efficient data structures**: The naive implementation will not
-utilize efficient data structures for maximum speed, rather it will likely use
-fixed-size arrays which need to be iterated over for a time complexity of
-$O(n^2)$. Our hypothesis is that more efficient data structures may allow data
-to be processed in a far more efficient manner -- however, this scenario poses a
-risk for greater memory complexity which may not be suitable for use on
-microcontrollers. Which data structures might be most feasible will be evaluated
-during this iteration and as such is not preordained.
+The initial implementation followed the pseudocode described in section 3.4,
+using matrix multiplication over raw input and seed data. It relied on
+`std::vector<int>` for storage and used nested loops to compute each output bit.
+From this point, this implementation was improved over the coming iterations,
+and the new implementation verified in the same manner as the initial version.
 
-**Iteration 3 - Bitshifting**: We expect that Toeplitz extraction can be
-significantly improved with bitwise XOR operations, thus reducing overhead and
-memory usage. Instead of explicitly constructing the Toeplitz matrix, a
-right-shift operation can be used to dynamically reconstruct matrix rows.
-Additionally, matrix-vector multiplication can be improved using XOR operations
-to extract bits more efficient, thus minimizing unnecessary computations.
+**Iteration 1 - Data structures:** This iteration kept the same algorithmic
+logic as the initial implementation, but experimented with data structures such
+as raw pointers and hash maps to enhance the use of `std::vector`. The goal was
+to reduce or eliminate the reliance on nested loops.
 
-**Iteration 4 - Batching**: Finally, we consider the concept of batching larger
-amounts of bits for processing. Consider that an input buffer of bits is read
-from the ADC and stored, waiting for processing. Rather than taking 64 bits, and
-shifting them one by one, we can take two batches of 64 bits and multiply them
-directly using XOR bitshifting -- eliminating the need to process these
-bit-by-bit. As we will have a constant stream of bits from the ADC, we theorize
-that this method will allow for better performance in real-time processing over
-reading individual bits.
+**Iteration 2 - Bitshifting:** Basic bitwise operation was introduced to replace
+arithmetic whenever possible. Multiplication was replaced with logical `AND &`
+and modulo operations with bit masking `& 1`. The goal was to reduce the number
+of instructions and improve per-bit processing speed.
 
-**Iteration 5 - ARM Hardware instructions**: Rather than performing bitshifting
-operations in the code itself, certain microcontrollers come equipped with a
-separate processor specifically for bitshift-operations. Offloading the shifting
-to these processors rather than running them on the main CPU may allow faster
-processing of the data than performing the shifting in the code itself. However,
-this operation isn't natively supported by Arduino, and will potentially lead to
-extreme rewrites of the code which may prove too time consuming to do for two
-microcontrollers (as the code will not be reusable between controllers). As
-such, this optimization may only be done for one controller or left for future
-work.
+**Iteration 3 - Batching and Hardware optimization:** This iteration focused on
+optimizing performance through batching and the use of ARM-native instructions,
+beginning by testing batching alone. This was followed by isolated use of ARM
+instructions such as `__builtin_popcountll()` (_which counts the number of set
+bits in an unsigned integer_). After establishing their individual effect we
+combined both techniques, multiple batch sizes were tested to determine their
+impact. More details and benchmarks for each configuration can be found in the
+section 6.
 
-Each scenario will first be executed on a single thread, and multiple threads
-may theoretically be executed concurrently to further optimize the data. The
-feasibility of this highly depends on the performance of every individual
-implementation. Depending on the results during our experimentation, this may
-yield yet another iteration.
+#### 5.3 Phase two
 
-### 5.2 Evaluation
+Phase two focused on addressing inefficiencies and design issues that were
+unintentionally introduced during earlier iterations. Rather than continuing
+with new algorithmic ideas, this phase aimed to identify and fix structural
+problems. Several assumptions from phase one were re-evaluated -- such as the
+benefits of certain data structures or abstractions.
 
-In order to evaluate the efficacy of each iteration, we will test the code by
-processing our pre-determined bitstreams, saving the processed bits in a binary
-file and evaluating this file with the command line utility `ent`. This utility
-runs a series of tests on the data to determine its level of entropy the file
-has -- rather, how information dense the file is. A perfect result (_e.g.
-entirely random_) has an entropy value of $8.0$, whereas acceptable entropy
-values for our tests are greater than $7.99$, denoting a high level of
-randomness. Furthermore, `ent` can verify the arithmetic mean of the file,
-summing all the bits in the file and dividing it by the length of the file. A
-good distribution of randomness should have an arithmetic mean of $~127.5$. To
-ensure each iteration works as expected, we will compare the `ent` result from
-each iteration against the original baseline, ensuring that the resulting
-processed bitstring is identical between iterations. There are a few more
-measurements shown by `ent`, and more details regarding these can be found in
-the utilities manual page[^8].
+**Iteration 4 - Loop unrolling:** This iteration focused on reducing the number
+of loops in the extractor by manually unrolling repeated operations. The goal
+was to decrease overhead created by loops. Whereas this operation is commonly
+done by compiler optimization, manually performing this guarantees that we
+unroll the loops rather than leaving it to the compiler.
+
+**Iteration 5 - Removal of vector usage:** This iteration removed `std::vector`
+in favor of fixed-size types like `uint32_t` and `uint64_t` to reduce the
+overhead introduced by creating and populating this complex data structure.
+
+**Iteration 6 - Data type exploration:** Following the removal of vectors, this
+iteration explored alternative static data types to determine the most efficient
+structure for storing input and seed data.
+
+**Iteration 7 - Re-implementation of bitshifting:** In this final iteration, bit
+shifting techniques were reintroduced into the now simplified implementation.
+With high-level abstractions removed and memory structures streamlined,
+bit-level operations such as shifting and masking were applied.
+
+### 5.4 Evaluation
+
+To evaluate the correctness of each implementation, a baseline was generated as
+discussed in section 5.2. Using the naive, initial implementation to process
+bits and saving for later evaluation gave us a source of truth against which to
+compare following iterations. To verify that the algorithm successfully removed
+the patterns it should, we verified the measured entropy score with the command
+line utility `ent`[^8].
 
 [^8]:
-    [Manual page for `ent`, accessed 2025-04-23.](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
 
-As discussed in section 3, the hardware used will impose a clear bound on how
-quickly our implementation needs to process the bits in order to match the speed
-of the ADC, as well as the output speed of the USB-port, both in $MB/s$. In
-order to verify accuracy, the output of random numbers should be identical for
-each sample bitstring tested. Certain iterations might, however, use larger
-parts of the bitstring, and thus produce a slightly variable result.
+[Manual page for `ent`, accessed 2025-04-23.](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
+
+We created a script to facilitate easier testing, which is attached to this
+paper. Using this script, all bitstrings used for testing can be evaluated
+against the baseline, ensuring that the output from the new iteration matches
+the baseline exactly. Furthermore, the script also provides the average
+execution time of only the Toeplitz extraction in microseconds.
 
 Hyncica et. al. [@micromeasurements] propose that measuring execution time of
 algorithms directly via the microcontrollers internal timers (while subtracting
@@ -603,19 +560,32 @@ execution speed. An additional advantage is that the same code can be used to
 measure execution speed on several different microcontrollers, rather than
 relying on counting CPU cycles (as the process for this may vary greatly between
 controllers). As we will use fixed-size bitstrings for evaluation, we can then
-derive the throughput of the algorithm in $MB/s$ as follows:
+derive the throughput of the algorithm in $Mbit/s$ as follows:
 
 $$
-Throughput*{MB/s} = \frac{DataSize*{bits}}{Execution Time_{ms}} \times
-\frac{1}{8} \times \frac{1000}{10^6} \text{\phantom{12}(2)}
+\text{Throughput}{\mathrm{Mbit/s}}
+= \frac{DataSize{\mathrm{bits}}}{ExecutionTime_{\mathrm{ms}}}
+\times 10^{-3}
+\phantom{12}(2)
 $$
 
 This measurement allows us to place the throughput of our algorithm soundly in
-the bounds imposed on us by the hardware. During implementation, measurements of
-time complexity may be discussed with regards to the code -- but in the end, the
-performance of the code as it runs is what will be evaluated most thoroughly.
+the bounds imposed on us by the hardware. Plugging in the $24 Mbit/s$ bound
+imposed by the ADC with an arbitrarily chosen 64-bit sample size, we can derive
+the average execution speed in microseconds:
 
-### 5.2 Limitations
+$$
+T_{\mathrm{ms}}
+= \frac{64}{24}\times10^{-3}\ \mathrm{ms}
+\approx 2.667\times10^{-3}\ \mathrm{ms}
+=2.667\ \mu\mathrm{s}.
+\phantom{12}(3)
+$$
+
+In section 6, this calculation will be used to derive the execution speed of the
+various iterations.
+
+### 5.3 Limitations
 
 Our proposed iterations all assume that the limited hardware will support it.
 Whereas we are confident that Teensy 4.1 will be able to handle each iteration
@@ -624,48 +594,28 @@ specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
 however, this remains to be seen during the experimentation.
 
-## 6 EXPERIMENTATION
+## 6 RESULTS
 
-Each iteration results in an implementation written in C++, all of which will be
-supplied as an appendix to this paper. Furthermore, to simplify the
-implementation process, we will use the Arduino framework to communicate with
-the hardware. Whereas this introduces some overhead, it drastically reduces the
-time spent per iteration, and is deemed to be a suitable starting point.
+<!-- NOTE: IT'S TABLE TIME -->
 
-Initially, we created a script to simulate a stream of bits from a file, and
-pre-computed the expected results using a trusted version of Toeplitz
-extraction. With the expected results saved to a file on the host computer, each
-iteration could then be deployed to the MCU, and tested with the same data as
-the baseline. As the algorithm is fully deterministic with this uniform data,
-the exact same results in the same order should be produced by all iterations.
-The simulation script then simply asserts that the MCU produces the same random
-string of bits from the resulting iterations as with the baseline.
+\begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
+\multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &
+\multicolumn{3}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline & Min & Max & Avg & Min &
+Max & Avg \\ \hline 64 & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 &
+791 & 788.3139 & 5296 & 5311 & 5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 &
+21108 & 21119 & 21111.2163 \\ \hline \end{tabular} \caption{Minimum, maximum and
+average processing time for Teensy and Pico.}
+\label{tab:teensy_pico_min_max_avg}
 
-As our system does not rely on interrupts in any capacity, measuring the
-execution speed of the implemented Toeplitz extraction function can be done
-using the built in `micros()`-function provided by Arduino. This provides us
-with an accurate measurement of the execution time per function call. The
-average execution time per test set over each iteration will be presented in
-**`TABLE 1`**, along with the fastest and slowest executions per iteration
-respectively. Furthermore, the entropy value on the processed bitstream will be
-noted in the table to demonstrate that the important measurement, e.g. the
-randomness, still holds true between iterations.
+Table 1 presents the execution speeds of each iteration as listed in sections
+5.3 and 5.4, alongside the exectution speed in Mbit/s as calculated by utilizing
+the average value in (3). My thought then is that we here talk about the results
+and what they demonstrate, before moving on to draw conclusions and attempt to
+answer our research questions in section 7.
 
-For our tests, we used six files with varying degrees of patterns in the
-bitstring, ranging from quite disastrous to acceptable. We constructed a simple
-test script to facilitate easier testing of each iteration. This script allowed
-us to easily test each implementation by automating several tasks -- generating
-a baseline binary file with data processed by a good, proven implementation of
-Toeplitz extraction, giving us a way to ensure each iteration still produces the
-correct result. Furthermore, this script allows us to define different sample
-sizes for the MCU to utilize, and can extract the amount of time the algorithm
-takes to execute (_see table 1_) per each sample size.
+<!--
 
-Below we'll detail the results for each iteration.
-
-\newpage
-
-## RESULTS <!-- mb first present raw results, and than explain them/draw conclusion ? idk -->
+##7 CONCLUSION mb first present raw results, and than explain them/draw conclusion ? idk
 
 All iterations was tested on 6 different input datasets, with some results
 varying less than 0.1 microseconds. These results with such slight variations
@@ -685,22 +635,23 @@ our surprise, it executed well enough on Pi Pico 2 as well, albeit with
 used to generate the baseline results, and used to ensure following iterations
 all generate correct output.
 
-Worth noting is that this iteration (\_and all following iterations that
-generate the same result) have achieved entropy scores from `ent` that are
-greater than 7.99 for all tested data while ensuring it cannot be compressed
-further. This ensures that the algorithm has successfully removed as much of the
-patterns as can be reasonably expected from the raw binary data while
-maintaining the random nature of the data.
+Worth noting is that this iteration (_and all following iterations that generate
+the same result_) have achieved entropy scores from `ent` that are greater than
+7.99 for all tested data while ensuring it cannot be compressed further. This
+ensures that the algorithm has successfully removed as much of the patterns as
+can be reasonably expected from the raw binary data while maintaining the random
+nature of the data.
 
-\centering \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
-\multicolumn{3}{c|}{\textbf{Teensy (µs)}} & \multicolumn{3}{c|}{\textbf{Pico
-(µs)}} \\ \hline & Min & Max & Avg & Min & Max & Avg \\ \hline 64 & 13 & 14 &
-13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 & 791 & 788.3139 & 5296 & 5311 &
-5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 & 21108 & 21119 & 21111.2163 \\
-\hline \end{tabular} \caption{Minimum, maximum and average processing time for
-Teensy and Pico.} \label{tab:teensy_pico_min_max_avg} \end{table}
+\begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
+\multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &
+\multicolumn{3}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline & Min & Max & Avg & Min &
+Max & Avg \\ \hline 64 & 13 & 14 & 13.1564 & 103 & 117 & 106.3914 \\ 512 & 788 &
+791 & 788.3139 & 5296 & 5311 & 5302.4979 \\ 1024 & 3124 & 3130 & 3124.0580 &
+21108 & 21119 & 21111.2163 \\ \hline \end{tabular} \caption{Minimum, maximum and
+average processing time for Teensy and Pico.}
+\label{tab:teensy_pico_min_max_avg}
 
-### Iteration 2 <!--TODO: ask if it ok to write so? mb need some test to prove or not?-->
+### Iteration 2
 
 Although the updated version included enhanced data structures, theoretical and
 practical analysis indicated that these modifications do not provide advantages
@@ -722,7 +673,7 @@ minimal approach is not just adequate, but also recommended.
 
 ### Iteration 3
 
-Coming soon!
+Coming soon!-->
 
 ## CHANGELOG
 
