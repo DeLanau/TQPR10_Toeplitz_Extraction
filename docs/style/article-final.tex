@@ -103,13 +103,19 @@
 
 \section{1 INTRODUCTION}\label{introduction}
 
-In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules \cite{randomness}. These numbers do not generate true randomness, and in order to heighten security other methods of generating these are required. Current random number generators (\emph{RNG}) are usually implemented in code, using certain states of the host machine as a starting point before running a predetermined algorithm \cite{randomness}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
+In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules \cite{randomness}. Pseudo-random numbers do not generate true randomness, and in order to heighten security, other methods of generating random numbers are required. Current random number generators (\emph{RNG}) are usually implemented in computer programs, using certain states of the host machine as a starting point before running a predetermined algorithm \cite{randomness}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
 
 Imagine, then, if a malicious attacker somehow manages to ascertain the state a computer was in when it generated a random number, for instance to produce an SSH-key. This attacker then has the opportunity to accurately reproduce the exact, deterministic state that produced said random number, in essence removing the safety that randomness brings. While it may sound unrealistic, the exponential increase in processing power and the burgeoning field of quantum computing does introduce the possibility that one day, what we perceive as random is nothing more than a simple algorithm to crack.
 
-True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately.
+True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately. Clason \cite{Clason2023} presents a device that generates a fluctuating analogue signal utilizing this method, which we will use as a basis for our work.
 
-Further details about how this signal is produced and sampled will be introduced in section 2 and 3, and builds on the work of Clason \cite{Clason2023}. This optical signal needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some processing of the data has to be done in order to ensure that the data is workable and to remove potential deterministic patterns from these random bits. One method for this post-processing we will explore in this work is Toeplitz extraction \cite{toeplitz}, typically performed on the host computer utilizing the randomly generated numbers. While this system could very well be implemented on physically larger hardware, thus avoiding the constraints that limited hardware introduces, Clason proposes a simpler and cheaper way to achieve QRNG \cite{Clason2023}. In keeping with this, utilizing microcontrollers rather than a host computer for processing the raw bits extracted further helps to keep the costs low and the solution reasonably complex. Additionally, this allows the system to be self-contained, for instance a simple and portable USB-device which both generates and processes true random numbers. Further details regarding the microcontrollers used in our work will be outlined in section 3.
+Further details about how this signal is produced and sampled will be introduced in section 2 and 3. The optical signal output by the device described in \cite{Clason2023} needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some post-processing of the said raw bits has to be performed in order to ensure that the bits are workable, and to remove potential deterministic patterns from the data. One method for this post-processing we will explore in this work is Toeplitz extraction \cite{toeplitz}, typically performed on the host computer utilizing the randomly generated numbers.
+
+\[
+    \text{OQRNG Analogue output} \rightarrow \text{ADC-converter} \rightarrow \text{post-processing}
+\]
+
+Clason proposes a simpler and cheaper way to achieve QRNG \cite{Clason2023}. In keeping with this, utilizing microcontrollers rather than a host computer for processing the raw bits extracted further helps to keep the costs low and the solution reasonably complex. Additionally, this allows the system to be self-contained, for instance a simple and portable USB-device which both generates and processes true random numbers. Further details regarding the microcontrollers used in our work will be outlined in section 3.
 
 However, due to the lower processing power of the average microcontroller, any implementation of Toeplitz extraction needs to work quickly and efficiently despite this hardware constraint. Experimenting with efficient implementations of this well-defined algorithm is the main focus of this thesis, and the key research areas explored in this work are as follows:
 
@@ -256,8 +262,6 @@ Phase two focused on addressing inefficiencies and design issues that were unint
 
 To evaluate the correctness of each implementation, a baseline was generated as discussed in section 5.2. Using the naive, initial implementation to process bits and saving for later evaluation gave us a source of truth against which to compare following iterations. To verify that the algorithm successfully removed the patterns it should, we verified the measured entropy score with the command line utility \texttt{ent}\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}.
 
-We created a script to facilitate easier testing, which is attached to this paper. Using this script, all bitstrings used for testing can be evaluated against the baseline, ensuring that the output from the new iteration matches the baseline exactly. Furthermore, the script also provides the average execution time of only the Toeplitz extraction in microseconds.
-
 Hyncica et. al. \cite{micromeasurements} propose that measuring execution time of algorithms directly via the microcontrollers internal timers (while subtracting the interrupt overhead) provides adequate measurements of an algorithms execution speed. An additional advantage is that the same code can be used to measure execution speed on several different microcontrollers, rather than relying on counting CPU cycles (as the process for this may vary greatly between controllers). As we will use fixed-size bitstrings for evaluation, we can then derive the throughput of the algorithm in \(Mbit/s\) as follows:
 
 \[
@@ -285,6 +289,8 @@ Our proposed iterations all assume that the limited hardware will support it. Wh
 
 \subsection{6 RESULTS}\label{results}
 
+We created a script to facilitate easier testing, which is attached to this paper. Using this script, all bitstrings used for testing can be evaluated against the baseline, ensuring that the output from the new iteration matches the baseline exactly. Furthermore, the script also provides the average execution time of only the Toeplitz extraction in microseconds.
+
 \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{3}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline & Min & Max & Avg & Min &
@@ -295,6 +301,8 @@ average processing time for Teensy and Pico.}
 \label{tab:teensy_pico_min_max_avg}
 
 Table 1 presents the execution speeds of each iteration as listed in sections 5.3 and 5.4, alongside the exectution speed in Mbit/s as calculated by utilizing the average value in (3). My thought then is that we here talk about the results and what they demonstrate, before moving on to draw conclusions and attempt to answer our research questions in section 7.
+
+\subsection{7 CONCLUSION}\label{conclusion}
 
 \subsection{CHANGELOG}\label{changelog}
 
@@ -309,6 +317,8 @@ Table 1 presents the execution speeds of each iteration as listed in sections 5.
 2025-04-22: Begun including details regarding initial experimentation, updating details regarding experiments that had to change (e.g.~no baseline on separate hardware).
 
 2025-04-27: Added first table with test data.
+
+2025-05-20: Unfortunately, we've missed adding concrete details about changes made up until this point. Fix later.
 % BALANCE COLUMNS
 \balance{}
 
