@@ -584,13 +584,13 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 ### 6.1 Phase one
 
-<<<<<<< HEAD **Iteration 1 - Data Structures:**
+**Iteration 1 - Data Structures:**
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 13.1564 & 106.3914
 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\ \hline
-\end{tabular} \label{tab:iter1}
+\end{tabular} \label{tab:iter1}/end{table}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
 Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes. The Teensy
@@ -599,9 +599,10 @@ increases.
 
 **Iteration 2 - Bitshifting:**
 
-\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline 64 & 16.4689 \\ 512 &
-1006.6255 \\ 1024 & 3996.5972 \\ \hline \end{tabular} \label{tab:iter2}
+1006.6255 \\ 1024 & 3996.5972 \\ \hline \end{tabular}
+\label{tab:iter2}\end{table}
 
 Table \ref{tab:iter2} shows the execution times for iteration 2 on the Teensy
 4.1, which utilizes bitshifting instead of the original data structure approach.
@@ -614,9 +615,10 @@ in the tables above.
 
 **Iteration 3 - Batching and Hardware optimization:**
 
-\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline 64/64 & 43.0760 \\ 512/512
-& 2663.8194 \\ 1024/1024 & 10513.1767 \\ \hline \end{tabular} \label{tab:iter3}
+& 2663.8194 \\ 1024/1024 & 10513.1767 \\ \hline \end{tabular}
+\label{tab:iter3}\end{table}
 
 Table \ref{tab:iter3} presents the average execution time of iteration 3 on the
 Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the
@@ -628,11 +630,11 @@ the Teensy.
 
 **Iteration 4 - Loop unrolling:**
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 9.7017 & 70.7402 \\
 512 & 551.6358 & 3978.1928 \\ 1024 & 2195.1979 & 15830.8784 \\ \hline
-\end{tabular} \label{tab:iter4}
+\end{tabular} \label{tab:iter4}\end{table}
 
 Table \ref{tab:iter4} presents the execution time of iteration 4, which utilizes
 a 4x unrolled bit-processing loop. Compared to erlier iterations, this approach
@@ -648,10 +650,10 @@ later determined to be invalid due to packaging error.
 
 **Iteration 5 - Removal of vector usage:**
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 0.0501 & 0.2175 \\
-\hline \end{tabular} \label{tab:iter5}
+\hline \end{tabular} \label{tab:iter5}\end{table}
 
 Table \ref{tab:iter5} presents the results of iteration 5, in which vector
 structure were removed in favor of fixed-size integer types `uint32_t` and
@@ -660,10 +662,10 @@ approaches the physical execution limits of the Teensy 4.1.
 
 **Iteration 6 - Data type exploration:**
 
-\begin{tabular}{|c|c|} \hline \textbf{Data structure} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Data structure} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline array & 0.4284 \\
 unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline \end{tabular}
-\label{tab:iter6}
+\label{tab:iter6}\end{table}
 
 Table \ref{tab:iter6} presents the results of iteration 6, which was introduced
 to address the structural limitations encountered in iteration 5. Specifically,
