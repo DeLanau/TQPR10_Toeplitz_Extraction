@@ -586,11 +586,11 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 **Iteration 1 - Data Structures:**
 
-\begin{table}[ht]begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
-\multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
-\multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 13.1564 & 106.3914
-\\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\ \hline
-\end{tabular} \label{tab:iter1}/end{table}
+\begin{table}[ht] \centering \begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\ \hline 64 & 13.1564 &
+106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\
+\hline \end{tabular} \caption{Execution times for different bit sizes on Teensy
+and Pico} \label{tab:iter1} \end{table}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
 Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes. The Teensy
@@ -610,8 +610,8 @@ A clear increase in executiom time compared to iteration 1 is observed.
 
 Additionally, the isolated effect of applying a single bitmask operation `& 1`
 was evaluated. This resulted in a slight reduction in average execution time,
-from `13.1564 µs` to `13.1000 µs`, although this specific result is not included
-in the tables above.
+from `13.1564 $\mu s$` to `13.1000 $\mu s$`, although this specific result is
+not included in the tables above.
 
 **Iteration 3 - Batching and Hardware optimization:**
 
@@ -623,8 +623,8 @@ in the tables above.
 Table \ref{tab:iter3} presents the average execution time of iteration 3 on the
 Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the
 same 1024/1024-bit operation, the Raspberry Pi Pico 2 showed average execution
-time of `80806.006 µs` indicating a substantially lower throughput compared to
-the Teensy.
+time of `80806.006 $\mu s$` indicating a substantially lower throughput compared
+to the Teensy.
 
 ### 6.2 Phase two
 
@@ -643,10 +643,10 @@ Raspberry Pi Pico Mcu's.
 
 In addition to the results presented in Table \ref{tab:iter4}, a further tests
 was conducted on the Teensy using a single-loop unrolled implementation for the
-64-bit size, resulting in an average execution time of `6.6626 µs`. An
+64-bit size, resulting in an average execution time of `6.6626 $\mu s$`. An
 additional fully unrolled variant, where loops were entirely eliminated,
-produced a measured execution time of `0.0491 µs`. However, this measurement was
-later determined to be invalid due to packaging error.
+produced a measured execution time of `0.0491 $\mu s$`. However, this
+measurement was later determined to be invalid due to packaging error.
 
 **Iteration 5 - Removal of vector usage:**
 

@@ -1,120 +1,13 @@
-\documentclass{sigchi}
-
-% Arabic page numbers for submission.  Remove this line to eliminate
-% page numbers for the camera ready copy
-% \pagenumbering{arabic}
-
-% Load basic packages
-\usepackage{balance}       % to better equalize the last page
-\usepackage{graphics}      % for EPS, load graphicx instead 
-\usepackage[T1]{fontenc}   % for umlauts and other diaeresis
-\usepackage{txfonts}
-\usepackage{mathptmx}
-\usepackage[pdflang={en-US},pdftex]{hyperref}
-\usepackage{color}
-\usepackage{booktabs}
-\usepackage{textcomp}
-\usepackage{tikz}
-\usetikzlibrary{positioning}
-\usepackage{algorithm}
-\usepackage{algorithmic}
-
-% Some optional stuff you might like/need.
-\usepackage{microtype}        % Improved Tracking and Kerning
-% \usepackage[all]{hypcap}    % Fixes bug in hyperref caption linking
-\usepackage{ccicons}          % Cite your images correctly!
-% \usepackage[utf8]{inputenc} % for a UTF8 editor only
-
-% If you want to use todo notes, marginpars etc. during creation of
-% your draft document, you have to enable the "chi_draft" option for
-% the document class. To do this, change the very first line to:
-% "\documentclass[chi_draft]{sigchi}". You can then place todo notes
-% by using the "\todo{...}"  command. Make sure to disable the draft
-% option again before submitting your final document.
-\usepackage{todonotes}
-
-% Paper metadata (use plain text, for PDF inclusion and later
-% re-using, if desired).  Use \emtpyauthor when submitting for review
-% so you remain anonymous.
-\def\plaintitle{Efficient Exctraction of True Random Numbers from Quantum System on Resource Constrained Hardware}
-\def\plainauthor{First Author, Second Author, Third Author,
-  Fourth Author, Fifth Author, Sixth Author}
-\def\emptyauthor{}
-\def\plainkeywords{Authors' choice; of terms; separated; by
-  semicolons; include commas, within terms only; this section is required.}
-\def\plaingeneralterms{Documentation, Standardization}
-
-% llt: Define a global style for URLs, rather that the default one
-\makeatletter
-\def\url@leostyle{%
-  \@ifundefined{selectfont}{
-    \def\UrlFont{\sf}
-  }{
-    \def\UrlFont{\small\bf\ttfamily}
-  }}
-\makeatother
-\urlstyle{leo}
-
-% To make various LaTeX processors do the right thing with page size.
-\def\pprw{8.5in}
-\def\pprh{11in}
-\special{papersize=\pprw,\pprh}
-\setlength{\paperwidth}{\pprw}
-\setlength{\paperheight}{\pprh}
-\setlength{\pdfpagewidth}{\pprw}
-\setlength{\pdfpageheight}{\pprh}
-
-% Make sure hyperref comes last of your loaded packages, to give it a
-% fighting chance of not being over-written, since its job is to
-% redefine many LaTeX commands.
-\definecolor{linkColor}{RGB}{6,125,233}
-\hypersetup{%
-  pdftitle={\plaintitle},
-% Use \plainauthor for final version.
-%  pdfauthor={\plainauthor},
-  pdfauthor={\emptyauthor},
-  pdfkeywords={\plainkeywords},
-  pdfdisplaydoctitle=true, % For Accessibility
-  bookmarksnumbered,
-  pdfstartview={FitH},
-  colorlinks,
-  citecolor=black,
-  filecolor=black,
-  linkcolor=black,
-  urlcolor=linkColor,
-  breaklinks=true,
-  hypertexnames=false
-}
-
-% create a shortcut to typeset table headings
-% \newcommand\tabhead[1]{\small\textbf{#1}}
-
-% End of preamble. Here it comes the document.
-\begin{document}
-
-\title{\plaintitle}
-
-\numberofauthors{2}
-\author{%
-	\alignauthor{Love Arreborn\\
-		\email{lovar063@student.liu.se}}\\
-	\alignauthor{Nadim Lakrouz\\
-		\email{nadla777@student.liu.se}}\\
-}
-
-\maketitle
-
-
 \hypertarget{introduction}{%
 \section{1 INTRODUCTION}\label{introduction}}
 
-In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules \cite{randomness}. Pseudo-random numbers do not generate true randomness, and in order to heighten security, other methods of generating random numbers are required. Current random number generators (\emph{RNG}) are usually implemented in computer programs, using certain states of the host machine as a starting point before running a predetermined algorithm \cite{randomness}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
+In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules {[}@randomness{]}. Pseudo-random numbers do not generate true randomness, and in order to heighten security, other methods of generating random numbers are required. Current random number generators (\emph{RNG}) are usually implemented in computer programs, using certain states of the host machine as a starting point before running a predetermined algorithm {[}@randomness{]}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
 
 Imagine, then, if a malicious attacker somehow manages to ascertain the state a computer was in when it generated a random number, for instance to produce an SSH-key. This hypothetical attacker has the opportunity to accurately reproduce the exact, deterministic state that produced said random number, in essence removing the safety that randomness brings. While it may sound unrealistic, the exponential increase in processing power and the burgeoning field of quantum computing does introduce the possibility that one day, what we perceive as random is nothing more than a simple algorithm to crack.
 
-True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately. Clason \cite{Clason2023} presents a device that generates a fluctuating analogue signal utilizing this method.
+True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps {[}@lavarand{]}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) {[}@QRNG{]}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately. Clason {[}@Clason2023{]} presents a device that generates a fluctuating analogue signal utilizing this method.
 
-The optical signal output by the device described in \cite{Clason2023} needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some post-processing of the said raw bits has to be performed in order to ensure that the bits are workable, and to remove potential deterministic patterns from the data. One method for this post-processing we will explore in this work is Toeplitz extraction \cite{toeplitz}, typically performed on the host computer utilizing the randomly generated numbers. The post-processing finally yields a random number. This relationship can be seen in Figure \ref{fig:linear-system}.
+The optical signal output by the device described in {[}@Clason2023{]} needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some post-processing of the said raw bits has to be performed in order to ensure that the bits are workable, and to remove potential deterministic patterns from the data. One method for this post-processing we will explore in this work is Toeplitz extraction {[}@toeplitz{]}, typically performed on the host computer utilizing the randomly generated numbers. The post-processing finally yields a random number. This relationship can be seen in Figure \ref{fig:linear-system}.
 
 \begin{figure}[ht] \centering \begin{tikzpicture}[>=latex] % top row, 2 cm apart
 \node (A) {RNG-module}; \node (B) [right=2cm of A] {ADC-conversion};
@@ -129,7 +22,7 @@ The optical signal output by the device described in \cite{Clason2023} needs to 
 \end{tikzpicture} \caption{An abstract of the steps required for OQRNG.}
 \label{fig:linear-system} \end{figure}
 
-Clason proposes a simpler and cheaper way to achieve QRNG \cite{Clason2023} than what has been done in previous research. These systems have generally been large, bulky and expensive, whereas the method proposed is portable enough to theoretically be installed in a portable device -- for instance a USB-thumbstick. In keeping with this, utilizing microcontrollers rather than a host computer for processing the raw bits extracted allows this system to be self-contained and portable, and further helps to keep the costs low and the solution reasonably complex.
+Clason proposes a simpler and cheaper way to achieve QRNG {[}@Clason2023{]} than what has been done in previous research. These systems have generally been large, bulky and expensive, whereas the method proposed is portable enough to theoretically be installed in a portable device -- for instance a USB-thumbstick. In keeping with this, utilizing microcontrollers rather than a host computer for processing the raw bits extracted allows this system to be self-contained and portable, and further helps to keep the costs low and the solution reasonably complex.
 
 However, due to the limited processing power of the average microcontroller, any implementation of Toeplitz extraction needs to work quickly and efficiently despite this hardware constraint. Experimenting with efficient implementations of this well-defined algorithm is the main focus of this thesis, and the key research areas explored in this work are as follows:
 
@@ -148,37 +41,37 @@ Section 2 of this article will introduce the theory that allows for QRNG, and ho
 
 A majority of the research around this topic stems from physics, with implementations of the technology frequently being published and studied by physicists. As such, a brief introduction to the concepts used in previous research as well as an introduction to previous implementations of this technology will be presented in this section.
 
-The idea of an optical QRNG (\emph{OQRNG}) is not a novel one. The basis of the theory is the intrinsically random properties of a quantum process. Stefanov et. al. \cite{StefanovOptical} proposes using the random choice of a photon between two output signals to generate a random stream of bits, however the theory behind it can be applied to other quantum processes as well. This particular theorem has been implemented by Wayne et. al. \cite{Wayne} to create a quantum number generator. While this article proves the efficacy of OQRNG, it utilizes a slightly different method.
+The idea of an optical QRNG (\emph{OQRNG}) is not a novel one. The basis of the theory is the intrinsically random properties of a quantum process. Stefanov et. al. {[}@StefanovOptical{]} proposes using the random choice of a photon between two output signals to generate a random stream of bits, however the theory behind it can be applied to other quantum processes as well. This particular theorem has been implemented by Wayne et. al. {[}@Wayne{]} to create a quantum number generator. While this article proves the efficacy of OQRNG, it utilizes a slightly different method.
 
 \hypertarget{shot-noise-quantum-fluctuations}{%
 \subsubsection{2.1 Shot noise quantum fluctuations}\label{shot-noise-quantum-fluctuations}}
 
-Our work revolves around the measurement of shot noise of vacuum states rather than measuring arrival times of photons. Essentially, this is another quantum process with the same inherently random properties as described by Stefanov et. al. \cite{StefanovOptical}, but instead using shot noise. As described by Niemczuk \cite{shotnoise}, shot noise is minor fluctuations in an electrical current, which is inherently random. Reading this property, then, gives us an intrinsically random source from which to generate a random output, which in turn can be processed into a random number.
+Our work revolves around the measurement of shot noise of vacuum states rather than measuring arrival times of photons. Essentially, this is another quantum process with the same inherently random properties as described by Stefanov et. al. {[}@StefanovOptical{]}, but instead using shot noise. As described by Niemczuk {[}@shotnoise{]}, shot noise is minor fluctuations in an electrical current, which is inherently random. Reading this property, then, gives us an intrinsically random source from which to generate a random output, which in turn can be processed into a random number.
 
-Implementations of this theory exist, however with significant drawbacks. Shen et. al. \cite{contender1} presents an implementation using a fairly complex setup, in which a continuous-wave fiber laser is the optical source. They conclude that sampling the shot noise is, indeed, suitable for OQRNG. However, the implementation requires expensive and complex hardware, and the sheer size of the system prohibits it from being portable and easily reproducible in small-scale tests.
+Implementations of this theory exist, however with significant drawbacks. Shen et. al. {[}@contender1{]} presents an implementation using a fairly complex setup, in which a continuous-wave fiber laser is the optical source. They conclude that sampling the shot noise is, indeed, suitable for OQRNG. However, the implementation requires expensive and complex hardware, and the sheer size of the system prohibits it from being portable and easily reproducible in small-scale tests.
 
-A more recent implementation of OQRNG in a smaller scale has been presented by Singh et. al. \cite{singh}. This particular implementation uses a bespoke circuit board where all components are present on a single board -- e.g., this experimental setup contains an integrated ADC, post-processor, entropy controller and entropy generator. While this article cements the viability of OQRNG using shot noise (\emph{despite the article not being confirmed as peer reviewed}), the bespoke nature of the circuit board makes this experiment difficult to reproduce. As our thesis will use commercially available ADCs and microcontrollers, the only bespoke component is the shot noise generator itself. Furthermore, the Toeplitz extraction is not run on the microcontroller itself in these experiments -- instead, the hashing of these raw bits is done on the receiving computer as this bespoke circuit board featured a relatively weak processor.
+A more recent implementation of OQRNG in a smaller scale has been presented by Singh et. al. {[}@singh{]}. This particular implementation uses a bespoke circuit board where all components are present on a single board -- e.g., this experimental setup contains an integrated ADC, post-processor, entropy controller and entropy generator. While this article cements the viability of OQRNG using shot noise (\emph{despite the article not being confirmed as peer reviewed}), the bespoke nature of the circuit board makes this experiment difficult to reproduce. As our thesis will use commercially available ADCs and microcontrollers, the only bespoke component is the shot noise generator itself. Furthermore, the Toeplitz extraction is not run on the microcontroller itself in these experiments -- instead, the hashing of these raw bits is done on the receiving computer as this bespoke circuit board featured a relatively weak processor.
 
-In summary, previous research has proven that OQRNG can generate true randomness, and more specifically, Shen et. al. \cite{contender1} and Singh et. al. \cite{singh} both implement OQRNG through readings of shot noise. However, there are limitations in both of these works. Either the system that generates the shot noise is large and complex \cite{contender1} or the system is built on bespoke hardware with limitations in processing power which prevents a fully integrated system \cite{singh}. Furthermore, to the best of our knowledge, most of the work in this field is from the perspective of physicists, and there appears to be little research on this subject in the domain of computer science. Our work aims to bridge this gap by using commercially available hardware (\emph{other than the bespoke shot noise generator \cite{Clason2023}}) and focuses on implementing Toeplitz extraction directly on the microcontroller. Rather than focusing on the intricacies of quantum fluctuations, we will instead approach this problem from a computer science perspective.
+In summary, previous research has proven that OQRNG can generate true randomness, and more specifically, Shen et. al. {[}@contender1{]} and Singh et. al. {[}@singh{]} both implement OQRNG through readings of shot noise. However, there are limitations in both of these works. Either the system that generates the shot noise is large and complex {[}@contender1{]} or the system is built on bespoke hardware with limitations in processing power which prevents a fully integrated system {[}@singh{]}. Furthermore, to the best of our knowledge, most of the work in this field is from the perspective of physicists, and there appears to be little research on this subject in the domain of computer science. Our work aims to bridge this gap by using commercially available hardware (\emph{other than the bespoke shot noise generator {[}@Clason2023{]}}) and focuses on implementing Toeplitz extraction directly on the microcontroller. Rather than focusing on the intricacies of quantum fluctuations, we will instead approach this problem from a computer science perspective.
 
 \hypertarget{background}{%
 \subsection{3 BACKGROUND}\label{background}}
 
-Our work is a practical continuation of the work of Clason \cite{Clason2023}. In this work, quantum shot noise originating from photodiodes was studied, and in so doing a prototype device was constructed. This prototype utilized an LED soldered millimeters apart from a photodiode, which in turn outputs a variable analog signal from the device. In this section, we introduce the remaining hardware used for our implementations as well as the considerations taken in order to shift the focus from physics to computer science.
+Our work is a practical continuation of the work of Clason {[}@Clason2023{]}. In this work, quantum shot noise originating from photodiodes was studied, and in so doing a prototype device was constructed. This prototype utilized an LED soldered millimeters apart from a photodiode, which in turn outputs a variable analog signal from the device. In this section, we introduce the remaining hardware used for our implementations as well as the considerations taken in order to shift the focus from physics to computer science.
 
 \hypertarget{optical-rng-module}{%
 \subsubsection{3.1 Optical RNG module}\label{optical-rng-module}}
 
-The one bespoke piece of hardware used in this study is the prototype designed by Clason \cite{Clason2023} as a part of his masters thesis. This device produces the optical shot noise which will be the source of randomness in our work. Moving forward in this article, we will refer to this as the OQRNG-device.
+The one bespoke piece of hardware used in this study is the prototype designed by Clason {[}@Clason2023{]} as a part of his masters thesis. This device produces the optical shot noise which will be the source of randomness in our work. Moving forward in this article, we will refer to this as the OQRNG-device.
 
-As described in Clasons work \cite{Clason2023}, the OQRNG-device is an electro-optical system which measures optical shot noise, generating quantum randomness. The device has an LED and a photodiode positioned a few millimeters apart, ensuring efficient light coupling. The photodiode detects light from the LED, and converts the light into a current signal, which is sent to a transimpedance amplifier to convert it into measurable voltage. In order to minimize disruptions by other external lights, the system is enclosed in a shielded measurment box.
+As described in Clasons work {[}@Clason2023{]}, the OQRNG-device is an electro-optical system which measures optical shot noise, generating quantum randomness. The device has an LED and a photodiode positioned a few millimeters apart, ensuring efficient light coupling. The photodiode detects light from the LED, and converts the light into a current signal, which is sent to a transimpedance amplifier to convert it into measurable voltage. In order to minimize disruptions by other external lights, the system is enclosed in a shielded measurment box.
 
-Whereas the exact quantum mechanisms that ensure that this system ensures randomness and further details regarding the OQRNG-device is better derived directly from Clasons work \cite{Clason2023}, the primary concern for our study is the inherently random, analog voltage current produced by the system.
+Whereas the exact quantum mechanisms that ensure that this system ensures randomness and further details regarding the OQRNG-device is better derived directly from Clasons work {[}@Clason2023{]}, the primary concern for our study is the inherently random, analog voltage current produced by the system.
 
 \hypertarget{adc-converter}{%
 \subsubsection{3.2 ADC converter}\label{adc-converter}}
 
-This analog current is not suitable to operate on without further processing. As mentioned in Section 1, the signal needs to pass through an ADC to be converted into raw bits. In his thesis, Clason \cite{Clason2023} suggests a discrete ADC chip capable of analyzing frequencies higher than 25 MHz, as this is the highest frequency studied in his work. However, in the interest of keeping the implementation light and cheap, we will be using ADCs that provide less samples per second and lower frequencies. This is done mainly for ease of development and access to this hardware.
+This analog current is not suitable to operate on without further processing. As mentioned in Section 1, the signal needs to pass through an ADC to be converted into raw bits. In his thesis, Clason {[}@Clason2023{]} suggests a discrete ADC chip capable of analyzing frequencies higher than 25 MHz, as this is the highest frequency studied in his work. However, in the interest of keeping the implementation light and cheap, we will be using ADCs that provide less samples per second and lower frequencies. This is done mainly for ease of development and access to this hardware.
 
 Many microcontrollers furthermore come equipped with internal ADCs that can be utilized, and while these provide a lower sample size (\emph{often around 1 MSPS}), the ease of development may be prudent to utilize for this proof-of-concept. While our initial ADC has a fairly low throughput, this can always be upgraded if it ends up becoming too limiting.
 
@@ -199,7 +92,7 @@ Microcontrollers (\emph{MCUs}) are compact and low-power computing devices desig
 
 Since MCUs often function under strict timing requirements, it is critical to have effective ways to access memory and transfer data for processing in real time. High-performance MCUs enhance memory usage in various ways. Some of them use Tightly Coupled Memory\footnote{\href{https://www.farnell.com/datasheets/1913106.pdf}{Technical specification for MAX11102AUB, accessed 2025-03-13}} (\emph{TCM}), which gives fast SRAM with specific access routes for important data, avoiding cache misses and guaranteeing consistent performance. Moreover, instruction and data caching techniques, including instruction pre-fetching and branch prediction, help minimize execution delays in computationally intensive real-time applications. Another important aspect is Direct Memory Access\footnote{\href{https://www.sciencedirect.com/topics/computer-science/direct-memory-access}{ScienceDirect Journals \& Books, accessed 2025-03-13}} (DMA), which enables data transfer between peripherals such as the ADC and RAM, without CPU intervention. This offloading reduces processing overhead, allowing the MCU to manage fast data transfers effectively. These improvements are especially significant for Toeplitz extraction, where large amount of random data needs to be processed and sent quickly with low delays. Efficient memory management guarantees that randomness extraction can occur rapidly without major slowdowns in computing. Both approaches will be tested during development.
 
-In our work, we intend to use Teensy 4.1\footnote{\href{https://www.pjrc.com/store/teensy41.html}{Teensy developer documentation, accessed 2025-02-27}}, based on the ARM Cortex-M7. This MCU is especially suitable for computationally demanding tasks involving randomness extraction due to its dual-issue superscalar architecture and Digital Signal Processing (\emph{DSP}) capabilities. The floating-point unit\footnote{\href{https://www.sciencedirect.com/topics/computer-science/floating-point-unit}{ScienceDirect Journals \& Books, accessed 2025-03-13}} (\emph{FPU}) and Single Instruction, Multiple Data (\emph{SIMD}) style DSP instructions improve how quickly it can perform bitwise and arithmetic tasks, which is crucial for quick Toeplitz extraction. SIMD-controlled DSP architectures, as described by Han et al. \cite{simd-dsp}, leverage parallel vectorized computation to accelerate matrix operations -- making them highly effective for Toeplitz matrix-vector multiplications.
+In our work, we intend to use Teensy 4.1\footnote{\href{https://www.pjrc.com/store/teensy41.html}{Teensy developer documentation, accessed 2025-02-27}}, based on the ARM Cortex-M7. This MCU is especially suitable for computationally demanding tasks involving randomness extraction due to its dual-issue superscalar architecture and Digital Signal Processing (\emph{DSP}) capabilities. The floating-point unit\footnote{\href{https://www.sciencedirect.com/topics/computer-science/floating-point-unit}{ScienceDirect Journals \& Books, accessed 2025-03-13}} (\emph{FPU}) and Single Instruction, Multiple Data (\emph{SIMD}) style DSP instructions improve how quickly it can perform bitwise and arithmetic tasks, which is crucial for quick Toeplitz extraction. SIMD-controlled DSP architectures, as described by Han et al. {[}@simd-dsp{]}, leverage parallel vectorized computation to accelerate matrix operations -- making them highly effective for Toeplitz matrix-vector multiplications.
 
 In order to evaluate how efficent our implementation can become, our aim is to try our implementation on other MCUs with varying levels of power and hardware support. Whereas Teensy 4.1 is our primary development platform which we will evaluate closely, we aim to run our implementations on Raspberry Pi Pico 2\footnote{\href{https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf}{Raspberry Pi Pico 2 documentation, accessed 2025-03-13}} as well as ESP32-S3\footnote{\href{https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf}{ESP32-S3 documentation, accessed 2025-03-13}}. Due to the lower computational power of these MCUs, there may be significant issues in utilizing these weaker models, yet they are significantly cheaper and easier to access. Testing of these will consist solely of running the implementation on these controllers and measuring execution speed and correctness of the output.
 
@@ -208,9 +101,9 @@ In order to evaluate how efficent our implementation can become, our aim is to t
 
 The raw bits from the ADC can potentially have some deterministic patterns, and as such have to be processed somehow in order to remove these patterns. Several methods exist for this purpose, and for our work, we will perform this pre-processing via Toeplitz extraction. The main focus of this study is to implement this extraction algorithm as effectively as possible on resource constrained hardware.
 
-A detailed account of the inner workings of Toeplitz extraction can be found in the work of Chouhan et al. \cite{toeplitz-desc}. This work focuses on implementing Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific details can be derived from their work. As these authors describe, Toeplitz extraction is a strong contender for our work due to a lower computational complexity than other alternatives, as well as a relatively easy algorithm to use. This extraction utilizes either matrix multiplication or hashing between a pseudo-random seed and the raw data provided from a high-entropy source of randomness -- in our case, the OQRNG-device.
+A detailed account of the inner workings of Toeplitz extraction can be found in the work of Chouhan et al. {[}@toeplitz-desc{]}. This work focuses on implementing Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific details can be derived from their work. As these authors describe, Toeplitz extraction is a strong contender for our work due to a lower computational complexity than other alternatives, as well as a relatively easy algorithm to use. This extraction utilizes either matrix multiplication or hashing between a pseudo-random seed and the raw data provided from a high-entropy source of randomness -- in our case, the OQRNG-device.
 
-To summarize the theoretical working of Toeplitz extraction (\emph{as explained by Chouhan et al. \cite{toeplitz-desc}}), a pre-determined seed matrix (\(T\)) is multiplied with the sampled raw bit matrix (\(K\)). The size of the seed is directly dependent on the size of the sampled data, and can be fixed or continually re-sampled as needed. To ensure high levels of entropy, our intuition is that re-sampling the seed from the OQRNG-device continually is prudent. The sample and seed will then be processed with matrix multiplication to remove deterministic patterns, and produce a bitstring that results in our randomly generated number. An example of how this extraction works can be seen below.
+To summarize the theoretical working of Toeplitz extraction (\emph{as explained by Chouhan et al. {[}@toeplitz-desc{]}}), a pre-determined seed matrix (\(T\)) is multiplied with the sampled raw bit matrix (\(K\)). The size of the seed is directly dependent on the size of the sampled data, and can be fixed or continually re-sampled as needed. To ensure high levels of entropy, our intuition is that re-sampling the seed from the OQRNG-device continually is prudent. The sample and seed will then be processed with matrix multiplication to remove deterministic patterns, and produce a bitstring that results in our randomly generated number. An example of how this extraction works can be seen below.
 
 \begin{algorithm}[ht] \caption{Toeplitz extraction}\label{alg:bit-conv}
 \begin{algorithmic}[1] \REQUIRE \(x[0\,..\,n-1]\) \Comment{input bit array of
@@ -232,11 +125,11 @@ With the assumption that the OQRNG-device produces a truly random analog signal,
 
 Most related works found tend to revolve around optimizing Toeplitz using more advanced hardware, and few works seem to delve into evaluating the implementation in code.
 
-As mentioned in section 3.4, Chouhan et al. \cite{toeplitz-desc} utilized FPGA to implement Toeplitz extraction specifically for OQRNG, a work also studied by Zhang et al. \cite{toeplitz}. Furthermore, Zhang et al.~utilized a standardized min-entropy evaluation to ensure true, unbiased randomness in their result. Both of these implementations utilize powerful hardware where the matrix multiplication is offloaded to FPGA. These implementations provided extraction speeds of between 3.36 Gpbs \cite{toeplitz} to 26.57 Gbps \cite{toeplitz-desc}. Neither of these implementations operate on constrained hardware, instead creating bespoke circuit boards for their works.
+As mentioned in section 3.4, Chouhan et al. {[}@toeplitz-desc{]} utilized FPGA to implement Toeplitz extraction specifically for OQRNG, a work also studied by Zhang et al. {[}@toeplitz{]}. Furthermore, Zhang et al.~utilized a standardized min-entropy evaluation to ensure true, unbiased randomness in their result. Both of these implementations utilize powerful hardware where the matrix multiplication is offloaded to FPGA. These implementations provided extraction speeds of between 3.36 Gpbs {[}@toeplitz{]} to 26.57 Gbps {[}@toeplitz-desc{]}. Neither of these implementations operate on constrained hardware, instead creating bespoke circuit boards for their works.
 
-Another important point that is often neglected in randomness extraction using Toeplitz matrices is how the seed key is handled when forming the Toeplitz matrix. Numerous systems, such as those developed by Chouhan et al. \cite{toeplitz-desc} and Zhang et al. \cite{toeplitz}, depends on fixed seeds. Fixed seeds can create security risks over prolonged operation time. To tackle this problem, Lin et al \cite{lin} proposed a method for seed-renewable Toeplitz post-processing in QRNG. Their strategy incorporates a dynamic seed pool within the FPGA, where each instance of post-processing picks a new, randomly selected seed. Thus, minimizing temporal correlations between extractions. Furthermore, an external seed updating mechanism via Peripheral Component Interconnect Express (\emph{PCIe}) ensures that seeds are refreshed whenever a certain security limit is reached. Compared to fixed-seed methods, this renewable approach enhances cryptographic robustness and ensures sustained high-security randomness extraction in real-world applications.
+Another important point that is often neglected in randomness extraction using Toeplitz matrices is how the seed key is handled when forming the Toeplitz matrix. Numerous systems, such as those developed by Chouhan et al. {[}@toeplitz-desc{]} and Zhang et al. {[}@toeplitz{]}, depends on fixed seeds. Fixed seeds can create security risks over prolonged operation time. To tackle this problem, Lin et al {[}@lin{]} proposed a method for seed-renewable Toeplitz post-processing in QRNG. Their strategy incorporates a dynamic seed pool within the FPGA, where each instance of post-processing picks a new, randomly selected seed. Thus, minimizing temporal correlations between extractions. Furthermore, an external seed updating mechanism via Peripheral Component Interconnect Express (\emph{PCIe}) ensures that seeds are refreshed whenever a certain security limit is reached. Compared to fixed-seed methods, this renewable approach enhances cryptographic robustness and ensures sustained high-security randomness extraction in real-world applications.
 
-Efficient Toeplitz matrix-vector multiplication (\emph{TMVM}) is critical for optimizing randomness extraction that relies on Toeplitz, particulary in constrained hardware environments. Liao et al. \cite{liao} showed that this process could be greatly accelerated using Fast Fourier Transform (\emph{FFT}) and its inverse (\emph{IFFT}) -- reducing computational complexity from \(O(n^2)\) to \(O(n \log n)\). Their implementation on FPGA utilized this approach for deep neural networks, resulting in a 28.7 times decrease in model size while still achieving fast inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing for randomness extraction could achieve higher throughput. Thus, potentially could improve performance and reduce latency.
+Efficient Toeplitz matrix-vector multiplication (\emph{TMVM}) is critical for optimizing randomness extraction that relies on Toeplitz, particulary in constrained hardware environments. Liao et al. {[}@liao{]} showed that this process could be greatly accelerated using Fast Fourier Transform (\emph{FFT}) and its inverse (\emph{IFFT}) -- reducing computational complexity from \(O(n^2)\) to \(O(n \log n)\). Their implementation on FPGA utilized this approach for deep neural networks, resulting in a 28.7 times decrease in model size while still achieving fast inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing for randomness extraction could achieve higher throughput. Thus, potentially could improve performance and reduce latency.
 
 \hypertarget{methodology}{%
 \subsection{5 METHODOLOGY}\label{methodology}}
@@ -276,7 +169,7 @@ Phase two focused on addressing inefficiencies and design issues that were unint
 
 To evaluate the correctness of each implementation, a baseline was generated as discussed in section 5.2. Using the naive, initial implementation to process bits and saving for later evaluation gave us a source of truth against which to compare following iterations. To verify that the algorithm successfully removed the patterns it should, we verified the measured entropy score with the command line utility \texttt{ent}\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}.
 
-Hyncica et. al. \cite{micromeasurements} propose that measuring execution time of algorithms directly via the microcontrollers internal timers (while subtracting the interrupt overhead) provides adequate measurements of the execution speed of an algorithm. An additional advantage is that the same code can be used to measure execution speed on several different microcontrollers, rather than relying on counting CPU cycles (as the process for this may vary greatly between controllers). As we will use fixed-size bitstrings for evaluation, we can then derive the throughput of the algorithm in \(Mbit/s\) as follows:
+Hyncica et. al. {[}@micromeasurements{]} propose that measuring execution time of algorithms directly via the microcontrollers internal timers (while subtracting the interrupt overhead) provides adequate measurements of the execution speed of an algorithm. An additional advantage is that the same code can be used to measure execution speed on several different microcontrollers, rather than relying on counting CPU cycles (as the process for this may vary greatly between controllers). As we will use fixed-size bitstrings for evaluation, we can then derive the throughput of the algorithm in \(Mbit/s\) as follows:
 
 \[
 Throughput_\mathrm{Mbit/s}
@@ -342,7 +235,7 @@ Additionally, the isolated effect of applying a single bitmask operation \texttt
 & 2663.8194 \\ 1024/1024 & 10513.1767 \\ \hline \end{tabular}
 \label{tab:iter3}\end{table}
 
-Table \ref{tab:iter3} presents the average execution time of iteration 3 on the Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the same 1024/1024-bit operation, the Raspberry Pi Pico 2 showed average execution time of \texttt{80806.006\ µs} indicating a substantially lower throughput compared to the Teensy.
+Table \ref{tab:iter3} presents the average execution time of iteration 3 on the Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the same 1024/1024-bit operation, the Raspberry Pi Pico 2 showed average execution time of \texttt{80806.006\ \$\$\textbackslash{}mu\textbackslash{}mathrm\{s\}\$} indicating a substantially lower throughput compared to the Teensy.
 
 \hypertarget{phase-two-1}{%
 \subsubsection{6.2 Phase two}\label{phase-two-1}}
@@ -396,17 +289,3 @@ Table \ref{tab:iter6} presents the results of iteration 6, which was introduced 
 2025-04-27: Added first table with test data.
 
 2025-05-20: Unfortunately, we've missed adding concrete details about changes made up until this point. Fix later.
-% BALANCE COLUMNS
-\balance{}
-
-% REFERENCES FORMAT
-% References must be the same font size as other body text.
-\bibliographystyle{SIGCHI-Reference-Format}
-\bibliography{sample}
-
-\end{document}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% End:
