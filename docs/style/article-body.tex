@@ -192,23 +192,20 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 \textbf{Iteration 1 - Data Structures:}
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
-\multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
-\multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 13.1564 & 106.3914
-\\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\ \hline
+\textbackslash begin\{table\}{[}ht{]}begin\{tabular\}\{\textbar c\textbar c\textbar c\textbar\} \hline \textbf{Bit size} \& \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} \& \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \textbackslash{} \hline 64 \& 13.1564 \& 106.3914 \textbackslash{} 512 \& 788.3139 \& 5302.4979 \textbackslash{} 1024 \& 3124.0580 \& 21111.2163 \textbackslash{} \hline
+
 \caption{A brief overview of the testscript architecture.} \label{tab:iter1}
 
-\end{tabular}
+\textbackslash end\{tabular\} \label{tab:iter1}/end\{table\}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on both Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes. The Teensy consistently outperforms the Pico, with the gap widening as the bit size increases.
 
 \textbf{Iteration 2 - Bitshifting:}
 
-\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline 64 & 16.4689 \\ 512 &
 1006.6255 \\ 1024 & 3996.5972 \\ \hline \end{tabular}
-
-\label{tab:iter2}
+\label{tab:iter2}\end{table}
 
 Table \ref{tab:iter2} shows the execution times for iteration 2 on the Teensy 4.1, which utilizes bitshifting instead of the original data structure approach. A clear increase in executiom time compared to iteration 1 is observed.
 
@@ -216,11 +213,10 @@ Additionally, the isolated effect of applying a single bitmask operation \texttt
 
 \textbf{Iteration 3 - Batching and Hardware optimization:}
 
-\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline 64/64 & 43.0760 \\ 512/512
 & 2663.8194 \\ 1024/1024 & 10513.1767 \\ \hline \end{tabular}
-
-\label{tab:iter3}
+\label{tab:iter3}\end{table}
 
 Table \ref{tab:iter3} presents the average execution time of iteration 3 on the Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the same 1024/1024-bit operation, the Raspberry Pi Pico 2 showed average execution time of \texttt{80806.006\ µs} indicating a substantially lower throughput compared to the Teensy.
 
@@ -228,13 +224,11 @@ Table \ref{tab:iter3} presents the average execution time of iteration 3 on the 
 
 \textbf{Iteration 4 - Loop unrolling:}
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 9.7017 & 70.7402 \\
 512 & 551.6358 & 3978.1928 \\ 1024 & 2195.1979 & 15830.8784 \\ \hline
-\end{tabular}
-
-\label{tab:iter4}
+\end{tabular} \label{tab:iter4}\end{table}
 
 Table \ref{tab:iter4} presents the execution time of iteration 4, which utilizes a 4x unrolled bit-processing loop. Compared to erlier iterations, this approach yields a substantial performance improvments on both the Teensy and the Raspberry Pi Pico Mcu's.
 
@@ -242,22 +236,19 @@ In addition to the results presented in Table \ref{tab:iter4}, a further tests w
 
 \textbf{Iteration 5 - Removal of vector usage:}
 
-\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
+\begin{table}[ht]\begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 0.0501 & 0.2175 \\
-\hline \end{tabular}
-
-\label{tab:iter5}
+\hline \end{tabular} \label{tab:iter5}\end{table}
 
 Table \ref{tab:iter5} presents the results of iteration 5, in which vector structure were removed in favor of fixed-size integer types \texttt{uint32\_t} and \texttt{uint64\_t}. This iteration led to an extremely efficient implementation that approaches the physical execution limits of the Teensy 4.1.
 
 \textbf{Iteration 6 - Data type exploration:}
 
-\begin{tabular}{|c|c|} \hline \textbf{Data structure} &
+\begin{table}[ht]\begin{tabular}{|c|c|} \hline \textbf{Data structure} &
 \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline array & 0.4284 \\
 unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline \end{tabular}
-
-\label{tab:iter6}
+\label{tab:iter6}\end{table}
 
 Table \ref{tab:iter6} presents the results of iteration 6, which was introduced to address the structural limitations encountered in iteration 5. Specifically, the fixed-width output constrains imposed by the removal of vector. In this iteration, alternative data structures were evaluated. Vector-based approach from iteration 1 serving as a baseline for comparison.
 
