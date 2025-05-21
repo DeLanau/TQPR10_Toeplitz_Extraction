@@ -584,18 +584,18 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 ### 6.1 Phase one
 
-<<<<<<< HEAD **Iteration 1 - Data Structures:**
+**Iteration 1 - Data Structures:**
 
 \begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 13.1564 & 106.3914
 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\ \hline
-\end{tabular} \label{tab:iter1}
+\caption{A brief overview of the testscript architecture.} \label{tab:iter1}
 
-Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
-Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes. The Teensy
-consistently outperforms the Pico, with the gap widening as the bit size
-increases.
+\end{tabular} Table \ref{tab:iter1} presents the average execution time of
+iteration 1 on both Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes.
+The Teensy consistently outperforms the Pico, with the gap widening as the bit
+size increases.
 
 **Iteration 2 - Bitshifting:**
 
