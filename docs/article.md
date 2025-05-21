@@ -673,11 +673,44 @@ the fixed-width output constrains imposed by the removal of vector. In this
 iteration, alternative data structures were evaluated. Vector-based approach
 from iteration 1 serving as a baseline for comparison.
 
-<!--Table 1 presents the execution speeds of each iteration as listed in sections
-5.3 and 5.4, alongside the execution speed in Mbit/s as calculated by utilizing
-the average value in (3). My thought then is that we here talk about the results
-and what they demonstrate, before moving on to draw conclusions and attempt to
-answer our research questions in section 7. -->## 7 CONCLUSION
+## 7 CONCLUSION
+
+Observing the results, we can place them into the context of the limits imposed
+by the ADC, as discussed in Section 3.2. In (3), we calculate the average
+execution speed required to be $2.667 \mu$ for the ADC that requires soldering
+to the microcontroller. From Tables \ref{tab:iter5} and \ref{tab:iter6} we
+demonstrate execution speeds well below that, with iteration 5 as well as
+iteration 6 -- specifically with bitsets -- being the most prominent results to
+discuss. Here, our implementation achieved speeds of $0.0501 \mu s$ and
+$0.0474 \mu$ respectively which within the bounds of the ADC listed in Section
+3.2. The built in ADC on Teensy has an effective sample rate of 1 MSPS (_e.g.
+half of MAX11102AUB_), which would require an average execution speed of
+~$2.667/2 \mu s \approx 1.334 \mu s$, making our implementation suitable even
+for that limited conversion speed.
+
+The main culprit that led other iterations to not be viable was the inclusion of
+`std::vector`, which was used to ensure we could deliver variable lengths of our
+return data -- e.g. either 32, 64 or 128 bits. The overhead introduced from
+initializing and populating the vector led to significant delays in execution
+speed, leading to all other attempts at optimization to be superfluous. In fact,
+any other complexities led to significantly worse results than the naive,
+original implementation.
+
+However, it is important to note that both of these implementations has a hard
+limit of working on 64 bits input. Whereas larger bitstrings still yield results
+with high entropy, the execution speed increases far above the hardware
+limitations, as evident in \ref{tab:iter6}. Iteration 5 is hard capped at using
+only 64 bits input, as we need to store the bits in fixed-size integers before
+running them through the algorithm, and on embedded machines we have no larger
+integer types available.
+
+One issue still remains concerning the size of the input string and subsequent
+output string. The larger the size of the matrix provided to the Toeplitz
+function (_e.g. the larger our input_), the higher the potential overall entropy
+becomes. As our implementation is essentially capped at 64 bits input at this
+point in time (_without being limited by the hardware_), this may or may not
+prove to not be secure enough for use in real world applications. This, however,
+is out of scope for this particular thesis, but a consideration nonetheless.
 
 ## CHANGELOG
 
