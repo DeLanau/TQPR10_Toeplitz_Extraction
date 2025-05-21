@@ -1,0 +1,2 @@
+\babel@toc {swedish}{}\relax 
+\beamer@sectionintoc {1}{Stack-maskin}{4}{0}{1}
