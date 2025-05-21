@@ -586,14 +586,14 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 **Iteration 1 - Data Structures:**
 
-\begin{table}[ht] \centering \begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
-\textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\ \hline 64 & 13.1564 &
-106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\
-\hline \end{tabular} \caption{Execution times for different bit sizes on Teensy
-and Pico} \label{tab:iter1} \end{table}
+\begin{table}[ht] \centering \caption{Execution times for different bit sizes on
+Teensy and Pico} \label{tab:iter1} \begin{tabular}{|c|c|c|} \hline \textbf{Bit
+size} & \textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\ \hline 64 & 13.1564
+& 106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580 & 21111.2163 \\
+\hline \end{tabular} \end{table}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
-Teensy 4.1 and Raspberry Pico Pi 2 across thre input sizes. The Teensy
+Teensy 4.1 and Raspberry Pico Pi 2 across the input sizes. The Teensy
 consistently outperforms the Pico, with the gap widening as the bit size
 increases.
 
