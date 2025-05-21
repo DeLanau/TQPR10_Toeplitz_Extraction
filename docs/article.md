@@ -35,9 +35,9 @@ state is known.
 
 Imagine, then, if a malicious attacker somehow manages to ascertain the state a
 computer was in when it generated a random number, for instance to produce an
-SSH-key. This attacker then has the opportunity to accurately reproduce the
-exact, deterministic state that produced said random number, in essence removing
-the safety that randomness brings. While it may sound unrealistic, the
+SSH-key. This hypothetical attacker has the opportunity to accurately reproduce
+the exact, deterministic state that produced said random number, in essence
+removing the safety that randomness brings. While it may sound unrealistic, the
 exponential increase in processing power and the burgeoning field of quantum
 computing does introduce the possibility that one day, what we perceive as
 random is nothing more than a simple algorithm to crack.
@@ -63,7 +63,8 @@ to ensure that the bits are workable, and to remove potential deterministic
 patterns from the data. One method for this post-processing we will explore in
 this work is Toeplitz extraction [@toeplitz], typically performed on the host
 computer utilizing the randomly generated numbers. The post-processing finally
-yields a random number. This relationship can be seen in Figure 1.
+yields a random number. This relationship can be seen in Figure
+\ref{fig:linear-system}.
 
 \begin{figure}[ht] \centering \begin{tikzpicture}[>=latex] % top row, 2 cm apart
 \node (A) {RNG-module}; \node (B) [right=2cm of A] {ADC-conversion};
@@ -444,8 +445,6 @@ to this paper.
 <!-- TODO: add figure for testing setup -->
 <!-- TODO: move some details from experementation sectio to implementation strategy and remove whole experemintation section, as well as some part of results. e.g concentrate every important thingy about implementation and testing setup here in section 5. -->
 
-### 5.1 Implementation strategy
-
 Our implementation of the Toeplitz extractor followed a structured, iterative
 approach divided into two phases. Phase one focused on exploring performance
 improvements through incremental algorithmic changes. Phase two then addressed
@@ -454,7 +453,7 @@ consisted of a number of individual iterations, in which performance was
 evaluated in terms of both correctness and execution time on the target
 hardware.
 
-#### 5.2 Phase one
+### 5.1 Phase one
 
 Initially, we require a "naive" version designed to prioritize correctness over
 speed. This version was first executed on a separate computer to generate
@@ -464,11 +463,12 @@ microcontroller, where execution time was measured in microseconds. Each
 subsequent iteration introduced controlled modifications aimed at improving
 throughput.
 
-The initial implementation followed the pseudocode described in section 3.4,
-using matrix multiplication over raw input and seed data. It relied on
-`std::vector<int>` for storage and used nested loops to compute each output bit.
-From this point, this implementation was improved over the coming iterations,
-and the new implementation verified in the same manner as the initial version.
+The initial implementation followed the pseudocode described in Algorithm
+\ref{alg:bit-conv}, using matrix multiplication over raw input and seed data. It
+relied on `std::vector<int>` for storage and used nested loops to compute each
+output bit. From this point, this implementation was improved over the coming
+iterations, and the new implementation verified in the same manner as the
+initial version.
 
 **Iteration 1 - Data structures:** This iteration kept the same algorithmic
 logic as the initial implementation, but experimented with data structures such
@@ -489,7 +489,7 @@ combined both techniques, multiple batch sizes were tested to determine their
 impact. More details and benchmarks for each configuration can be found in the
 section 6.
 
-#### 5.3 Phase two
+### 5.2 Phase two
 
 Phase two focused on addressing inefficiencies and design issues that were
 unintentionally introduced during earlier iterations. Rather than continuing
@@ -518,7 +518,7 @@ bit-level operations such as shifting and masking were applied.
 
 <!-- TODO: Yeah which simplified implementation are we talking about here? -->
 
-### 5.4 Evaluation
+### 5.3 Evaluation
 
 To evaluate the correctness of each implementation, a baseline was generated as
 discussed in section 5.2. Using the naive, initial implementation to process
@@ -562,11 +562,10 @@ $$
 In section 6, this calculation will be used to derive the execution speed of the
 various iterations.
 
-### 5.5 Limitations
+### 5.4 Limitations
 
 Our proposed iterations all assume that the limited hardware will support it.
 Whereas we are confident that Teensy 4.1 will be able to handle each iteration
-
 step (_even the naive implementation_), the remaining microcontrollers with
 lower specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
@@ -578,9 +577,14 @@ We created a script to facilitate easier testing, which is attached to this
 paper. Using this script, all bitstrings used for testing can be evaluated
 against the baseline, ensuring that the output from the new iteration matches
 the baseline exactly. Furthermore, the script also provides the average
-execution time of only the Toeplitz extraction in microseconds.
+execution time of only the Toeplitz extraction in microseconds. A brief overview
+of the architecture of this test script can be seen in Figure
+\ref{fig:testscript-architecture}.
 
-<!-- NOTE: IT'S TABLE TIME -->
+\begin{figure*}[ht] \centering
+\includegraphics[width=\textwidth]{img/testscript.png} \caption{A brief overview
+of the testscript architecture.} \label{fig:testscript-architecture}
+\end{figure*}
 
 \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &

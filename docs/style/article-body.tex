@@ -2,11 +2,11 @@
 
 In computer science, there are many applications for randomly generated numbers. From generating keys for cryptography, salting password hashes, load balancing in distributed systems, memory addressing and so much more. However, the process of producing these random numbers tends to be pseudo-random, e.g.~utilizing the current states of various modules \cite{randomness}. Pseudo-random numbers do not generate true randomness, and in order to heighten security, other methods of generating random numbers are required. Current random number generators (\emph{RNG}) are usually implemented in computer programs, using certain states of the host machine as a starting point before running a predetermined algorithm \cite{randomness}. This pseudo-random number generation (\emph{PRNG}) comes with the drawback that the result is always deterministic, provided that the initial state is known.
 
-Imagine, then, if a malicious attacker somehow manages to ascertain the state a computer was in when it generated a random number, for instance to produce an SSH-key. This attacker then has the opportunity to accurately reproduce the exact, deterministic state that produced said random number, in essence removing the safety that randomness brings. While it may sound unrealistic, the exponential increase in processing power and the burgeoning field of quantum computing does introduce the possibility that one day, what we perceive as random is nothing more than a simple algorithm to crack.
+Imagine, then, if a malicious attacker somehow manages to ascertain the state a computer was in when it generated a random number, for instance to produce an SSH-key. This hypothetical attacker has the opportunity to accurately reproduce the exact, deterministic state that produced said random number, in essence removing the safety that randomness brings. While it may sound unrealistic, the exponential increase in processing power and the burgeoning field of quantum computing does introduce the possibility that one day, what we perceive as random is nothing more than a simple algorithm to crack.
 
 True random numbers, then, cannot be produced solely through code. These systems require some input that is neither replicable nor reproducible. One method that can be realistically used is the inherently random movement of lava lamps \cite{lavarand}, which is used as a backup source of randomness for Cloudflare\footnote{\href{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}{Cloudflare.com, accessed 2025-03-10}}. Another proposed solution for this is quantum random number generation (\emph{QRNG}) \cite{QRNG}. By reading quantum fluctuation signals from any given source, for instance an optical signal, the inherent natural unpredictability of said signal can be harnessed in order to produce a random number from a state that is nigh impossible to reproduce accurately. Clason \cite{Clason2023} presents a device that generates a fluctuating analogue signal utilizing this method.
 
-The optical signal output by the device described in \cite{Clason2023} needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some post-processing of the said raw bits has to be performed in order to ensure that the bits are workable, and to remove potential deterministic patterns from the data. One method for this post-processing we will explore in this work is Toeplitz extraction \cite{toeplitz}, typically performed on the host computer utilizing the randomly generated numbers. The post-processing finally yields a random number. This relationship can be seen in Figure 1.
+The optical signal output by the device described in \cite{Clason2023} needs to be converted to a stream of random, raw bits via an Analog to Digital Converter (\emph{ADC}). Some post-processing of the said raw bits has to be performed in order to ensure that the bits are workable, and to remove potential deterministic patterns from the data. One method for this post-processing we will explore in this work is Toeplitz extraction \cite{toeplitz}, typically performed on the host computer utilizing the randomly generated numbers. The post-processing finally yields a random number. This relationship can be seen in Figure \ref{fig:linear-system}.
 
 \begin{figure}[ht] \centering \begin{tikzpicture}[>=latex] % top row, 2 cm apart
 \node (A) {RNG-module}; \node (B) [right=2cm of A] {ADC-conversion};
@@ -127,15 +127,13 @@ With the consideration that our work revolves around optimizing Toeplitz extract
 
 However, in order to ensure the results work with varying data, we cannot limit ourselves to simply one stream of bits. The main point of the algorithm is to remove patterns in the bitstream that may lead to less randomized results. As such, we will sample several bitstreams from the OQRNG-device to use for our tests -- each with varying degrees of repeated patterns that should be eliminated by the algorithm. All bitstrings tested are available as an appendix to this paper.
 
-\subsubsection{5.1 Implementation strategy}\label{implementation-strategy}
-
 Our implementation of the Toeplitz extractor followed a structured, iterative approach divided into two phases. Phase one focused on exploring performance improvements through incremental algorithmic changes. Phase two then addressed architectural inefficiencies identified during phase one. Each phase then consisted of a number of individual iterations, in which performance was evaluated in terms of both correctness and execution time on the target hardware.
 
-\paragraph{5.2 Phase one}\label{phase-one}
+\subsubsection{5.1 Phase one}\label{phase-one}
 
 Initially, we require a ``naive'' version designed to prioritize correctness over speed. This version was first executed on a separate computer to generate reference output for various input bitstrings, which were later used as accuracy baselines. The naive implementation was then flashed onto the Teensy 4.1 microcontroller, where execution time was measured in microseconds. Each subsequent iteration introduced controlled modifications aimed at improving throughput.
 
-The initial implementation followed the pseudocode described in section 3.4, using matrix multiplication over raw input and seed data. It relied on \texttt{std::vector\textless{}int\textgreater{}} for storage and used nested loops to compute each output bit. From this point, this implementation was improved over the coming iterations, and the new implementation verified in the same manner as the initial version.
+The initial implementation followed the pseudocode described in Algorithm \ref{alg:bit-conv}, using matrix multiplication over raw input and seed data. It relied on \texttt{std::vector\textless{}int\textgreater{}} for storage and used nested loops to compute each output bit. From this point, this implementation was improved over the coming iterations, and the new implementation verified in the same manner as the initial version.
 
 \textbf{Iteration 1 - Data structures:} This iteration kept the same algorithmic logic as the initial implementation, but experimented with data structures such as raw pointers and hash maps to enhance the use of \texttt{std::vector}. The goal was to reduce or eliminate the reliance on nested loops.
 
@@ -143,7 +141,7 @@ The initial implementation followed the pseudocode described in section 3.4, usi
 
 \textbf{Iteration 3 - Batching and Hardware optimization:} This iteration focused on optimizing performance through batching and the use of ARM-native instructions, beginning by testing batching alone. This was followed by isolated use of ARM instructions such as \texttt{\_\_builtin\_popcountll()} (\emph{which counts the number of set bits in an unsigned integer}). After establishing their individual effect we combined both techniques, multiple batch sizes were tested to determine their impact. More details and benchmarks for each configuration can be found in the section 6.
 
-\paragraph{5.3 Phase two}\label{phase-two}
+\subsubsection{5.2 Phase two}\label{phase-two}
 
 Phase two focused on addressing inefficiencies and design issues that were unintentionally introduced during earlier iterations. Rather than continuing with new algorithmic ideas, this phase aimed to identify and fix structural problems. Several assumptions from phase one were re-evaluated -- such as the benefits of certain data structures or abstractions.
 
@@ -155,7 +153,7 @@ Phase two focused on addressing inefficiencies and design issues that were unint
 
 \textbf{Iteration 7 - Re-implementation of bitshifting:} In this final iteration, bit shifting techniques were reintroduced into the now simplified implementation. With high-level abstractions removed and memory structures streamlined, bit-level operations such as shifting and masking were applied.
 
-\subsubsection{5.4 Evaluation}\label{evaluation}
+\subsubsection{5.3 Evaluation}\label{evaluation}
 
 To evaluate the correctness of each implementation, a baseline was generated as discussed in section 5.2. Using the naive, initial implementation to process bits and saving for later evaluation gave us a source of truth against which to compare following iterations. To verify that the algorithm successfully removed the patterns it should, we verified the measured entropy score with the command line utility \texttt{ent}\footnote{\href{https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html}{Manual page for \texttt{ent}, accessed 2025-04-23.}}.
 
@@ -179,15 +177,18 @@ This measurement allows us to place the throughput of our algorithm soundly in t
 
 In section 6, this calculation will be used to derive the execution speed of the various iterations.
 
-\subsubsection{5.5 Limitations}\label{limitations}
+\subsubsection{5.4 Limitations}\label{limitations}
 
-Our proposed iterations all assume that the limited hardware will support it. Whereas we are confident that Teensy 4.1 will be able to handle each iteration
-
-step (\emph{even the naive implementation}), the remaining microcontrollers with lower specifications might not be suitable for the first iterations. Testing the implementations on different microcontrollers could turn out to be unfeasible -- however, this remains to be seen during the experimentation.
+Our proposed iterations all assume that the limited hardware will support it. Whereas we are confident that Teensy 4.1 will be able to handle each iteration step (\emph{even the naive implementation}), the remaining microcontrollers with lower specifications might not be suitable for the first iterations. Testing the implementations on different microcontrollers could turn out to be unfeasible -- however, this remains to be seen during the experimentation.
 
 \subsection{6 RESULTS}\label{results}
 
-We created a script to facilitate easier testing, which is attached to this paper. Using this script, all bitstrings used for testing can be evaluated against the baseline, ensuring that the output from the new iteration matches the baseline exactly. Furthermore, the script also provides the average execution time of only the Toeplitz extraction in microseconds.
+We created a script to facilitate easier testing, which is attached to this paper. Using this script, all bitstrings used for testing can be evaluated against the baseline, ensuring that the output from the new iteration matches the baseline exactly. Furthermore, the script also provides the average execution time of only the Toeplitz extraction in microseconds. A brief overview of the architecture of this test script can be seen in Figure \ref{fig:testscript-architecture}.
+
+\begin{figure*}[ht] \centering
+\includegraphics[width=\textwidth]{img/testscript.png} \caption{A brief overview
+of the testscript architecture.} \label{fig:testscript-architecture}
+\end{figure*}
 
 \begin{tabular}{|c|c|c|c|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{3}{c|}{\textbf{Teensy ($\mu s$)}} &
