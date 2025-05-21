@@ -51,36 +51,41 @@ Another proposed solution for this is quantum random number generation (_QRNG_)
 instance an optical signal, the inherent natural unpredictability of said signal
 can be harnessed in order to produce a random number from a state that is nigh
 impossible to reproduce accurately. Clason [@Clason2023] presents a device that
-generates a fluctuating analogue signal utilizing this method, which we will use
-as a basis for our work.
+generates a fluctuating analogue signal utilizing this method.
 
 [^1]:
     [Cloudflare.com, accessed 2025-03-10](https://blog.cloudflare.com/randomness-101-lavarand-in-production/)
 
-Further details about how this signal is produced and sampled will be introduced
-in section 2 and 3. The optical signal output by the device described in
-[@Clason2023] needs to be converted to a stream of random, raw bits via an
-Analog to Digital Converter (_ADC_). Some post-processing of the said raw bits
-has to be performed in order to ensure that the bits are workable, and to remove
-potential deterministic patterns from the data. One method for this
-post-processing we will explore in this work is Toeplitz extraction [@toeplitz],
-typically performed on the host computer utilizing the randomly generated
-numbers.
+The optical signal output by the device described in [@Clason2023] needs to be
+converted to a stream of random, raw bits via an Analog to Digital Converter
+(_ADC_). Some post-processing of the said raw bits has to be performed in order
+to ensure that the bits are workable, and to remove potential deterministic
+patterns from the data. One method for this post-processing we will explore in
+this work is Toeplitz extraction [@toeplitz], typically performed on the host
+computer utilizing the randomly generated numbers. The post-processing finally
+yields a random number. This relationship can be seen in Figure 1.
 
-$$
-    \text{Analogue output} \rightarrow \text{ADC-converter} \rightarrow \text{post-processing}
-$$
+\begin{figure}[ht] \centering \begin{tikzpicture}[>=latex] % top row, 2 cm apart
+\node (A) {RNG-module}; \node (B) [right=2cm of A] {ADC-conversion};
 
-<!-- TODO: This could legit be a figure of the linear system for easier referencing later -->
-<!-- FIX: The sentence below isn't tied into the rest -->
+    \node (C) [below=1cm of B] {Post-processing};
+    \node (D) [left=2cm of C]  {Random number};
 
-Clason proposes a simpler and cheaper way to achieve QRNG [@Clason2023]. In
-keeping with this, utilizing microcontrollers rather than a host computer for
-processing the raw bits extracted further helps to keep the costs low and the
-solution reasonably complex. Additionally, this allows the system to be
-self-contained, for instance a simple and portable USB-device which both
-generates and processes true random numbers. Further details regarding the
-microcontrollers used in our work will be outlined in section 3.
+    \draw[->] (A) -- (B);
+    \draw[->] (B) -- (C);
+    \draw[->] (C) -- (D);
+
+\end{tikzpicture} \caption{An abstract of the steps required for OQRNG.}
+\label{fig:linear-system} \end{figure}
+
+Clason proposes a simpler and cheaper way to achieve QRNG [@Clason2023] than
+what has been done in previous research. These systems have generally been
+large, bulky and expensive, whereas the method proposed is portable enough to
+theoretically be installed in a portable device -- for instance a
+USB-thumbstick. In keeping with this, utilizing microcontrollers rather than a
+host computer for processing the raw bits extracted allows this system to be
+self-contained and portable, and further helps to keep the costs low and the
+solution reasonably complex.
 
 However, due to the limited processing power of the average microcontroller, any
 implementation of Toeplitz extraction needs to work quickly and efficiently
@@ -162,8 +167,8 @@ Singh et. al. [@singh]. This particular implementation uses a bespoke circuit
 board where all components are present on a single board -- e.g., this
 experimental setup contains an integrated ADC, post-processor, entropy
 controller and entropy generator. While this article cements the viability of
-OQRNG using shot noise (despite the article not being confirmed as peer
-reviewed), the bespoke nature of the circuit board makes this experiment
+OQRNG using shot noise (_despite the article not being confirmed as peer
+reviewed_), the bespoke nature of the circuit board makes this experiment
 difficult to reproduce. As our thesis will use commercially available ADCs and
 microcontrollers, the only bespoke component is the shot noise generator itself.
 Furthermore, the Toeplitz extraction is not run on the microcontroller itself in
@@ -180,9 +185,9 @@ hardware with limitations in processing power which prevents a fully integrated
 system [@singh]. Furthermore, to the best of our knowledge, most of the work in
 this field is from the perspective of physicists, and there appears to be little
 research on this subject in the domain of computer science. Our work aims to
-bridge this gap by using commercially available hardware (other than the bespoke
-shot noise generator [@Clason2023]) and focuses on implementing Toeplitz
-extraction directly on the microcontroller. Rather than focusing on the
+bridge this gap by using commercially available hardware (_other than the
+bespoke shot noise generator [@Clason2023]_) and focuses on implementing
+Toeplitz extraction directly on the microcontroller. Rather than focusing on the
 intricacies of quantum fluctuations, we will instead approach this problem from
 a computer science perspective.
 
@@ -214,16 +219,14 @@ shielded measurment box.
 
 Whereas the exact quantum mechanisms that ensure that this system ensures
 randomness and further details regarding the OQRNG-device is better derived
-directly from Clasons work [@Clason2023], the end result as it correlates to our
-study is an inherently random, analog voltage current.
-
-<!-- TODO: Last sentence above is unclear, rewrite -->
+directly from Clasons work [@Clason2023], the primary concern for our study is
+the inherently random, analog voltage current produced by the system.
 
 ### 3.2 ADC converter
 
 This analog current is not suitable to operate on without further processing. As
 mentioned in Section 1, the signal needs to pass through an ADC to be converted
-into raw bits. In his thesis, Clason [@Clason2023] suggests a discretse ADC chip
+into raw bits. In his thesis, Clason [@Clason2023] suggests a discrete ADC chip
 capable of analyzing frequencies higher than 25 MHz, as this is the highest
 frequency studied in his work. However, in the interest of keeping the
 implementation light and cheap, we will be using ADCs that provide less samples
@@ -233,14 +236,14 @@ and access to this hardware.
 <!-- FIX: Couldn't think of anything better for the analyzing-bit -->
 
 Many microcontrollers furthermore come equipped with internal ADCs that can be
-utilized, and while these provide a lower sample size (often around 1 MSPS), the
-ease of development may be prudent to utilize for this proof-of-concept. While
-our initial ADC has a fairly low throughput, this can always be upgraded if it
-ends up becoming too limiting.
+utilized, and while these provide a lower sample size (_often around 1 MSPS_),
+the ease of development may be prudent to utilize for this proof-of-concept.
+While our initial ADC has a fairly low throughput, this can always be upgraded
+if it ends up becoming too limiting.
 
 Should these internal ADCs prove too limiting, we propose utilizing
 MAX11102AUB[^3] with an effective sample rate of 2 million samples per second
-(MSPS). This ADC provides a 12 bit sample size, providing roughly 24 Mbit/s of
+(_MSPS_). This ADC provides a 12 bit sample size, providing roughly 24 Mbit/s of
 sampled data per second, derived by the following calculation.
 
 $$
@@ -255,31 +258,32 @@ OQRNG-device is processed.
 
 ### 3.3 Microcontroller
 
-Microcontrollers (MCUs) are compact and low-power computing devices designed for
-embedded systems and real-time operations, and suitable as a processing unit for
-the purposes of this work. Unlike general CPUs, an MCU integrates a processor,
-memory and peripherals (_such as an ADC_) into a single chip. Furthermore,
-modern MCUs often feature advanced microarchitectural elements to enhance
-processing capabilities on single threads (_such as dual-issue superscalar
-architectures, allowing the MCU to run several instructions per CPU cycle_),
-making them suitable candidates for the post-processing required for OQRNG-data.
+Microcontrollers (_MCUs_) are compact and low-power computing devices designed
+for embedded systems and real-time operations, and suitable as a processing unit
+for the purposes of this work. Unlike general CPUs, an MCU integrates a
+processor, memory and peripherals (_such as an ADC_) into a single chip.
+Furthermore, modern MCUs often feature advanced microarchitectural elements to
+enhance processing capabilities on single threads (_such as dual-issue
+superscalar architectures, allowing the MCU to run several instructions per CPU
+cycle_), making them suitable candidates for the post-processing required for
+OQRNG-data.
 
 Since MCUs often function under strict timing requirements, it is critical to
 have effective ways to access memory and transfer data for processing in real
 time. High-performance MCUs enhance memory usage in various ways. Some of them
-use Tightly Coupled Memory[^3] (TCM), which gives fast SRAM with specific access
-routes for important data, avoiding cache misses and guaranteeing consistent
-performance. Moreover, instruction and data caching techniques, including
-instruction prefetching and branch prediction, help minimize execution delays in
-computationally intensive real-time applications. Another important aspect is
-Direct Memory Access[^5] (DMA), which enables data transfer between peripherals
-such as the ADC and RAM, without CPU intervention. This offloading reduces
-processing overhead, allowing the MCU to manage fast data transfers effectively.
-These improvements are especially significant for Toeplitz extraction, where
-large amount of random data needs to be processed and sent quickly with low
-delays. Efficient memory management guarantees that randomness extraction can
-occur rapidly without major slowdowns in computing. Both approaches will be
-tested during development.
+use Tightly Coupled Memory[^3] (_TCM_), which gives fast SRAM with specific
+access routes for important data, avoiding cache misses and guaranteeing
+consistent performance. Moreover, instruction and data caching techniques,
+including instruction pre-fetching and branch prediction, help minimize
+execution delays in computationally intensive real-time applications. Another
+important aspect is Direct Memory Access[^5] (DMA), which enables data transfer
+between peripherals such as the ADC and RAM, without CPU intervention. This
+offloading reduces processing overhead, allowing the MCU to manage fast data
+transfers effectively. These improvements are especially significant for
+Toeplitz extraction, where large amount of random data needs to be processed and
+sent quickly with low delays. Efficient memory management guarantees that
+randomness extraction can occur rapidly without major slowdowns in computing.
+Both approaches will be tested during development.
 
 [^3]:
     [Arm developer documentation, accessed 2025-03-13](https://developer.arm.com/documentation/den0042/a/Tightly-Coupled-Memory)
@@ -290,7 +294,7 @@ tested during development.
 In our work, we intend to use Teensy 4.1[^2], based on the ARM Cortex-M7. This
 MCU is especially suitable for computationally demanding tasks involving
 randomness extraction due to its dual-issue superscalar architecture and Digital
-Signal Processing (_DSP_) capabilities. The floating-point unit[^4] (FPU) and
+Signal Processing (_DSP_) capabilities. The floating-point unit[^4] (_FPU_) and
 Single Instruction, Multiple Data (_SIMD_) style DSP instructions improve how
 quickly it can perform bitwise and arithmetic tasks, which is crucial for quick
 Toeplitz extraction. SIMD-controlled DSP architectures, as described by Han et
@@ -328,7 +332,7 @@ and correctness of the output.
 The raw bits from the ADC can potentially have some deterministic patterns, and
 as such have to be processed somehow in order to remove these patterns. Several
 methods exist for this purpose, and for our work, we will perform this
-preprocessing via Toeplitz extraction. The main focus of this study is to
+pre-processing via Toeplitz extraction. The main focus of this study is to
 implement this extraction algorithm as effectively as possible on resource
 constrained hardware.
 
@@ -342,8 +346,8 @@ use. This extraction utilizes either matrix multiplication or hashing between a
 pseudo-random seed and the raw data provided from a high-entropy source of
 randomness -- in our case, the OQRNG-device.
 
-To summarize the theoretical working of Toeplitz extraction (as explained by
-Chouhan et al. [@toeplitz-desc]), a pre-determined seed matrix ($T$) is
+To summarize the theoretical working of Toeplitz extraction (_as explained by
+Chouhan et al. [@toeplitz-desc]_), a pre-determined seed matrix ($T$) is
 multiplied with the sampled raw bit matrix ($K$). The size of the seed is
 directly dependent on the size of the sampled data, and can be fixed or
 continually re-sampled as needed. To ensure high levels of entropy, our
@@ -353,25 +357,13 @@ to remove deterministic patterns, and produce a bitstring that results in our
 randomly generated number. An example of how this extraction works can be seen
 below.
 
-```
-Where n = number of input bits,
-      m = number of output bits:
-
-Let X be the input array (length n)
-Let T be the seed matrix (length n + m - 1)
-Let Y be a new array of length m
-
-For i from 0 to m - 1:
-  sum = 0
-  For j from 0 to n - 1:
-    sum = sum + X[j] * T[i + j]
-  Y[i] = sum mod 2
-
-Return Y
-```
-
-<!-- FIX: This should be an algorithm thingy -->
-<!-- TODO: Figure out how to do an algorithm thingy -->
+\begin{algorithm}[ht] \caption{Toeplitz extraction}\label{alg:bit-conv}
+\begin{algorithmic}[1] \REQUIRE \(x[0\,..\,n-1]\) \Comment{input bit array of
+length \(n\)} \REQUIRE \(t[0\,..\,n+m-2]\) \Comment{seed matrix of length
+\(n+m-1\)} \ENSURE \(y[0\,..\,m-1]\) \Comment{output bit array of length \(m\)}
+\FOR{\(i = 0\) to \(m - 1\)} \STATE sum = 0 \FOR{\(j = 0\) to \(n - 1\)} \STATE
+sum = sum + \(x[j] \* t[i + j]\) \ENDFOR \STATE \(y[i] =
+\mathrm{sum}\;\bmod\;2\) \ENDFOR \RETURN \(y\) \end{algorithmic} \end{algorithm}
 
 The main focus of this work is implementing this algorithm as efficiently as
 possible on our MCUs, and as such, several optimization efforts need to be taken
@@ -382,7 +374,7 @@ into account during our experimentation.
 With the assumption that the OQRNG-device produces a truly random analog signal,
 we can now clearly define the scope in which this thesis operates. Considering
 the maximum conversion speed from the ADC and the USB-output from the MCU, we
-have a clear bound over 24 Mbit/s (imposed by the ADC) in which Toeplitz
+have a clear bound over 24 Mbit/s (_imposed by the ADC_) in which Toeplitz
 extraction needs to be executed. Any speeds over 2.86 MB/s allows us to upgrade
 the ADC iteratively to continue increasing the output speed. Any implementation
 of Toeplitz extraction must then execute fast enough on any given
@@ -420,16 +412,16 @@ limit is reached. Compared to fixed-seed methods, this renewable approach
 enhances cryptographic robustness and ensures sustained high-security randomness
 extraction in real-world applications.
 
-Efficient Toeplitz matrix-vector multiplication (TMVM) is critical for
+Efficient Toeplitz matrix-vector multiplication (_TMVM_) is critical for
 optimizing randomness extraction that relies on Toeplitz, particulary in
 constrained hardware environments. Liao et al. [@liao] showed that this process
-could be greatly accelerated using Fast Fourier Transform (FFT) and its inverse
-(IFFT) -- reducing computational complexity from $O(n^2)$ to $O(n log n)$. Their
-implementation on FPGA utilized this approach for deep neural networks,
-resulting in a 28.7 times decrease in model size while still achieving fast
-inference speeds. By using FFT and IFFT acceleration, Toeplitz post-processing
-for randomness extraction could achieve higher throughput. Thus, potentially
-could improve performance and reduce latency.
+could be greatly accelerated using Fast Fourier Transform (_FFT_) and its
+inverse (_IFFT_) -- reducing computational complexity from $O(n^2)$ to
+$O(n \log n)$. Their implementation on FPGA utilized this approach for deep
+neural networks, resulting in a 28.7 times decrease in model size while still
+achieving fast inference speeds. By using FFT and IFFT acceleration, Toeplitz
+post-processing for randomness extraction could achieve higher throughput. Thus,
+potentially could improve performance and reduce latency.
 
 ## 5 METHODOLOGY
 
@@ -545,8 +537,8 @@ controllers). As we will use fixed-size bitstrings for evaluation, we can then
 derive the throughput of the algorithm in $Mbit/s$ as follows:
 
 $$
-\text{Throughput_\mathrm{Mbit/s}}
-= \frac{DataSize_{\mathrm{bits}}}{ExecutionTime_{\mathrm{ms}}}
+Throughput_\mathrm{Mbit/s}
+= \frac{DataSize_\mathrm{bits}}{ExecutionTime_\mathrm{ms}}
 \times 10^{-3}
 \phantom{12}(2)
 $$
@@ -570,8 +562,9 @@ various iterations.
 
 Our proposed iterations all assume that the limited hardware will support it.
 Whereas we are confident that Teensy 4.1 will be able to handle each iteration
-step (even the naive implementation), the remaining microcontrollers with lower
-specifications might not be suitable for the first iterations. Testing the
+
+step (_even the naive implementation_), the remaining microcontrollers with
+lower specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
 however, this remains to be seen during the experimentation.
 
@@ -587,7 +580,7 @@ execution time of only the Toeplitz extraction in microseconds.
 
 ### 6.1 Phase one
 
-**Iteration 1 - Data Structures:**
+<<<<<<< HEAD **Iteration 1 - Data Structures:**
 
 \begin{tabular}{|c|c|c|} \hline \textbf{Bit size} &
 \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
@@ -674,8 +667,8 @@ the fixed-width output constrains imposed by the removal of vector. In this
 iteration, alternative data structures were evaluated. Vector-based approach
 from iteration 1 serving as a baseline for comparison.
 
-<!-- Table 1 presents the execution speeds of each iteration as listed in sections
-5.3 and 5.4, alongside the exectution speed in Mbit/s as calculated by utilizing
+<!--Table 1 presents the execution speeds of each iteration as listed in sections
+5.3 and 5.4, alongside the execution speed in Mbit/s as calculated by utilizing
 the average value in (3). My thought then is that we here talk about the results
 and what they demonstrate, before moving on to draw conclusions and attempt to
 answer our research questions in section 7. -->

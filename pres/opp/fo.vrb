@@ -1,0 +1,12 @@
+\frametitle{Dagens föreläsning}
+  \begin{itemize}
+    \item Introduktion till stack-maskiner
+    \begin{itemize}
+      \item Övning: Implementera delar av en stack-maskin
+    \end{itemize}
+    \item Överblick av olika programspråk och deras användningsområde och syften
+    \begin{itemize}
+      \item Övning: Utöka befintlig kod i helt nya programspråk!
+    \end{itemize}
+    \item Lite tips på verktyg som kan vara bra i framtiden!
+  \end{itemize}
