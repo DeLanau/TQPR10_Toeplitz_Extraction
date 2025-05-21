@@ -17,7 +17,7 @@ $(BODY_TEX): $(MD_FILE)
 	# Convert markdown to LaTeX body
 	pandoc $(MD_FILE) -o $(BODY_TEX) --bibliography=$(BIB_FILE) --csl=$(CSL_FILE) --wrap=none
 	# Fix citations in the LaTeX file
-	python fix_citations.py $(BODY_TEX)
+	python3 fix_citations.py $(BODY_TEX)
 
 $(FINAL_TEX): $(PREAMBLE) $(BODY_TEX) $(ENDING)
 	# Move article-body.tex into style/ and concatenate with preamble and ending
