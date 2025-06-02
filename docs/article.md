@@ -626,19 +626,34 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 \vspace{1em}
 
+<!-- iter 0 -->
+
+\begin{table}[H] \centring
+\begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
+\hline \textbf{Bit size} & \textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\
+\hline 64 & 13.1564 & 106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580
+& 21111.2163 \\ \hline \end{tabularx} \caption{Iteration 0 - Naive
+implementation} \label{tab:iter0} \end{table}
+
+Table \ref{tab:iter0} presents the average execution time of iteration 1 on both
+Teensy 4.1 and Raspberry Pico Pi 2 across the input sizes. The Teensy
+consistently outperforms the Pico, with the gap widening as the bit size
+increases. These results will be used as baseline for future comparison.
+
 <!-- iter 1 -->
 
 \begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
-\hline \textbf{Bit size} & \textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\
-\hline 64 & 13.1564 & 106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580
-& 21111.2163 \\ \hline \end{tabularx} \caption{Iteration 1 - Data Structures}
-\label{tab:iter1} \end{table}
+\hline \textbf{Bit size} & \textbf{Teensy ($\mu$s)} \\ \hline pointers & 13.7999
+\\ hash map & 68.8099 \\ \hline \end{tabularx} \caption{Iteration 1 - Data
+Structures} \label{tab:iter1} \end{table}
 
-Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
-Teensy 4.1 and Raspberry Pico Pi 2 across the input sizes. The Teensy
-consistently outperforms the Pico, with the gap widening as the bit size
-increases.
+Table \ref{tab:iter1} presents the average execution time of iteration 1 on
+Teensy 4.1. This iteration introduced additional complexity without yelding
+significant gains and in some cases led to worse performance. Although this
+iteration did not achieve the desired performance gains, it provided valuable
+insight into the limitations of certain data structure choises within the
+context of this study.
 
 <!-- iter 2-->
 
