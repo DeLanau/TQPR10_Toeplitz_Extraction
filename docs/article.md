@@ -518,19 +518,40 @@ discussed in section 5.2. Using the naive, initial implementation to process
 bits and saving for later evaluation gave us a source of truth against which to
 compare following iterations. To verify that the algorithm successfully removed
 the patterns it should, we verified the measured entropy score with the command
-line utility `ent`[^8].
+line utility `ent`[^8]. This tool verifies the statistical randomness of any
+given file, and does several calculations to provide an estimate of how random
+any given binary file is.
 
 [^8]:
 
 [Manual page for `ent`, accessed 2025-04-23.](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
 
-Hyncica et. al. [@micromeasurements] propose that measuring execution time of
-algorithms directly via the microcontrollers internal timers (while subtracting
-the interrupt overhead) provides adequate measurements of the execution speed of
-an algorithm. An additional advantage is that the same code can be used to
-measure execution speed on several different microcontrollers, rather than
-relying on counting CPU cycles (as the process for this may vary greatly between
-controllers).
+The way `ent` calculates the entropy of a given binary file is by checking the
+frequency of certain byte values. If some byte values are more frequent, the
+binary file has a low entropy -- essentially singifying that there are
+predictable patterns. Conversely, if all byte values appear roughly equally, the
+binary file has a high entropy -- meaning that it is more random, and less
+predictable. The maximum entropy of any given file is
+$\log_2(256) = 8 \text{ bits per byte}$, meaning that a perfectly random binary
+file has an entropy score of 8. For the purposes of our work, we consider values
+greater than $7.99$ to be acceptable.
+
+Furthermore, `ent` also provides a measurement of the possible compression ratio
+of the file, e.g. how much more the file can be theoretically compressed. This
+is calculated as $1 - \frac{\text{entropy}}{\text{maximum entropy}}$, signifying
+that the file cannot be compressed further -- that the data is already as
+compressed as its random distribution allows. Essentially, this informs us that
+the file has no more detectable statistical patterns or compressable
+regularities remaining. We consider any file where `ent` reports a compression
+ratio of $0\%$ to be acceptable.
+
+In regards to execution time, Hyncica et. al. [@micromeasurements] propose that
+measuring execution time of algorithms directly via the microcontrollers
+internal timers (while subtracting the interrupt overhead) provides adequate
+measurements of the execution speed of an algorithm. An additional advantage is
+that the same code can be used to measure execution speed on several different
+microcontrollers, rather than relying on counting CPU cycles (as the process for
+this may vary greatly between controllers).
 
 In our implementation, execution time for each extraction was measured using
 Arduino's built-in `micros()`[^9] function. This function offers a convenient
@@ -683,7 +704,7 @@ approaches the physical execution limits of the Teensy 4.1.
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Data structure} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}}
 \\ \hline array & 0.4284 \\ unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline
-\end{tabularx} \caption{Iteration 6 - Data type exloration} \label{tab:iter6}
+\end{tabularx} \caption{Iteration 6 - Data type exploration} \label{tab:iter6}
 \end{table}
 
 Table \ref{tab:iter6} presents the results of iteration 6 using 64 bit size,
@@ -695,20 +716,20 @@ comparison.
 
 Additionally, 128 bit size were tested resulting in `179.8712` $\mu s$.
 
-## 7 CONCLUSION
+## 7 DISCUSSION
 
 Observing the results, we can place them into the context of the limits imposed
-by the ADC, as discussed in Section 3.2. In (3), we calculate the average
-execution speed required to be $2.667 \mu$ for the ADC that requires soldering
-to the microcontroller. From Tables \ref{tab:iter5} and \ref{tab:iter6} we
-demonstrate execution speeds well below that, with iteration 5 as well as
-iteration 6 -- specifically with bitsets -- being the most prominent results to
-discuss. Here, our implementation achieved speeds of $0.0501 \mu s$ and
-$0.0474 \mu$ respectively which within the bounds of the ADC listed in Section
-3.2. The built in ADC on Teensy has an effective sample rate of 1 MSPS (_e.g.
-half of MAX11102AUB_), which would require an average execution speed of
-~$2.667/2 \mu s \approx 1.334 \mu s$, making our implementation suitable even
-for that limited conversion speed.
+by the ADC, as discussed in Section 3.2. In algorithm (3) (_as seen in Section
+3.3_), we calculate the average execution speed required to be $2.667 \mu$ for
+the ADC that requires soldering to the microcontroller. From Tables
+\ref{tab:iter5} and \ref{tab:iter6} we demonstrate execution speeds well below
+that, with iteration 5 as well as iteration 6 -- specifically with bitsets --
+being the most prominent results to discuss. Here, our implementation achieved
+speeds of $0.0501 \mu s$ and $0.0474 \mu$ respectively which within the bounds
+of the ADC listed in Section 3.2. The built in ADC on Teensy has an effective
+sample rate of 1 MSPS (_e.g. half of MAX11102AUB_), which would require an
+average execution speed of ~$2.667/2 \mu s \approx 1.334 \mu s$, making our
+implementation suitable even for that limited conversion speed.
 
 The main culprit that led other iterations to not be viable was the inclusion of
 `std::vector`, which was used to ensure we could deliver variable lengths of our
@@ -734,30 +755,51 @@ point in time (_without being limited by the hardware_), this may or may not
 prove to not be secure enough for use in real world applications. This, however,
 is out of scope for this particular thesis, but a consideration nonetheless.
 
-## CHANGELOG
+Any requirement of output integers larger than 32 bits may prove problematic.
+Whereas the bits processed by the algorithm does show an entropy measure quite
+close to 8, e.g. reliably random, this does not necessarily mean that two sets
+of 32 bits can be combined on the host machine to produce a 64-bit integer.
+Combining these two sets may very well result in a less random result -- in
+essence, an entropy score that is not entirely random. As quantum computing
+evolves, the process of bruteforcing algorithms with all possible numbers
+becomes less of an impossible task, which is why this process of generating
+random numbers is required. The purpose of using quantum flucuation for random
+number generation is to provide greater assurances of security not possible from
+traditional, pseudo-random RNG, and being so severely limited by the size of the
+output is a major flaw in this implementation worth considering.
 
-2025-02-14: Added background section, smaller reviews to introduction.
+## 8 CONCLUSION
 
-2025-02-28: Template adjusted, added methodology. Started review of background
-and theory to add stronger correlation to computer science. Not yet finished due
-to review of articles as well as some additional information required from the
-project owner. The update to theory and background should be considered a heavy
-work in progress at this stage.
+This work set out to investigate the feasibility of implementing Toeplitz
+extraction on resource constrained hardware. Furthermore, we aimed to conclude
+whether the extraction algorithm could be executed fast enough to not be the
+limiting factor, e.g. that the speed of the extraction did not exceed the speed
+of the ADC conversion. Ostensibly, these investigations were both successful,
+considering that we managed to create an implementation that executes in roughly
+one half microsecond on average, far exceeding the limits imposed by the ADC.
+The optimization with the algorithm revolved around removing as much complexity
+as possible, avoiding anything that is not the simplest form of data structure
+for maximum performance gains.
 
-2025-03-10: Moved evaluation down in the methodology in order to provide a
-better flow. Elaborated further on Toeplitz extraction and ADC converters, as
-well as motivating the selection of these. Some additional information added in
-introduction as motivation for the work.
+As mentioned in Section 7, this comes at a price. The implementation that did
+indeed perform above expectation could only output a 32-bit integer, as we
+cannot take any larger input than 64 bits without any more complex data
+structure. How much of a flaw this is for a system utilizing this method of
+OQRNG is beyond the scope of this thesis to investigate. However, it is likely
+that a larger output is required for any application revolving around tight
+security. For less critical systems and less essential functionality, this
+method might, however, prove just secure enough. For instance, an IoT-device
+that requires a random number output for symmetric cryptography when connecting
+to a user device may be an ideal candidate for this method of OQRNG.
 
-2025-03-13: Elaborated on background, as well as adding more details regarding
-hardware. Note that the hardware selected is subject to change over time.
-Further elaborated on related works in optimizing Toeplitz extraction.
+## 9 FUTURE WORK
 
-2025-04-22: Begun including details regarding initial experimentation, updating
-details regarding experiments that had to change (e.g. no baseline on separate
-hardware).
-
-2025-04-27: Added first table with test data.
-
-2025-05-20: Unfortunately, we've missed adding concrete details about changes
-made up until this point. Fix later.
+The main limitation for producing output with a larger size is the lack of a
+suitable data type in the limited standard library available for MCUs.
+Furthermore, it appears as if generic containers (_such as `std::vector`_) that
+have already been severely optimized still impose a far greater performance
+penalty for this purpose. Future work may focus on implementing custom data
+types for larger bit sizes, for instance 128-bit and 256-bit integers. It may be
+possible that external libraries exist that alredy provide implementations of
+these integer sizes, but even then a slimmed down and customized implementation
+may prove the better alternative for this extreme performance constraint.
