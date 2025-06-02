@@ -313,20 +313,17 @@ multiplications.
     [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
 In order to evaluate how efficent our implementation can become, our aim is to
-try our implementation on other MCUs with varying levels of power and hardware
-support. Whereas Teensy 4.1 is our primary development platform which we will
-evaluate closely, we aim to run our implementations on Raspberry Pi Pico 2[^6]
-as well as ESP32-S3[^7]. Due to the lower computational power of these MCUs,
-there may be significant issues in utilizing these weaker models, yet they are
-significantly cheaper and easier to access. Testing of these will consist solely
-of running the implementation on these controllers and measuring execution speed
-and correctness of the output.
+try our implementation on other MCU with different level of power and hardware
+support. Whereas Teensy 4.1, operating at `600 MHz`, is our primary development
+platform which we will evaluate closely, we aim to run our implementations on
+the Raspberry Pi Pico 2[^6], operating at `150 MHz`. Due to the lower
+computational power of this MCU, there may be significant issues in utilizing
+this weaker model, yet it is significantly cheaper and easier to access. Testing
+will consist solely of running the implementation on these controllers and
+measuring execution speed and correctness of the output.
 
 [^6]:
     [Raspberry Pi Pico 2 documentation, accessed 2025-03-13](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
-
-[^7]:
-    [ESP32-S3 documentation, accessed 2025-03-13](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf)
 
 ### 3.4 Toeplitz extraction
 
@@ -533,8 +530,16 @@ the interrupt overhead) provides adequate measurements of the execution speed of
 an algorithm. An additional advantage is that the same code can be used to
 measure execution speed on several different microcontrollers, rather than
 relying on counting CPU cycles (as the process for this may vary greatly between
-controllers). As we will use fixed-size bitstrings for evaluation, we can then
-derive the throughput of the algorithm in $Mbit/s$ as follows:
+controllers).
+
+In our implementation, execution time for each extraction was measured using
+Arduino's built-in `micros()`[^9] function. This function offers a convenient
+and platform-independent method for recording elapsed time with microsecond
+precision, enabling consistent performance evaluation across different
+iterations.
+
+As we will use fixed-size bitstrings for evaluation, we can then derive the
+throughput of the algorithm in $Mbit/s$ as follows:
 
 $$
 Throughput_\mathrm{Mbit/s}
@@ -557,6 +562,10 @@ $$
 
 In section 6, this calculation will be used to derive the execution speed of the
 various iterations.
+
+[^9]:
+
+[Documentation for `micros()`, accessed 2025-05-02.](https://docs.arduino.cc/language-reference/en/functions/time/micros/)
 
 ### 5.4 Limitations
 
@@ -588,12 +597,12 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 
 <!-- iter 1 -->
 
-\begin{table}[ht] \centering \caption{Iteration 1 - Data Structures}
-\label{tab:iter1}
+\begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Bit size} & \textbf{Teensy ($\mu$s)} & \textbf{Pico ($\mu$s)} \\
 \hline 64 & 13.1564 & 106.3914 \\ 512 & 788.3139 & 5302.4979 \\ 1024 & 3124.0580
-& 21111.2163 \\ \hline \end{tabularx} \end{table}
+& 21111.2163 \\ \hline \end{tabularx} \caption{Iteration 1 - Data Structures}
+\label{tab:iter1} \end{table}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on both
 Teensy 4.1 and Raspberry Pico Pi 2 across the input sizes. The Teensy
@@ -602,12 +611,11 @@ increases.
 
 <!-- iter 2-->
 
-\begin{table}[ht] \centring \caption{Iteration 2 - Bitshifting}
-\label{tab:iter2}
+\begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
-\hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline
-64 & 16.4689 \\ 512 & 1006.6255 \\ 1024 & 3996.5972 \\ \hline \end{tabularx}
-\end{table}
+\hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} \\
+\hline 64 & 16.4689 \\ 512 & 1006.6255 \\ 1024 & 3996.5972 \\ \hline
+\end{tabularx} \caption{Iteration 2 - Bitshifting} \label{tab:iter2} \end{table}
 
 Table \ref{tab:iter2} shows the execution times for iteration 2 on the Teensy
 4.1, which utilizes bitshifting instead of the original data structure approach.
@@ -618,12 +626,12 @@ was evaluated. This resulted in a slight reduction in average execution time,
 from `13.1564` $\mu s$ to `13.1000` $\mu s$, although this specific result is
 not included in the tables above.
 
-\begin{table}[H] \centring \caption{Iteration 3 - Batching and Hardware
-optimization} \label{tab:iter3}
+\begin{table}[H] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
-\hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\ \hline
-64/64 & 43.0760 \\ 512/512 & 2663.8194 \\ 1024/1024 & 10513.1767 \\ \hline
-\end{tabularx} \end{table}
+\hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} \\
+\hline 64/64 & 43.0760 \\ 512/512 & 2663.8194 \\ 1024/1024 & 10513.1767 \\
+\hline \end{tabularx} \caption{Iteration 3 - Batching and Hardware optimization}
+\label{tab:iter3} \end{table}
 
 Table \ref{tab:iter3} presents the average execution time of iteration 3 on the
 Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the
@@ -635,13 +643,13 @@ to the Teensy.
 
 \vspace{1em}
 
-\begin{table}[ht] \centring \caption{Iteration 4 - Loop unrolling}
-\label{tab:iter4}
+\begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 9.7017 & 70.7402 \\
 512 & 551.6358 & 3978.1928 \\ 1024 & 2195.1979 & 15830.8784 \\ \hline
-\end{tabularx} \end{table}
+\end{tabularx} \caption{Iteration 4 - Loop unrolling} \label{tab:iter4}
+\end{table}
 
 Table \ref{tab:iter4} presents the execution time of iteration 4, which utilizes
 a 4x unrolled bit-processing loop. Compared to erlier iterations, this approach
@@ -657,12 +665,12 @@ measurement was later determined to be invalid due to packaging error.
 
 \vspace{1em}
 
-\begin{table}[ht] \centring \caption{Iteration 5 - Removal of vector usage}
-\label{tab:iter5}
+\begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 0.0501 & 0.2175 \\
-\hline \end{tabularx} \end{table}
+\hline \end{tabularx} \caption{Iteration 5 - Removal of vector usage}
+\label{tab:iter5} \end{table}
 
 Table \ref{tab:iter5} presents the results of iteration 5, in which vector
 structure were removed in favor of fixed-size integer types `uint32_t` and
@@ -671,12 +679,12 @@ approaches the physical execution limits of the Teensy 4.1.
 
 \vspace{1em}
 
-\begin{table}[H] \centring \caption{Iteration 6 - Data type exloration}
-\label{tab:iter6}
+\begin{table}[H] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
-\hline \textbf{Data structure} & \multicolumn{1}{c|}{\textbf{Avg ($\mu s$)}} \\
-\hline array & 0.4284 \\ unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline
-\end{tabularx} \end{table}
+\hline \textbf{Data structure} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}}
+\\ \hline array & 0.4284 \\ unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline
+\end{tabularx} \caption{Iteration 6 - Data type exloration} \label{tab:iter6}
+\end{table}
 
 Table \ref{tab:iter6} presents the results of iteration 6 using 64 bit size,
 which was introduced to address the structural limitations encountered in
