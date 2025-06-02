@@ -597,6 +597,16 @@ lower specifications might not be suitable for the first iterations. Testing the
 implementations on different microcontrollers could turn out to be unfeasible --
 however, this remains to be seen during the experimentation.
 
+Whereas our implementation can be controlled at the algorithmic and structural
+level, compiler optimization are managed outside of our influence. The Arduino
+and Teensy platforms automatically sets compiler flags and optimization levels.
+Thus, applying aggressive settings for performance. However, we cannot determine
+exactly how these flags influence our iterations. This limitation makes it
+impossible to isolate the impact of compiler optimizations from the effects of
+our own code. Therefore, any performance differences observed in our experiments
+are considered to stem solely from our implementation, as the compiler behavior
+remains opaque and unchangeable in this context.
+
 ## 6 RESULTS
 
 We created a script to facilitate easier testing, which is attached to this
