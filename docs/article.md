@@ -767,10 +767,17 @@ not included in the tables above.
 \label{tab:iter3} \end{table}
 
 Table \ref{tab:iter3} presents the average execution time of iteration 3 on the
-Teensy 4.1 for varying batching and bit sizes. Additionally, when performing the
-same 1024/1024-bit operation, the Raspberry Pi Pico 2 showed average execution
-time of `80806.006` $\mu s$ indicating a substantially lower throughput compared
-to the Teensy.
+Teensy 4.1 for varying batching and bit sizes. The notation `64/64`, `512/512`
+and `1024/1024` refers to the input bit size and batching size.
+
+To evaluate the effect of batching granularity, additional tests were conducted
+using batch sizez of 32, 256 and 512 for various input sizes. The observed
+difference in execution time between low and high batching configurations ranged
+approximately from 10 to 50 microseconds, depending on the input size.
+
+For comparative analysis, the same 1024/1024-bit configuration was executed on
+the Raspberry Pi Pico 2. The average execution time was measured at `80806.006`
+$\mu s$ indicating a substantially lower throughput compared to the Teensy.
 
 ### 6.2 Phase two
 
