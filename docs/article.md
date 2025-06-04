@@ -53,8 +53,9 @@ can be harnessed in order to produce a random number from a state that is nigh
 impossible to reproduce accurately. Clason [@Clason2023] presents a device that
 generates a fluctuating analogue signal utilizing this method.
 
-[^1]:
-    [Cloudflare.com, accessed 2025-03-10](https://blog.cloudflare.com/randomness-101-lavarand-in-production/)
+[^1]: \url{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}
+
+<!-- [https://blog.cloudflare.com/randomness-101-lavarand-in-production/](https://blog.cloudflare.com/randomness-101-lavarand-in-production/) -->
 
 The optical signal output by the device described in [@Clason2023] needs to be
 converted to a stream of random, raw bits via an Analog to Digital Converter
@@ -106,7 +107,7 @@ find the most optimal implementation with the least amount of effective
 processing time spent on the algorithm.
 
 **Research area 2 (_RA2_)**: Can we ensure that the output of random numbers is
-not primarily limited primarily by our implementation, but rather limited by the
+not primarily limited by our implementation, but rather limited by the
 processing power or the USB transfer speed of the microcontroller, alternatively
 by the ADC?
 
@@ -236,14 +237,15 @@ and access to this hardware.
 
 <!-- FIX: Couldn't think of anything better for the analyzing-bit -->
 
-Many microcontrollers furthermore come equipped with internal ADCs that can be
-utilized, and while these provide a lower sample size (_often around 1 MSPS_),
-the ease of development may be prudent to utilize for this proof-of-concept.
-While our initial ADC has a fairly low throughput, this can always be upgraded
-if it ends up becoming too limiting.
+Many modern microcontrollers (_including both MCUs used in this study_)
+furthermore come equipped with internal ADCs that can be utilized. While these
+provide a lower sample size (_often around 1 MSPS_), the ease of development may
+be prudent to utilize for this proof-of-concept. While our initial ADC has a
+fairly low throughput, this can always be upgraded if it ends up becoming too
+limiting.
 
 Should these internal ADCs prove too limiting, we propose utilizing
-MAX11102AUB[^3] with an effective sample rate of 2 million samples per second
+MAX11102AUB[^3] with an effective sample rate of two million samples per second
 (_MSPS_). This ADC provides a 12 bit sample size, providing roughly 24 Mbit/s of
 sampled data per second, derived by the following calculation.
 
@@ -287,43 +289,47 @@ randomness extraction can occur rapidly without major slowdowns in computing.
 Both approaches will be tested during development.
 
 [^3]:
-    [Arm developer documentation, accessed 2025-03-13](https://developer.arm.com/documentation/den0042/a/Tightly-Coupled-Memory)
+    [https://developer.arm.com/documentation/den0042/a/Tightly-Coupled-Memory](https://developer.arm.com/documentation/den0042/a/Tightly-Coupled-Memory)
 
 [^5]:
-    [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/direct-memory-access)
+    [https://www.sciencedirect.com/topics/computer-science/direct-memory-access](https://www.sciencedirect.com/topics/computer-science/direct-memory-access)
 
-In our work, we intend to use Teensy 4.1[^2], based on the ARM Cortex-M7. This
-MCU is especially suitable for computationally demanding tasks involving
-randomness extraction due to its dual-issue superscalar architecture and Digital
-Signal Processing (_DSP_) capabilities. The floating-point unit[^4] (_FPU_) and
-Single Instruction, Multiple Data (_SIMD_) style DSP instructions improve how
-quickly it can perform bitwise and arithmetic tasks, which is crucial for quick
-Toeplitz extraction. SIMD-controlled DSP architectures, as described by Han et
-al. [@simd-dsp], leverage parallel vectorized computation to accelerate matrix
-operations -- making them highly effective for Toeplitz matrix-vector
-multiplications.
+![Teensy 4.1 on the left, compared to Raspberry Pi Pico 2 on the right.](img/mcu.jpeg){#fig:mcu
+width=100%}
+
+In our work, we intend to use Teensy 4.1[^2] based on the ARM Cortex-M7 pictured
+to the right in Figure [@fig:mcu]. This MCU is especially suitable for
+computationally demanding tasks involving randomness extraction due to its
+dual-issue superscalar architecture and Digital Signal Processing (_DSP_)
+capabilities. The floating-point unit[^4] (_FPU_) and Single Instruction,
+Multiple Data (_SIMD_) style DSP instructions improve how quickly it can perform
+bitwise and arithmetic tasks, which is crucial for quick Toeplitz extraction.
+SIMD-controlled DSP architectures, as described by Han et al. [@simd-dsp],
+leverage parallel vectorized computation to accelerate matrix operations --
+making them highly effective for Toeplitz matrix-vector multiplications.
 
 [^3]:
-    [Technical specification for MAX11102AUB, accessed 2025-03-13](https://www.farnell.com/datasheets/1913106.pdf)
+    [https://www.farnell.com/datasheets/1913106.pdf](https://www.farnell.com/datasheets/1913106.pdf)
 
 [^2]:
-    [Teensy developer documentation, accessed 2025-02-27](https://www.pjrc.com/store/teensy41.html)
+    [https://www.pjrc.com/store/teensy41.html](https://www.pjrc.com/store/teensy41.html)
 
 [^4]:
-    [ScienceDirect Journals & Books, accessed 2025-03-13](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
+    [https://www.sciencedirect.com/topics/computer-science/floating-point-unit](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
 In order to evaluate how efficent our implementation can become, our aim is to
 try our implementation on other MCU with different level of power and hardware
 support. Whereas Teensy 4.1, operating at `600 MHz`, is our primary development
 platform which we will evaluate closely, we aim to run our implementations on
-the Raspberry Pi Pico 2[^6], operating at `150 MHz`. Due to the lower
-computational power of this MCU, there may be significant issues in utilizing
-this weaker model, yet it is significantly cheaper and easier to access. Testing
-will consist solely of running the implementation on these controllers and
-measuring execution speed and correctness of the output.
+the Raspberry Pi Pico 2[^6], operating at `150 MHz` (_pictured to the right in
+Figure [@fig:mcu]_). Due to the lower computational power of this MCU, there may
+be significant issues in utilizing this weaker model, yet it is significantly
+cheaper and easier to access. Testing will consist solely of running the
+implementation on these controllers and measuring execution speed and
+correctness of the output.
 
 [^6]:
-    [Raspberry Pi Pico 2 documentation, accessed 2025-03-13](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
+    [https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
 
 ### 3.4 Toeplitz extraction
 
@@ -461,11 +467,11 @@ subsequent iteration introduced controlled modifications aimed at improving
 throughput.
 
 The initial implementation followed the pseudocode described in Algorithm
-\ref{alg:bit-conv}, using matrix multiplication over raw input and seed data. It
-relied on `std::vector<int>` for storage and used nested loops to compute each
-output bit. From this point, this implementation was improved over the coming
-iterations, and the new implementation verified in the same manner as the
-initial version.
+\ref{alg:bit-conv}, using matrix multiplication over the raw input and seed
+data. It relied on `std::vector<int>` for storing the raw data, and utilized
+nested loops to compute each output bit. From this point, this implementation
+was adapted over the coming iterations, and each new version was then verified
+in the same manner as the initial version as outlined in Section 5.3.
 
 **Iteration 1 - Data structures:** This iteration kept the same algorithmic
 logic as the initial implementation, but experimented with data structures such
@@ -473,32 +479,32 @@ as raw pointers and hash maps to enhance the use of `std::vector`. The goal was
 to reduce or eliminate the reliance on nested loops.
 
 **Iteration 2 - Bitshifting:** Basic bitwise operation was introduced to replace
-arithmetic whenever possible. Multiplication was replaced with logical `AND &`
-and modulo operations with bit masking `& 1`. The goal was to reduce the number
-of instructions and improve per-bit processing speed.
+arithmetic operations whenever possible. Multiplication was replaced with
+logical `AND &`, and modulo operations with bit masking `& 1`. The goal was to
+reduce the number of instructions and improve per-bit processing speed.
 
 **Iteration 3 - Batching and Hardware optimization:** This iteration focused on
 optimizing performance through batching and the use of ARM-native instructions,
 beginning by testing batching alone. This was followed by isolated use of ARM
 instructions such as `__builtin_popcountll()` (_which counts the number of set
-bits in an unsigned integer_). After establishing their individual effect we
-combined both techniques, multiple batch sizes were tested to determine their
+bits in an unsigned integer_). After establishing their individual effect, we
+combined both techniques, Multiple batch sizes were tested to determine their
 impact. More details and benchmarks for each configuration can be found in the
 section 6.
 
 ### 5.2 Phase two
 
 Phase two focused on addressing inefficiencies and design issues that were
-unintentionally introduced during earlier iterations. Rather than continuing
-with new algorithmic ideas, this phase aimed to identify and fix structural
-problems. Several assumptions from phase one were re-evaluated -- such as the
-benefits of certain data structures or abstractions.
+unintentionally introduced or not addressed during earlier iterations. Rather
+than continuing with new algorithmic ideas, this phase aimed to identify and fix
+structural problems. Several assumptions from phase one were re-evaluated --
+such as the benefits of certain data structures or abstractions.
 
 **Iteration 4 - Loop unrolling:** This iteration focused on reducing the number
 of loops in the extractor by manually unrolling repeated operations. The goal
 was to decrease overhead created by loops. Whereas this operation is commonly
-done by compiler optimization, manually performing this guarantees that we
-unroll the loops rather than leaving it to the compiler.
+done by compiler optimization, manually unrolling the loops guarantees the
+optimization rather than leaving it to the compiler.
 
 **Iteration 5 - Removal of vector usage:** This iteration removed `std::vector`
 in favor of fixed-size types like `uint32_t` and `uint64_t` to reduce the
@@ -514,8 +520,8 @@ storing input and seed data.
 ### 5.3 Evaluation
 
 To evaluate the correctness of each implementation, a baseline was generated as
-discussed in section 5.2. Using the naive, initial implementation to process
-bits and saving for later evaluation gave us a source of truth against which to
+discussed in Section 5. Using the naive, initial implementation to process bits
+and saving for later evaluation gave us a source of truth against which to
 compare following iterations. To verify that the algorithm successfully removed
 the patterns it should, we verified the measured entropy score with the command
 line utility `ent`[^8]. This tool verifies the statistical randomness of any
@@ -524,7 +530,7 @@ any given binary file is.
 
 [^8]:
 
-[Manual page for `ent`, accessed 2025-04-23.](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
+[https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html](https://manpages.ubuntu.com/manpages/trusty/man1/ent.1.html)
 
 The way `ent` calculates the entropy of a given binary file is by checking the
 frequency of certain byte values. If some byte values are more frequent, the
@@ -559,6 +565,15 @@ and platform-independent method for recording elapsed time with microsecond
 precision, enabling consistent performance evaluation across different
 iterations.
 
+To isolate the execution speed of the algorithm as precisely as possible, we
+only intend to measure the execution speed of the algorithm. Whereas there is
+some other code present in each iteration (_primarily packing the output data to
+be sent to the host computer in a workable format_), the brunt of the work
+should reasonably be performed by the algorithm. As such, we expect the time
+spent on executing other code to be negligible. Furthermore, this code performs
+significantly less work per cycle, and does not exponentially increase the
+larger the input and output requirements increase.
+
 As we will use fixed-size bitstrings for evaluation, we can then derive the
 throughput of the algorithm in $Mbit/s$ as follows:
 
@@ -586,7 +601,7 @@ various iterations.
 
 [^9]:
 
-[Documentation for `micros()`, accessed 2025-05-02.](https://docs.arduino.cc/language-reference/en/functions/time/micros/)
+[https://docs.arduino.cc/language-reference/en/functions/time/micros/](https://docs.arduino.cc/language-reference/en/functions/time/micros/)
 
 ### 5.4 Limitations
 
@@ -599,13 +614,15 @@ however, this remains to be seen during the experimentation.
 
 Whereas our implementation can be controlled at the algorithmic and structural
 level, compiler optimization are managed outside of our influence. The Arduino
-and Teensy platforms automatically sets compiler flags and optimization levels.
-Thus, applying aggressive settings for performance. However, we cannot determine
-exactly how these flags influence our iterations. This limitation makes it
-impossible to isolate the impact of compiler optimizations from the effects of
-our own code. Therefore, any performance differences observed in our experiments
-are considered to stem solely from our implementation, as the compiler behavior
-remains opaque and unchangeable in this context.
+framework automatically sets compiler flags and optimization levels specifically
+chosen for the hardware -- for instance, specific flags are selected when
+compiling code for Teensy, applying aggressive settings for performance.
+However, we cannot determine exactly how these flags influence our iterations.
+Consequently, this makes it impossible to isolate the impact of compiler
+optimizations from the performance gains of our implementations. Therefore, any
+performance differences observed in our experiments are considered to stem
+solely from our implementation, as the compiler behavior remains opaque and
+unchangeable in this context.
 
 ## 6 RESULTS
 
@@ -649,11 +666,18 @@ increases. These results will be used as baseline for future comparison.
 Structures} \label{tab:iter1} \end{table}
 
 Table \ref{tab:iter1} presents the average execution time of iteration 1 on
-Teensy 4.1. This iteration introduced additional complexity without yelding
+Teensy 4.1. This iteration introduced additional complexity without yielding
 significant gains and in some cases led to worse performance. Although this
 iteration did not achieve the desired performance gains, it provided valuable
-insight into the limitations of certain data structure choises within the
+insight into the limitations of certain data structure choices within the
 context of this study.
+
+Notably, as the execution speed of the more powerful Teensy 4.1 increased with
+this iteration, we omit the limited results of executing the same code on
+Pico 2. During the remainder of this phase as well as the next, test results of
+any given iteration of Pico 2 are only reported if there are significant enough
+improvements in execution speeds for Teensy to potentially lead to gains for the
+weaker MCU.
 
 <!-- iter 2-->
 
@@ -709,9 +733,7 @@ additional fully unrolled variant, where loops were entirely eliminated,
 produced a measured execution time of `0.0491` $\mu s$. However, this
 measurement was later determined to be invalid due to packaging error.
 
-\vspace{1em}
-
-\begin{table}[ht] \centring
+\vspace{1em} \begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Bit size} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}} &
 \multicolumn{1}{c|}{\textbf{Pico ($\mu s$)}} \\ \hline 64 & 0.0501 & 0.2175 \\
@@ -721,36 +743,42 @@ measurement was later determined to be invalid due to packaging error.
 Table \ref{tab:iter5} presents the results of iteration 5, in which vector
 structure were removed in favor of fixed-size integer types `uint32_t` and
 `uint64_t`. This iteration led to an extremely efficient implementation that
-approaches the physical execution limits of the Teensy 4.1.
+approaches the physical execution limits of the Teensy 4.1. Due to the removal
+of `std::vector`, this implementation is limited by the available integer sizes
+of the MCU, and could as such only be tested with at most 64 bits. The
+ramifications of this will be discussed in more detail in Section 7.
 
 \vspace{1em}
 
 \begin{table}[H] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Data structure} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}}
-\\ \hline array & 0.4284 \\ unordered_map & 31.5090 \\ bitset & 0.0474 \\ \hline
-\end{tabularx} \caption{Iteration 6 - Data type exploration} \label{tab:iter6}
-\end{table}
+\\ \hline array & 0.4284 \\ unordered\_{map} & 31.5090 \\ bitset & 0.0474 \\
+\hline \end{tabularx} \caption{Iteration 6 - Data type exploration}
+\label{tab:iter6} \end{table}
 
-Table \ref{tab:iter6} presents the results of iteration 6 using 64 bit size,
-which was introduced to address the structural limitations encountered in
-iteration 5. Specifically, the fixed-width output constrains imposed by the
-removal of vector. In this iteration, alternative data structures were
-evaluated. Vector-based approach from iteration 1 serving as a baseline for
-comparison.
+Table \ref{tab:iter6} presents the results of iteration 6 using 64 bits input
+size, which was introduced to address the structural limitations encountered in
+iteration 5 (_specifically, the fixed-width output constrains imposed by the
+removal of `std::vector`_). In this iteration, another set of alternative data
+structures were evaluated, the vector-based approach from iteration 1 serving as
+a baseline for comparison.
 
-Additionally, 128 bit size were tested resulting in `179.8712` $\mu s$.
+As the bitset appeared to provide gains in execution speed, we attempted to
+increase the input bit size to 128 bits in order to investigate whether this
+data structure could allow for larger outputs. However, this substantially
+increased the execution time to `179.8712` $\mu s$.
 
 ## 7 DISCUSSION
 
 Observing the results, we can place them into the context of the limits imposed
 by the ADC, as discussed in Section 3.2. In algorithm (3) (_as seen in Section
-3.3_), we calculate the average execution speed required to be $2.667 \mu$ for
+3.3_), we calculate the average execution speed required to be $2.667 \mu s$ for
 the ADC that requires soldering to the microcontroller. From Tables
 \ref{tab:iter5} and \ref{tab:iter6} we demonstrate execution speeds well below
 that, with iteration 5 as well as iteration 6 -- specifically with bitsets --
 being the most prominent results to discuss. Here, our implementation achieved
-speeds of $0.0501 \mu s$ and $0.0474 \mu$ respectively which within the bounds
+speeds of $0.0501 \mu s$ and $0.0474 \mu s$ respectively which within the bounds
 of the ADC listed in Section 3.2. The built in ADC on Teensy has an effective
 sample rate of 1 MSPS (_e.g. half of MAX11102AUB_), which would require an
 average execution speed of ~$2.667/2 \mu s \approx 1.334 \mu s$, making our
@@ -828,3 +856,11 @@ types for larger bit sizes, for instance 128-bit and 256-bit integers. It may be
 possible that external libraries exist that alredy provide implementations of
 these integer sizes, but even then a slimmed down and customized implementation
 may prove the better alternative for this extreme performance constraint.
+
+Finally, this proof-of-concept has not been tested when connected to the
+OQRNG-device itself, and has focused on a theoretical exploration of the
+capabilities of the MCUs as well as the limitations of Toeplitz extraction.
+Sampling raw, live data from the OQRNG-device and processing it utilizing the
+firmware developed in this work may reveal flaws not evident from our tests, as
+well as demonstrating the efficacy of our implementation in a real world
+scenario.
