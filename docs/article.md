@@ -23,23 +23,24 @@ header-includes:
 True random number generation is indispensable for a wide range of cryptographic
 and distributed computing applications, yet traditional pseudo-random number
 generators remain deterministic, and thus vulnerable to state‐recovery attacks.
-Quantum random number generation (QRNG) offers a robust alternative by
-harnessing inherent quantum fluctuations -- in particular, optical QRNG (OQRNG)
-based on shot noise provides an accessible source of entropy from which true
-random numbers can be generated. However, existing OQRNG solutions typically
-rely on expensive or bespoke hardware and defer post‐processing to host
-computers, limiting portability and integration. In this work, we investigate
-the feasibility of performing Toeplitz randomness extraction directly on
-resource constrained microcontrollers, thus creating a fully self‐contained QRNG
-system. We address two primary research areas: (RA1) developing an
-implementation of Toeplitz extraction that minimizes processing time on embedded
-hardware, and (RA2) ensuring that the extraction algorithm does not become the
-throughput bottleneck compared to ADC conversion or USB transfer speeds.
+Quantum random number generation (_QRNG_) offers a robust alternative by
+harnessing inherent quantum fluctuations -- in particular, optical QRNG
+(_OQRNG_) based on shot noise provides an accessible source of entropy from
+which true random numbers can be generated. However, existing OQRNG solutions
+typically rely on expensive or bespoke hardware and defer post‐processing to
+host computers, limiting portability and integration. In this work, we
+investigate the feasibility of performing Toeplitz randomness extraction
+directly on resource constrained microcontrollers, thus creating a fully
+self‐contained QRNG system. We address two primary research areas: RA1
+developing an implementation of Toeplitz extraction that minimizes processing
+time on embedded hardware, and RA2 ensuring that the extraction algorithm does
+not become the throughput bottleneck compared to ADC conversion or USB transfer
+speeds.
 
 Our results demonstrate that, by eliminating dynamic allocations and leveraging
-bit‐parallel techniques, Toeplitz extraction on 64‐bit inputs can be executed in
+bit parallel techniques, Toeplitz extraction on 64-bit inputs can be executed in
 approximately $0.05 \mu s$ on the Teensy 4.1 -- well below the $2.667 \mu s$
-threshold imposed by a 12‐bit, 2 MSPS ADC. Even accounting for variance in
+threshold imposed by a 12-bit, 2 MSPS ADC. Even accounting for variance in
 individual measurements, these speeds confirm that the algorithmic
 implementation does not constrain overall throughput. On the Pico 2, the same
 implementations yield sub‐microsecond performance, albeit with a wider variance.
@@ -100,8 +101,7 @@ to ensure that the bits are workable, and to remove potential deterministic
 patterns from the data. One method for this post-processing we will explore in
 this work is Toeplitz extraction [@toeplitz], typically performed on the host
 computer utilizing the randomly generated numbers. The post-processing finally
-yields a random number. This relationship can be seen in Figure
-\ref{fig:linear-system}.
+yields a random number. This relationship can be seen in @fig:linear-system.
 
 \begin{figure}[ht] \centering \begin{tikzpicture}[>=latex] % top row, 2 cm apart
 \node (A) {RNG-module}; \node (B) [right=2cm of A] {ADC-conversion};
@@ -334,15 +334,15 @@ Both approaches will be tested during development.
 width=100%}
 
 In our work, we intend to use Teensy 4.1[^2] based on the ARM Cortex-M7 pictured
-to the right in Figure [@fig:mcu]. This MCU is especially suitable for
-computationally demanding tasks involving randomness extraction due to its
-dual-issue superscalar architecture and Digital Signal Processing (_DSP_)
-capabilities. The floating-point unit[^4] (_FPU_) and Single Instruction,
-Multiple Data (_SIMD_) style DSP instructions improve how quickly it can perform
-bitwise and arithmetic tasks, which is crucial for quick Toeplitz extraction.
-SIMD-controlled DSP architectures, as described by Han et al. [@simd-dsp],
-leverage parallel vectorized computation to accelerate matrix operations --
-making them highly effective for Toeplitz matrix-vector multiplications.
+to the right in @fig:mcu. This MCU is especially suitable for computationally
+demanding tasks involving randomness extraction due to its dual-issue
+superscalar architecture and Digital Signal Processing (_DSP_) capabilities. The
+floating-point unit[^4] (_FPU_) and Single Instruction, Multiple Data (_SIMD_)
+style DSP instructions improve how quickly it can perform bitwise and arithmetic
+tasks, which is crucial for quick Toeplitz extraction. SIMD-controlled DSP
+architectures, as described by Han et al. [@simd-dsp], leverage parallel
+vectorized computation to accelerate matrix operations -- making them highly
+effective for Toeplitz matrix-vector multiplications.
 
 [^3]:
     [https://www.farnell.com/datasheets/1913106.pdf](https://www.farnell.com/datasheets/1913106.pdf)
@@ -353,13 +353,13 @@ making them highly effective for Toeplitz matrix-vector multiplications.
 [^4]:
     [https://www.sciencedirect.com/topics/computer-science/floating-point-unit](https://www.sciencedirect.com/topics/computer-science/floating-point-unit)
 
-In order to evaluate how efficent our implementation can become, our aim is to
+In order to evaluate how efficient our implementation can become, our aim is to
 try our implementation on other MCU with different level of power and hardware
 support. Whereas Teensy 4.1, operating at `600 MHz`, is our primary development
 platform which we will evaluate closely, we aim to run our implementations on
 the Raspberry Pi Pico 2[^6], operating at `150 MHz` (_pictured to the right in
-Figure [@fig:mcu]_). Due to the lower computational power of this MCU, there may
-be significant issues in utilizing this weaker model, yet it is significantly
+@fig:mcu_). Due to the lower computational power of this MCU, there may be
+significant issues in utilizing this weaker model, yet it is significantly
 cheaper and easier to access. Testing will consist solely of running the
 implementation on these controllers and measuring execution speed and
 correctness of the output.
@@ -398,13 +398,13 @@ constrained hardware.
 
 A detailed account of the inner workings of Toeplitz extraction can be found in
 the work of Chouhan et al. [@toeplitz-desc]. This work focuses on implementing
-Toeplitz extraction on field-programmable gate-arrays (FPGA), but some specific
-details can be derived from their work. As these authors describe, Toeplitz
-extraction is a strong contender for our work due to a lower computational
-complexity than other alternatives, as well as a relatively easy algorithm to
-use. This extraction utilizes either matrix multiplication or hashing between a
-pseudo-random seed and the raw data provided from a high-entropy source of
-randomness -- in our case, the OQRNG-device.
+Toeplitz extraction on field-programmable gate-arrays (_FPGA_), but some
+specific details can be derived from their work. As these authors describe,
+Toeplitz extraction is a strong contender for our work due to a lower
+computational complexity than other alternatives, as well as a relatively easy
+algorithm to use. This extraction utilizes either matrix multiplication or
+hashing between a pseudo-random seed and the raw data provided from a
+high-entropy source of randomness -- in our case, the OQRNG-device.
 
 To summarize the theoretical working of Toeplitz extraction (_as explained by
 Chouhan et al. [@toeplitz-desc]_), a pre-determined seed matrix ($T$) is
@@ -418,11 +418,11 @@ randomly generated number. An example of how this extraction works can be seen
 below.
 
 \begin{algorithm}[ht] \caption{Toeplitz extraction}\label{alg:bit-conv}
-\begin{algorithmic}[1] \REQUIRE \(x[0\,..\,n-1]\) \Comment{input bit array of
+\begin{algorithmic}[1] \REQUIRE \(k[0\,..\,n-1]\) \Comment{input bit array of
 length \(n\)} \REQUIRE \(t[0\,..\,n+m-2]\) \Comment{seed matrix of length
 \(n+m-1\)} \ENSURE \(y[0\,..\,m-1]\) \Comment{output bit array of length \(m\)}
 \FOR{\(i = 0\) to \(m - 1\)} \STATE sum = 0 \FOR{\(j = 0\) to \(n - 1\)} \STATE
-sum = sum + \(x[j] \* t[i + j]\) \ENDFOR \STATE \(y[i] =
+sum = sum + \(k[j] $\times$ t[i + j]\) \ENDFOR \STATE \(y[i] =
 \mathrm{sum}\;\bmod\;2\) \ENDFOR \RETURN \(y\) \end{algorithmic} \end{algorithm}
 
 The main focus of this work is implementing this algorithm as efficiently as
@@ -709,7 +709,7 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 implementation} \label{tab:iter0} \end{table}
 
 Table \ref{tab:iter0} presents the average execution time of the naive
-implementation (iteration 0) across different input sizes for both the Teensy
+implementation (_iteration 0_) across different input sizes for both the Teensy
 4.1 and the Raspberry Pi Pico 2. The results reveal that the Teensy consistently
 achieves lower execution times compared to the Pico, with performance
 differences becoming more pronounced as thje bit size increases. This behaivor

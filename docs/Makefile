@@ -15,7 +15,7 @@ all: $(PDF_FILE)
 
 $(BODY_TEX): $(MD_FILE)
 	# Convert markdown to LaTeX body
-	pandoc $(MD_FILE) -o $(BODY_TEX) --bibliography=$(BIB_FILE) --csl=$(CSL_FILE) --wrap=none
+	pandoc $(MD_FILE) -o $(BODY_TEX) --filter pandoc-crossref --bibliography=$(BIB_FILE) --csl=$(CSL_FILE) --wrap=none
 	# Fix citations in the LaTeX file
 	python3 fix_citations.py $(BODY_TEX)
 
