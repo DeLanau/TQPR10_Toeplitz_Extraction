@@ -18,6 +18,42 @@ header-includes:
   - \numberofauthors{2}
 ---
 
+# ABSTRACT
+
+True random number generation is indispensable for a wide range of cryptographic
+and distributed computing applications, yet traditional pseudo-random number
+generators remain deterministic, and thus vulnerable to state‐recovery attacks.
+Quantum random number generation (QRNG) offers a robust alternative by
+harnessing inherent quantum fluctuations -- in particular, optical QRNG (OQRNG)
+based on shot noise provides an accessible source of entropy from which true
+random numbers can be generated. However, existing OQRNG solutions typically
+rely on expensive or bespoke hardware and defer post‐processing to host
+computers, limiting portability and integration. In this work, we investigate
+the feasibility of performing Toeplitz randomness extraction directly on
+resource constrained microcontrollers, thus creating a fully self‐contained QRNG
+system. We address two primary research areas: (RA1) developing an
+implementation of Toeplitz extraction that minimizes processing time on embedded
+hardware, and (RA2) ensuring that the extraction algorithm does not become the
+throughput bottleneck compared to ADC conversion or USB transfer speeds.
+
+Our results demonstrate that, by eliminating dynamic allocations and leveraging
+bit‐parallel techniques, Toeplitz extraction on 64‐bit inputs can be executed in
+approximately $0.05 \mu s$ on the Teensy 4.1 -- well below the $2.667 \mu s$
+threshold imposed by a 12‐bit, 2 MSPS ADC. Even accounting for variance in
+individual measurements, these speeds confirm that the algorithmic
+implementation does not constrain overall throughput. On the Pico 2, the same
+implementations yield sub‐microsecond performance, albeit with a wider variance.
+However, our most efficient implementations are limited to 64‐bit inputs --
+extending to larger input bit sizes incurs significant overhead due to the
+absence of wider integer types in typical MCU toolchains.
+
+In conclusion, Toeplitz extraction can be performed in real time on low‐power
+microcontrollers without becoming the system’s performance bottleneck,
+validating the viability of a portable QRNG thumbstick. Future work should
+explore custom data types or lightweight libraries for 128- and 256-bit size
+extraction, as well as integration with a live OQRNG device to assess end‐to‐end
+randomness quality and throughput.
+
 # 1 INTRODUCTION
 
 In computer science, there are many applications for randomly generated numbers.
@@ -331,6 +367,26 @@ correctness of the output.
 [^6]:
     [https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf](https://datasheets.raspberrypi.com/pico/pico-2-product-brief.pdf)
 
+To estimate the theoretical lower bound for execution time on the Teensy 4.1,
+the duration of a single CPU cycle can be calculated using the following
+expression:
+
+$$
+\text{Cycle time} = \frac{1}{600\, \mathrm{MHz}} \approx 1.67\, \mathrm{ns} \phantom{123}(2)
+$$
+
+Given a clock frequency of `600 MHz`, each cycle lasts approximately 1.67
+nanoseconds. Assuming a minimal implementation requires 30 instruction cycles to
+complete a single extraction, the theoretical execution time becomes:
+
+$$
+t_{\text{min}} = 30 \times 1.67\,\mathrm{ns} = 50.1\,\mathrm{ns} \approx 0.05\,\mu\mathrm{s} \phantom{123}(3)
+$$
+
+These theoretical limits will serve as a baseline to assess how closely our
+implementations approach the maximum capabilities of the Teensy 4.1
+microcontroller.
+
 ### 3.4 Toeplitz extraction
 
 The raw bits from the ADC can potentially have some deterministic patterns, and
@@ -581,7 +637,7 @@ $$
 Throughput_\mathrm{Mbit/s}
 = \frac{DataSize_\mathrm{bits}}{ExecutionTime_\mathrm{ms}}
 \times 10^{-3}
-\phantom{12}(2)
+\phantom{12}(4)
 $$
 
 This measurement allows us to place the throughput of our algorithm soundly in
@@ -593,7 +649,7 @@ $$
 \frac{64}{24}\times10^{-3}\ \mathrm{ms}
 \approx 2.667\times10^{-3}\ \mathrm{ms}
 =2.667\ \mu\mathrm{s}.
-\phantom{12}(3)
+\phantom{12}(5)
 $$
 
 In section 6, this calculation will be used to derive the execution speed of the
@@ -652,10 +708,17 @@ of the testscript architecture.} \label{fig:testscript-architecture}
 & 21111.2163 \\ \hline \end{tabularx} \caption{Iteration 0 - Naive
 implementation} \label{tab:iter0} \end{table}
 
-Table \ref{tab:iter0} presents the average execution time of iteration 1 on both
-Teensy 4.1 and Raspberry Pico Pi 2 across the input sizes. The Teensy
-consistently outperforms the Pico, with the gap widening as the bit size
-increases. These results will be used as baseline for future comparison.
+Table \ref{tab:iter0} presents the average execution time of the naive
+implementation (iteration 0) across different input sizes for both the Teensy
+4.1 and the Raspberry Pi Pico 2. The results reveal that the Teensy consistently
+achieves lower execution times compared to the Pico, with performance
+differences becoming more pronounced as thje bit size increases. This behaivor
+aligns with the expected difference in hardware specifications, such as CPU
+clock frequency and memory bandwidth.
+
+These measurements serve as the baseline for all subsequent iterations. They
+provide a reference point for assessing performance improvements introduced in
+later implementations and allow for cross-platform comparisons.
 
 <!-- iter 1 -->
 
@@ -728,10 +791,15 @@ Raspberry Pi Pico Mcu's.
 
 In addition to the results presented in Table \ref{tab:iter4}, a further tests
 was conducted on the Teensy using a single-loop unrolled implementation for the
-64-bit size, resulting in an average execution time of `6.6626` $\mu s$. An
-additional fully unrolled variant, where loops were entirely eliminated,
-produced a measured execution time of `0.0491` $\mu s$. However, this
-measurement was later determined to be invalid due to packaging error.
+64-bit size, resulting in an average execution time of `6.6626` $\mu s$.
+
+An additional fully unrolled variant, where loops were entirely eliminated,
+produced a measured execution time of `0.0491` $\mu s$. However, this result was
+later deemed invalid due to packaging error in the implementation. Specifically,
+the algorithm was incorrectly designed to transmit only a single output bit
+instead of full 32-bit expected output. This lead to an underestimation of the
+true execution time, as the cost of correctly formatting and sending the full
+result was omitted from measurement.
 
 \vspace{1em} \begin{table}[ht] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
@@ -746,34 +814,37 @@ structure were removed in favor of fixed-size integer types `uint32_t` and
 approaches the physical execution limits of the Teensy 4.1. Due to the removal
 of `std::vector`, this implementation is limited by the available integer sizes
 of the MCU, and could as such only be tested with at most 64 bits. The
-ramifications of this will be discussed in more detail in Section 7.
+ramifications of this will be discussed in more detail in Section 7. However,
+the results remain inconsistent—while the average is low, individual
+measurements vary, indicating that the implementation does not yet achieve
+stable execution at the architectural limit.
 
-\vspace{1em}
-
-\begin{table}[H] \centring
+\vspace{1em} \begin{table}[H] \centring
 \begin{tabularx}{\columnwidth}{|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
 \hline \textbf{Data structure} & \multicolumn{1}{c|}{\textbf{Teensy ($\mu s$)}}
 \\ \hline array & 0.4284 \\ unordered\_{map} & 31.5090 \\ bitset & 0.0474 \\
 \hline \end{tabularx} \caption{Iteration 6 - Data type exploration}
 \label{tab:iter6} \end{table}
 
-Table \ref{tab:iter6} presents the results of iteration 6 using 64 bits input
-size, which was introduced to address the structural limitations encountered in
-iteration 5 (_specifically, the fixed-width output constrains imposed by the
-removal of `std::vector`_). In this iteration, another set of alternative data
-structures were evaluated, the vector-based approach from iteration 1 serving as
-a baseline for comparison.
+Table \ref{tab:iter6} presents the results of iteration 6 using 64 bit size,
+which was introduced to address the structural limitations encountered in
+iteration 5. Specifically, the fixed-width output constrains imposed by the
+removal of vector. Several alternative data structures were evaluated, with the
+original vecotr-based implementation from iteration 1 serving as a baseline.
 
-As the bitset appeared to provide gains in execution speed, we attempted to
-increase the input bit size to 128 bits in order to investigate whether this
-data structure could allow for larger outputs. However, this substantially
-increased the execution time to `179.8712` $\mu s$.
+Notably, while the bitset-based implementation achieved an average execution
+time of 0.0474 $\mu s$, this value represents an average and not a consistently
+stable result. Individual measurements showed significant variance. This
+suggests that, despite nearing the theoretical limits outlined in Section 3.3,
+the implementation has not yet reached a consistently minimal execution time.
+Additional tests at 128-bit input size yielded 179.8712 $\mu s$, confirming that
+the system still operates within the physical capabilities of the Teensy 4.1.
 
 ## 7 DISCUSSION
 
 Observing the results, we can place them into the context of the limits imposed
-by the ADC, as discussed in Section 3.2. In algorithm (3) (_as seen in Section
-3.3_), we calculate the average execution speed required to be $2.667 \mu s$ for
+by the ADC, as discussed in Section 3.2. In equation (5) (_as seen in Section
+5.3_), we calculate the average execution speed required to be $2.667 \mu s$ for
 the ADC that requires soldering to the microcontroller. From Tables
 \ref{tab:iter5} and \ref{tab:iter6} we demonstrate execution speeds well below
 that, with iteration 5 as well as iteration 6 -- specifically with bitsets --
