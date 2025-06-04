@@ -18,42 +18,6 @@ header-includes:
   - \numberofauthors{2}
 ---
 
-# ABSTRACT
-
-True random number generation is indispensable for a wide range of cryptographic
-and distributed computing applications, yet traditional pseudo-random number
-generators remain deterministic, and thus vulnerable to state-recovery attacks.
-Quantum random number generation (_QRNG_) offers a robust alternative by
-harnessing inherent quantum fluctuations -- in particular, optical QRNG
-(_OQRNG_) based on shot noise provides an accessible source of entropy from
-which true random numbers can be generated. However, existing OQRNG solutions
-typically rely on expensive or bespoke hardware and defer post‐processing to
-host computers, limiting portability and integration. In this work, we
-investigate the feasibility of performing Toeplitz randomness extraction
-directly on resource constrained microcontrollers, thus creating a fully
-self‐contained QRNG system. We address two primary research areas -- developing
-an implementation of Toeplitz extraction that minimizes processing time on
-embedded hardware, and ensuring that the extraction algorithm does not become
-the throughput bottleneck compared to ADC conversion or USB transfer speeds.
-
-Our results demonstrate that, by eliminating dynamic allocations and leveraging
-bit parallel techniques, Toeplitz extraction on 64-bit inputs can be executed in
-approximately $0.05 \mu s$ on the Teensy 4.1 -- well below the $2.667 \mu s$
-threshold imposed by a 12-bit, 2 MSPS ADC. Even accounting for variance in
-individual measurements, these speeds confirm that the algorithmic
-implementation does not constrain overall throughput. On the Pico 2, the same
-implementations yield sub‐microsecond performance, albeit with a wider variance.
-However, our most efficient implementations are limited to 64-bit inputs --
-extending to larger input bit sizes incurs significant overhead due to the
-absence of wider integer types in typical MCU toolchains.
-
-In conclusion, Toeplitz extraction can be performed in real time on low‐power
-microcontrollers without becoming the system’s performance bottleneck,
-validating the viability of a portable QRNG thumbstick. Future work should
-explore custom data types or lightweight libraries for 128- and 256-bit size
-extraction, as well as integration with a live OQRNG device to assess end‐to‐end
-randomness quality and throughput.
-
 # 1 INTRODUCTION
 
 In computer science, there are many applications for randomly generated numbers.
@@ -90,6 +54,8 @@ impossible to reproduce accurately. Clason [@Clason2023] presents a device that
 generates a fluctuating analogue signal utilizing this method.
 
 [^1]: \url{https://blog.cloudflare.com/randomness-101-lavarand-in-production/}
+
+<!-- [^1]: \url{https://blog.cloudflare.com/randomness-101-lavarand-in-production/} -->
 
 <!-- [https://blog.cloudflare.com/randomness-101-lavarand-in-production/](https://blog.cloudflare.com/randomness-101-lavarand-in-production/) -->
 
@@ -251,7 +217,7 @@ apart, ensuring efficient light coupling. The photodiode detects light from the
 LED, and converts the light into a current signal, which is sent to a
 transimpedance amplifier to convert it into measurable voltage. In order to
 minimize disruptions by other external lights, the system is enclosed in a
-shielded measurment box.
+shielded measurement box.
 
 Whereas the exact quantum mechanisms that ensure that this system ensures
 randomness and further details regarding the OQRNG-device is better derived
@@ -471,7 +437,7 @@ cryptographic robustness and ensures sustained high-security randomness
 extraction in real-world applications.
 
 Efficient Toeplitz matrix-vector multiplication (_TMVM_) is critical for
-optimizing randomness extraction that relies on Toeplitz, particulary in
+optimizing randomness extraction that relies on Toeplitz, particularly in
 constrained hardware environments. Liao et al. [@liao] showed that this process
 could be greatly accelerated using Fast Fourier Transform (_FFT_) and its
 inverse (_IFFT_) -- reducing computational complexity from $O(n^2)$ to
@@ -589,7 +555,7 @@ any given binary file is.
 
 The way `ent` calculates the entropy of a given binary file is by checking the
 frequency of certain byte values. If some byte values are more frequent, the
-binary file has a low entropy -- essentially singifying that there are
+binary file has a low entropy -- essentially signifying that there are
 predictable patterns. Conversely, if all byte values appear roughly equally, the
 binary file has a high entropy -- meaning that it is more random, and less
 predictable. The maximum entropy of any given file is
@@ -602,7 +568,7 @@ of the file, e.g. how much more the file can be theoretically compressed. This
 is calculated as $1 - \frac{\text{entropy}}{\text{maximum entropy}}$, signifying
 that the file cannot be compressed further -- that the data is already as
 compressed as its random distribution allows. Essentially, this informs us that
-the file has no more detectable statistical patterns or compressable
+the file has no more detectable statistical patterns or compressible
 regularities remaining. We consider any file where `ent` reports a compression
 ratio of $0\%$ to be acceptable.
 
@@ -770,7 +736,7 @@ Teensy 4.1 for varying batching and bit sizes. The notation `64/64`, `512/512`
 and `1024/1024` refers to the input bit size and batching size.
 
 To evaluate the effect of batching granularity, additional tests were conducted
-using batch sizez of 32, 256 and 512 for various input sizes. The observed
+using batch sizes of 32, 256 and 512 for various input sizes. The observed
 difference in execution time between low and high batching configurations ranged
 approximately from 10 to 50 microseconds, depending on the input size.
 
