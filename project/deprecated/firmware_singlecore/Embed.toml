@@ -1,8 +1,0 @@
-[general]
-chip = "imxrt1062"
-
-[rtt]
-enabled = true
-up = [
-    { format = "Defmt", channel = 0, name = "defmt_log" },
-]
