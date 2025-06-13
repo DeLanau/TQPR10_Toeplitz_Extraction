@@ -1,0 +1,15 @@
+Creative Commons Attribution-NonCommercial 4.0 International License
+
+Copyright (c) 2025 Love Arreborn & Nadim Lakrouz
+
+This work (excluding the source code) is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
+
+You are free to:
+- Share — copy and redistribute the material in any medium or format
+- Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+- Attribution — You must give appropriate credit.
+- NonCommercial — You may not use the material for commercial purposes.
+
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/
